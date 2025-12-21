@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.env
+.venv/
+env/
+
+# QGIS / Spatial
+*.qgs~
+*.qgz
+
+# OS Junk
+.DS_Store
+Thumbs.db
+
+# Data (Optional but recommended for large files)
+# We usually don't commit huge Geopackages to Git. 
+# Uncomment the line below if your data is >100MB
+# data/
