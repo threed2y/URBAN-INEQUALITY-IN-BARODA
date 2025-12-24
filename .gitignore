@@ -18,3 +18,5 @@ Thumbs.db
 # Uncomment the line below if your data is >100MB
 # data/
 maps/baroda_map.png-1.ppm
+maps/baroda_map.png-1.ppm
+*.ppm
