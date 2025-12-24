@@ -17,3 +17,4 @@ Thumbs.db
 # We usually don't commit huge Geopackages to Git. 
 # Uncomment the line below if your data is >100MB
 # data/
+maps/baroda_map.png-1.ppm
