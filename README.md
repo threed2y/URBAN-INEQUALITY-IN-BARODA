@@ -18,14 +18,13 @@ This research models **urban inequality as a spatial and network phenomenon**. B
 
 The results are integrated into a composite **Urban Opportunity Index (UOI)** using **Principal Component Analysis (PCA)** and validated through **spatial statistical inference**.
 
----
 
 ## 🧠 Core Research Questions
 - ❓ *Is access to public services spatially equitable across the city?*
 - ❓ *Do areas of deprivation form persistent spatial clusters?*
 - ❓ *Can network-based accessibility reveal inequalities hidden by city-wide averages?*
 
----
+
 
 ## 🚀 Key Features & Contributions
 
@@ -45,7 +44,7 @@ The results are integrated into a composite **Urban Opportunity Index (UOI)** us
   - ❄️ Coldspots of deprivation
 - Provides empirical evidence of **Spatial Traps**.
 
----
+
 
 ## 🗂️ Project Structure
 
