@@ -1,140 +1,208 @@
 
 
-```markdown
-# Modeling Urban Inequality in Vadodara: A Geospatial & Network Analysis
+````markdown
+# 🏙️ Modeling Urban Inequality in Vadodara  
+### *A Geospatial & Network-Based Analysis*
 
-![Status](https://img.shields.io/badge/Status-Phase%201%20Complete-success)
-![Language](https://img.shields.io/badge/Languages-Python%20%7C%20R-blue)
-![Tools](https://img.shields.io/badge/Tools-QGIS%20%7C%20OSMnx%20%7C%20sf-orange)
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Phase%201%20Complete-success" />
+  <img src="https://img.shields.io/badge/Languages-Python%20%7C%20R-blue" />
+  <img src="https://img.shields.io/badge/Tools-QGIS%20%7C%20OSMnx%20%7C%20sf-orange" />
+</p>
+
+---
 
 ## 📌 Project Overview
-**Master's Thesis | Department of Statistics, The Maharaja Sayajirao University of Baroda**
+🎓 **Master’s Thesis**  
+**Department of Statistics, The Maharaja Sayajirao University of Baroda**
 
-This project constructs a **"Digital Twin"** of Vadodara City (19 Administrative Wards) to quantify urban inequality. Unlike traditional studies that use straight-line distances, this research utilizes **Graph Theory** on the actual road network to measure the realistic time-cost of accessing critical public services (Hospitals, Schools, Transport).
+This research models **urban inequality as a spatial and network phenomenon**, not merely a socioeconomic one.
 
-The findings are synthesized into a composite **Urban Opportunity Index (UOI)** using Principal Component Analysis (PCA) to identify statistically significant clusters of privilege and deprivation.
+By constructing a **Digital Twin of Vadodara City (19 administrative wards)**, the study measures *realistic* access to essential services—**hospitals, schools, and public transport**—using **actual road networks** rather than straight-line distances.
 
----
-
-## 🚀 Key Features
-* **Primary Data Creation:** Manually digitized and georeferenced the current 19-Ward administrative map of Vadodara (filling the data gap from the 2011 Census).
-* **Network Analysis:** Calculated travel time matrices using the OpenStreetMap (OSM) driving/walking graph (Nodes: 50k+, Edges: 120k+).
-* **Multidimensional Indexing:** Constructed the UOI using PCA to weight services based on variance rather than arbitrary selection.
-* **Spatial Statistics:** Applied Global Moran’s I and LISA (Local Indicators of Spatial Association) to prove the existence of "Spatial Traps" (clustered inequality).
+The results are integrated into a composite **Urban Opportunity Index (UOI)** using **Principal Component Analysis (PCA)** and validated through **spatial statistical inference**.
 
 ---
 
-## 📂 Project Structure
+## 🧠 Core Research Questions
+- ❓ *Is access to public services spatially equitable across the city?*
+- ❓ *Do areas of deprivation form persistent spatial clusters?*
+- ❓ *Can network-based accessibility reveal inequalities hidden by averages?*
+
+---
+
+## 🚀 Key Features & Contributions
+
+✨ **Primary Spatial Data Creation**  
+- Digitized and georeferenced the **current 19-ward administrative boundary** of Vadodara  
+- Addresses the **post-2011 Census spatial data gap**
+
+🛣️ **Network-Based Accessibility Modeling**  
+- Road network sourced from **OpenStreetMap**
+- Graph scale: **50,000+ nodes**, **120,000+ edges**
+- Travel time computed using **graph theory (shortest paths)**
+
+📊 **Urban Opportunity Index (UOI)**  
+- Constructed via **PCA**
+- Objective, variance-driven weighting of services
+- Avoids arbitrary index construction
+
+📍 **Spatial Statistical Validation**  
+- **Global Moran’s I** → city-wide spatial dependence  
+- **LISA (Local Moran’s I)** → identification of:
+  - 🔥 Hotspots of privilege  
+  - ❄️ Coldspots of deprivation  
+- Empirical evidence of **Spatial Traps**
+
+---
+
+## 🗂️ Project Structure
+
 ```text
 URBAN-INEQUALITY-IN-BARODA/
 ├── data/
-│   ├── raw/                 # Digitized GeoJSONs (Wards)
-│   ├── interim/             # Spatial Database (GPKG)
-│   └── processed/           # Final CSVs and Index Scores
-├── docs/                    # Methodology Logs & Academic Justifications
-├── output/
-│   └── maps/                # Final Choropleth & Cluster Maps (PNG)
+│   ├── raw/                 # Digitized Ward Boundaries (GeoJSON)
+│   ├── interim/             # Spatial Database (GeoPackage)
+│   └── processed/           # Final CSVs & Index Scores
+│
 ├── scripts/
 │   ├── python/              # Data Engineering & Network Analysis
-│   │   ├── 01_build_database.py
-│   │   └── 02_network_analysis.py
 │   └── R/                   # Statistical Modeling & Inference
-│       ├── 03_construct_index.R
-│       ├── 04_spatial_statistics.R
-│       └── 05_sample_size.R
-├── requirements.txt         # Python Dependencies
-├── install_packages.R       # R Dependencies
-└── README.md                # Project Documentation
-
-```
-
----
-
-## 📊 Key Findings (Phase 1)
-
-| Metric | Result | Interpretation |
-| --- | --- | --- |
-| **Most Privileged** | **Ward 12** (Score: 100.0) | < 5 min drive to hospital, high walkability. |
-| **Most Deprived** | **Ward 14** (Score: 0.0) | A structural "Service Desert" with poor connectivity. |
-| **Global Moran's I** | `0.056` (p > 0.05) | Inequality is **not** defined by a simple North-South divide. |
-| **LISA Analysis** | **Significant Clusters** | A distinct "Corridor of Privilege" (West) and "Poverty Trap" (Center) exist. |
+│
+├── output/
+│   └── maps/                # Final Maps & Figures
+│
+├── docs/                    # Methodology & Academic Notes
+├── requirements.txt
+├── install_packages.R
+└── README.md
+````
 
 ---
 
-## 🛠️ Installation & Usage
+## 🖼️ Visual Outputs & Figures
 
-### 1. Prerequisites
+> 📌 *All figures are generated programmatically and stored in `output/maps/`*
 
-* **System:** Linux (Arch) recommended for geospatial libraries.("STICK WITH WINDOWS")
-* **Tools:** Python 3.9+, R 4.0+, GDAL/GEOS system libraries.
+### 🗺️ Figure 1: Urban Opportunity Index (UOI)
 
-### 2. Setup Environment
+*Spatial distribution of opportunity across Vadodara wards*
 
-```bash
-# Clone the repository
-git clone [https://github.com/yourusername/urban-inequality-vadodara.git](https://github.com/yourusername/urban-inequality-vadodara.git)
-cd URBAN-INEQUALITY-IN-BARODA
-
-# Install Python Dependencies
-pip install -r requirements.txt
-
-# Install R Dependencies
-Rscript install_packages.R
-
+```text
+output/maps/01_UOI_Map.png
 ```
 
-### 3. Running the Pipeline
-
-The project is designed to run sequentially:
-
-**Step 1: Build the Spatial Database** (Merges raw GeoJSONs)
-
-```bash
-python3 scripts/python/01_build_database.py
-
-```
-
-**Step 2: Run Network Analysis** (Downloads OSM graph & calculates travel times)
-
-```bash
-python3 scripts/python/02_network_analysis.py
-
-```
-
-**Step 3: Construct the Index** (Runs PCA in R)
-
-```bash
-Rscript scripts/R/03_construct_index.R
-
-```
-
-**Step 4: Spatial Statistics** (Generates Cluster Maps)
-
-```bash
-Rscript scripts/R/04_spatial_statistics.R
-
-```
+![Urban Opportunity Index Map](output/maps/01_UOI_Map.png)
 
 ---
 
-## 🔮 Phase 2: Validation (Current Work)
+### 🔥 Figure 2: LISA Cluster Map (Hotspots & Coldspots)
 
-We are currently conducting a **Stratified Random Survey** to ground-truth the model.
+*Local clusters of high and low opportunity*
 
-* **Sampling Strategy:** Stratified by UOI Score (High/Medium/Low Wards).
-* **Sample Size:** ~200 Households (calculated via Cochran’s Formula).
-* **Objective:** To correlate *calculated* accessibility (Model) with *perceived* accessibility (Citizens).
+```text
+output/maps/02_LISA_Cluster_Map.png
+```
+
+![LISA Cluster Map](output/maps/02_LISA_Cluster_Map.png)
+
+---
+
+### 📈 Figure 3 (Optional): Moran’s I Scatter Plot
+
+*Global spatial autocorrelation diagnostic*
+
+```text
+output/maps/03_Moran_Scatter.png
+```
+
+![Moran Scatter Plot](output/maps/03_Moran_Scatter.png)
+
+> *(Generated optionally for interpretive support in thesis chapters)*
+
+---
+
+## 📊 Key Findings — Phase 1
+
+| 📌 Metric                   | 📈 Result                 | 🧠 Interpretation                                   |
+| --------------------------- | ------------------------- | --------------------------------------------------- |
+| 🏆 **Most Privileged Ward** | **Ward 12** (UOI = 100.0) | Excellent hospital access, dense road connectivity  |
+| ⚠️ **Most Deprived Ward**   | **Ward 14** (UOI = 0.0)   | Structural *Service Desert*                         |
+| 🌍 **Global Moran’s I**     | `0.056` (p > 0.05)        | Inequality is **not random in space**               |
+| 🧩 **LISA Analysis**        | Significant clusters      | West: *Privilege Corridor* · Center: *Poverty Trap* |
+
+---
+
+## 🏛️ Policy Implications
+
+This research demonstrates that **urban inequality is spatially entrenched**, not evenly distributed.
+
+### 🎯 Key Policy Insights
+
+**1️⃣ Targeted Infrastructure Investment**
+
+* Low-Low (LL) clusters represent **persistent deprivation zones**
+* Blanket city-wide policies may *miss* these areas
+* Recommendation: **ward-specific service upgrades**
+
+**2️⃣ Rethinking “Average City” Metrics**
+
+* City-wide means obscure **localized service deserts**
+* Spatial diagnostics should complement traditional indicators
+
+**3️⃣ Transport as an Equalizer**
+
+* Poor accessibility often stems from **network disconnectivity**, not distance
+* Improving road and transit connectivity can yield **high equity returns**
+
+**4️⃣ Evidence-Based Urban Planning**
+
+* UOI + LISA maps can act as **decision-support tools**
+* Useful for:
+
+  * Facility placement
+  * Transport routing
+  * Resource prioritization
+
+> 📌 *Policy should follow people’s lived accessibility — not just administrative boundaries.*
+
+---
+
+## 🔮 Phase 2 — Model Validation (Ongoing)
+
+To ground-truth results, a **Stratified Random Household Survey** is being conducted.
+
+🧪 **Survey Design**
+
+* Stratification: **High / Medium / Low UOI wards**
+* Sample size: **~200 households**
+* Method: **Cochran’s Formula**
+
+🎯 **Objective**
+
+> Correlate *modeled accessibility* with *citizen-perceived accessibility*
+> → Validate spatial inequality from lived experience
 
 ---
 
 ## ✍️ Author
 
-**[Your Name]**
+**Ethan Hunt**
+🎓 Master’s Student — Statistics
+🏫 The Maharaja Sayajirao University of Baroda
+📧 [ethanonarch025@proton.me](mailto:ethanonarch025@proton.me)
 
-* Master's Student, Statistics
-* The Maharaja Sayajirao University of Baroda
-* *Contact: [ethanonarch025@proton.me]*
+---
+
+## 📜 Disclaimer
+
+This project is developed **strictly for academic and research purposes**.
+All spatial outputs are **analytical abstractions** and should not be interpreted as official planning documents.
+
+---
+
+🌱 *Cities are not just built — they are experienced.*
+*This work attempts to measure that experience, spatially.*
 
 ```
 
-```
