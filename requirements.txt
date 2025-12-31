@@ -1,0 +1,8 @@
+geopandas
+pandas
+osmnx
+networkx
+scipy
+shapely
+fiona
+pyproj

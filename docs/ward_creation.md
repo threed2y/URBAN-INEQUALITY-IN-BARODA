@@ -1,6 +1,6 @@
 Step 1: Creation of 19-Ward Base Map
 
-Date: December 24, 2025 Objective: To generate a topologically correct digital shapefile of the current 19 Administrative Wards of Vadodara.
+Date: December 31, 2025 Objective: To generate a topologically correct digital shapefile of the current 19 Administrative Wards of Vadodara.
 1. The Problem
 
     Publicly available datasets (DataMeet, etc.) only contain the 2011 Census Boundaries (12 Wards).

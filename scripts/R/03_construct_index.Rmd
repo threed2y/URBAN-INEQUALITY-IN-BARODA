@@ -1,0 +1,146 @@
+---
+title: "03_construct_index"
+author: "Rupesh Pandey"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r}
+# -----------------------------------------------------------------------------
+# Script: 03_construct_index.R
+# Purpose: Urban Opportunity Index (UOI) using PCA
+# -----------------------------------------------------------------------------
+
+# if (!require("pacman")) install.packages("pacman")
+# pacman::p_load(tidyverse, sf, here, psych, knitr, cli)
+
+options(scipen = 999)
+options(knitr.kable.NA = "-")
+
+# Paths
+input_csv   <- "~/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/ward_accessibility.csv"
+input_gpkg  <- "~/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/vadodara_results.gpkg"
+output_csv  <- "~/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/ward_uoi_scores.csv"
+output_gpkg <- "~/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/vadodara_final_index.gpkg"
+
+cli::cli_h1("STEP 3: Urban Opportunity Index Construction (PCA)")
+
+if (!file.exists(input_csv)) cli::cli_abort("Input CSV not found")
+
+cli::cli_h2("Loading Accessibility Data")
+
+df_access <- read_csv(input_csv, show_col_types = FALSE)
+
+metrics <- df_access %>%
+  dplyr::select(time_hospital, time_school, time_transport)
+
+# Compact diagnostics
+diagnostics <- metrics %>%
+  summarise(across(everything(),
+                   list(
+                     Min = min,
+                     Median = median,
+                     Mean = mean,
+                     Max = max
+                   ),
+                   .names = "{.col}_{.fn}"))
+
+cli::cli_alert_success("Accessibility data loaded successfully")
+print(kable(t(diagnostics), col.names = "Minutes", format = "simple"))
+
+cli::cli_h2("Principal Component Analysis")
+
+metrics_inverted <- metrics * -1
+
+pca_result <- prcomp(metrics_inverted, center = TRUE, scale. = TRUE)
+
+variance_table <- tibble(
+  Component = paste0("PC", 1:length(pca_result$sdev)),
+  Variance_Explained = round(summary(pca_result)$importance[2, ] * 100, 1)
+)
+
+print(kable(variance_table, caption = "Variance Explained by Components"))
+
+pc1_var <- variance_table$Variance_Explained[1]
+
+if (pc1_var >= 60) {
+  cli::cli_alert_success("PC1 explains {pc1_var}% of variance (Strong index)")
+} else {
+  cli::cli_alert_warning("PC1 explains only {pc1_var}% of variance (Interpret cautiously)")
+}
+
+normalize_01 <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+
+raw_scores <- pca_result$x[, 1]
+uoi_scores <- normalize_01(raw_scores) * 100
+
+final_df <- df_access %>%
+  mutate(
+    PCA_Score = round(raw_scores, 3),
+    UOI_Score = round(uoi_scores, 1),
+    Rank = dense_rank(desc(UOI_Score))
+  ) %>%
+  arrange(Rank) %>%
+  dplyr::select(
+    Rank, ward_id, UOI_Score, PCA_Score,
+    time_hospital, time_school, time_transport
+  )
+
+write_csv(final_df, output_csv)
+cli::cli_alert_success("UOI scores saved → {output_csv}")
+
+cli::cli_h2("Saving Spatial Output")
+
+if (file.exists(input_gpkg)) {
+
+  wards_geo <- st_read(input_gpkg,
+                       layer = "wards_with_access",
+                       quiet = TRUE) %>%
+    dplyr::select(ward_id, geom)
+
+  wards_final <- left_join(wards_geo, final_df, by = "ward_id")
+
+  st_write(
+    wards_final,
+    output_gpkg,
+    layer = "uoi_scores",
+    delete_dsn = TRUE,
+    quiet = TRUE
+  )
+
+  cli::cli_alert_success("Spatial layer saved → {output_gpkg}")
+
+} else {
+  cli::cli_alert_warning("GPKG not found — map export skipped")
+}
+
+cli::cli_h1("FINAL RESULTS SUMMARY")
+
+cli::cli_h2("Top 5 Wards (Highest Opportunity)")
+print(kable(
+  final_df %>% slice_head(n = 5),
+  format = "simple"
+))
+
+cli::cli_h2("Bottom 5 Wards (Lowest Opportunity)")
+print(kable(
+  final_df %>% slice_tail(n = 5),
+  format = "simple"
+))
+
+city_stats <- final_df %>%
+  summarise(
+    Average_UOI = round(mean(UOI_Score), 1),
+    Median_UOI  = round(median(UOI_Score), 1),
+    Std_Dev     = round(sd(UOI_Score), 1)
+  )
+
+cli::cli_h2("City-wide Statistics")
+print(kable(city_stats, format = "simple"))
+
+cli::cli_alert_success("UOI construction completed successfully")
+
+```
+

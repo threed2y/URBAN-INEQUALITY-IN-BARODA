@@ -1,0 +1,135 @@
+---
+title: "04_spatial_statistics"
+author: "Rupesh Pandey"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+
+```{r}
+# -----------------------------------------------------------------------------
+# Script: 04_spatial_statistics.R
+# Purpose: Global & Local Moran’s I (Spatial Inequality)
+# -----------------------------------------------------------------------------
+
+
+
+options(scipen = 999)
+
+input_gpkg <- "~/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/vadodara_final_index.gpkg"
+output_dir <- "~/Downloads/URBAN-INEQUALITY-IN-BARODA/output/maps"
+
+cli::cli_h1("STEP 4: Spatial Autocorrelation Analysis (Moran’s I)")
+
+# -----------------------------------------------------------------------------
+# 1. LOAD & FIX GEOMETRY
+# -----------------------------------------------------------------------------
+if (!file.exists(input_gpkg))
+  cli::cli_abort("Final index not found. Run Step 3 first.")
+
+wards <- st_read(input_gpkg, layer = "uoi_scores", quiet = TRUE) %>%
+  st_make_valid() %>%
+  .[!st_is_empty(.), ]
+
+cli::cli_alert_success("Spatial data loaded and geometries validated")
+cli::cli_alert_info("Total wards analysed: {nrow(wards)}")
+
+# -----------------------------------------------------------------------------
+# 2. SPATIAL WEIGHTS (sf-native, safe)
+# -----------------------------------------------------------------------------
+cli::cli_h2("Spatial Neighbour Definition")
+
+nb <- st_contiguity(wards)
+lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
+
+cli::cli_alert_info("Average neighbours per ward: {round(mean(card(nb)), 2)}")
+
+# -----------------------------------------------------------------------------
+# 3. GLOBAL MORAN’S I
+# -----------------------------------------------------------------------------
+cli::cli_h2("Global Moran’s I")
+
+global_test <- moran.test(wards$UOI_Score, lw, zero.policy = TRUE)
+global_mc   <- moran.mc(wards$UOI_Score, lw, nsim = 999, zero.policy = TRUE)
+
+global_summary <- tibble(
+  Moran_I    = round(global_mc$statistic, 3),
+  Expected_I = round(global_test$estimate[2], 3),
+  P_value    = round(global_mc$p.value, 4)
+)
+
+print(knitr::kable(global_summary, format = "simple"))
+
+if (global_mc$p.value < 0.05) {
+  cli::cli_alert_success("Significant spatial autocorrelation detected")
+} else {
+  cli::cli_alert_warning("No significant spatial autocorrelation detected")
+}
+
+# -----------------------------------------------------------------------------
+# 4. LOCAL MORAN’S I (LISA)
+# -----------------------------------------------------------------------------
+cli::cli_h2("Local Moran’s I (LISA)")
+
+local <- localmoran(wards$UOI_Score, lw, zero.policy = TRUE)
+
+wards_lisa <- wards %>%
+  mutate(
+    z_uoi  = as.numeric(scale(UOI_Score)),
+    lag_uoi = as.numeric(scale(lag.listw(lw, UOI_Score))),
+    LISA_I = local[, "Ii"],
+    LISA_p = local[, "Pr(z != E(Ii))"],
+    cluster = case_when(
+      LISA_p >= 0.05          ~ "Insignificant",
+      z_uoi > 0 & lag_uoi > 0 ~ "High-High",
+      z_uoi < 0 & lag_uoi < 0 ~ "Low-Low",
+      z_uoi > 0 & lag_uoi < 0 ~ "High-Low",
+      z_uoi < 0 & lag_uoi > 0 ~ "Low-High"
+    )
+  )
+
+cluster_summary <- wards_lisa %>%
+  count(cluster) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+print(knitr::kable(cluster_summary, format = "simple"))
+
+# -----------------------------------------------------------------------------
+# 5. MAPPING
+# -----------------------------------------------------------------------------
+cli::cli_h2("Map Generation")
+
+if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
+
+tmap_mode("plot")
+
+map_uoi <- tm_shape(wards) +
+  tm_polygons("UOI_Score",
+              style = "jenks",
+              palette = "-magma",
+              title = "Urban Opportunity Index") +
+  tm_layout(frame = FALSE)
+
+map_lisa <- tm_shape(wards_lisa) +
+  tm_polygons(
+    "cluster",
+    palette = c(
+      "High-High" = "darkgreen",
+      "Low-Low" = "red",
+      "High-Low" = "orange",
+      "Low-High" = "skyblue",
+      "Insignificant" = "grey90"
+    ),
+    title = "LISA Clusters"
+  ) +
+  tm_borders(alpha = 0.4) +
+  tm_layout(frame = FALSE)
+
+tmap_save(map_uoi, file.path(output_dir, "01_UOI_Map.png"))
+tmap_save(map_lisa, file.path(output_dir, "02_LISA_Cluster_Map.png"))
+
+cli::cli_alert_success("All spatial statistics completed successfully")
+
+```
+

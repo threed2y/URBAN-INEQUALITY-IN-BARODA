@@ -4,6 +4,7 @@ __pycache__/
 .env
 .venv/
 env/
+.json
 
 # QGIS / Spatial
 *.qgs~
