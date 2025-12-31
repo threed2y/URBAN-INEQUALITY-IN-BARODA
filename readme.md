@@ -65,7 +65,7 @@ URBAN-INEQUALITY-IN-BARODA/
 
 ### 1. Prerequisites
 
-* **System:** Linux (Arch/Ubuntu) recommended for geospatial libraries.
+* **System:** Linux (Arch) recommended for geospatial libraries.("STICK WITH WINDOWS")
 * **Tools:** Python 3.9+, R 4.0+, GDAL/GEOS system libraries.
 
 ### 2. Setup Environment
