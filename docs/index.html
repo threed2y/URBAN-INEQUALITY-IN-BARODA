@@ -7,6 +7,10 @@
   <title>Urban URBAN-INEQUALITY-IN-BARODA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- DARK MODE TOGGLE-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css" title="dark">
+
+
   <!-- Docsify Theme -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
 
@@ -40,5 +44,31 @@
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-r.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script>
+  function setTheme(theme) {
+    document.querySelectorAll('link[title]').forEach(link => {
+      link.disabled = link.getAttribute('title') !== theme;
+    });
+    localStorage.setItem('docsify-theme', theme);
+  }
+
+  const savedTheme = localStorage.getItem('docsify-theme') || 'light';
+  setTheme(savedTheme);
+
+  window.$docsify.plugins = [].concat(function (hook) {
+    hook.ready(function () {
+      const btn = document.createElement('button');
+      btn.innerText = '🌙 / ☀️';
+      btn.style.cssText =
+        'position:fixed;bottom:20px;right:20px;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;z-index:9999;';
+      btn.onclick = () => {
+        const next = localStorage.getItem('docsify-theme') === 'dark' ? 'light' : 'dark';
+        setTheme(next);
+      };
+      document.body.appendChild(btn);
+    });
+  }, window.$docsify.plugins || []);
+</script>
+
 </body>
 </html>
