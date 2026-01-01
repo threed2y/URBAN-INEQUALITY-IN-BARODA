@@ -5,62 +5,24 @@
   <title>Vadodara Inequality Model</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      margin: 4rem;
-      line-height: 1.6;
-      max-width: 900px;
-    }
-    h1 {
-      margin-bottom: 0.5rem;
-    }
-    a {
-      color: #1a73e8;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    .box {
-      padding: 1.2rem;
-      background: #f6f8fa;
-      border-left: 4px solid #1a73e8;
-      margin: 2rem 0;
-    }
-  </style>
+  <!-- Docsify Theme -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
 </head>
 
 <body>
+  <div id="app">Loading documentation…</div>
 
-<h1>Modeling Urban Inequality in Vadodara</h1>
-<p>
-A geospatial and network-based analysis of urban opportunity.<br>
-<b>Master’s Thesis — Department of Statistics</b><br>
-The Maharaja Sayajirao University of Baroda
-</p>
+  <script>
+    window.$docsify = {
+      name: 'Vadodara Inequality Model',
+      repo: 'https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA',
+      loadSidebar: true,
+      subMaxLevel: 2,
+      auto2top: true,
+      homepage: 'README.md'
+    }
+  </script>
 
-<div class="box">
-  🎓 <b>Presentation Slides</b><br>
-  <a href="slides/">Open Slides</a>
-</div>
-
-<div class="box">
-  📂 <b>GitHub Repository</b><br>
-  <a href="https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA">
-    View Source Code
-  </a>
-</div>
-
-<h2>About</h2>
-<p>
-This project models urban inequality as a spatially embedded and network-driven
-phenomenon using real road networks, accessibility metrics, and spatial statistics.
-</p>
-
-<p>
-<i>Cities are not just built — they are experienced.</i>
-</p>
-
+  <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
 </body>
 </html>
