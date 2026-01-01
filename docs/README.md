@@ -1,39 +1,37 @@
 # Modeling Urban Inequality in Vadodara
 
-A **Master’s Thesis project** exploring urban inequality as a
-**geospatial and network-based phenomenon**.
+A **Master’s Thesis project** analyzing urban inequality as a
+**geospatial, network-based, and spatially dependent phenomenon**.
 
 **Department of Statistics**  
 The Maharaja Sayajirao University of Baroda
 
 ---
 
-## What This Site Contains
+## Motivation
 
-This documentation walks through the *entire lifecycle* of the project:
+Urban inequality is rarely random.  
+It is shaped by **where people live**, **how they move**, and
+**how infrastructure is distributed**.
 
-- conceptual motivation
-- spatial data construction
-- network modeling
-- statistical validation
-- results and policy relevance
+Traditional averages fail to reveal these patterns.
 
 ---
 
-## Core Idea
+## Core Contribution
 
-> Urban inequality is not evenly distributed.  
-> It is structured by **networks, access, and spatial dependence**.
-
----
-
-## Quick Links
-
-- 🎓 [Presentation Slides](https://threed2y.github.io/URBAN-INEQUALITY-IN-BARODA/slides/)
-- 📂 [Source Code on GitHub](https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA)
+This project:
+- models the city as a **road network**
+- measures opportunity via **travel-time accessibility**
+- constructs an objective **Urban Opportunity Index**
+- validates inequality using **spatial statistics**
 
 ---
 
-## How to Navigate
+## How to Use This Site
 
-Use the **left sidebar** to explore each stage of the project in depth.
+Navigate using the **left sidebar** to explore:
+- theory behind the methods,
+- step-by-step project development,
+- statistical validation,
+- interpretation and policy relevance.

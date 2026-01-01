@@ -7,8 +7,12 @@
 
   <!-- Docsify Theme -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-</head>
 
+  <!-- Code Highlighting -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.css">
+
+</head>
 <body>
   <div id="app">Loading documentation…</div>
 
@@ -17,12 +21,22 @@
       name: 'Vadodara Inequality Model',
       repo: 'https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA',
       loadSidebar: true,
-      subMaxLevel: 2,
+      subMaxLevel: 3,
       auto2top: true,
-      homepage: 'README.md'
+      homepage: 'README.md',
+      search: 'auto'
     }
   </script>
 
+  <!-- Docsify -->
   <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
+
+  <!-- Search -->
+  <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+
+  <!-- Prism languages -->
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-r.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
 </body>
 </html>
