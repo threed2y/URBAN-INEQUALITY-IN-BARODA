@@ -1,0 +1,16 @@
+title: "Modeling Urban Inequality in Vadodara"
+description: "A geospatial and network-based analysis of urban opportunity"
+theme: minima
+
+markdown: kramdown
+kramdown:
+  math_engine: katex
+
+plugins:
+  - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: false
+
+show_excerpts: false
