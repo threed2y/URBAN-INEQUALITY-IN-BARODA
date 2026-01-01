@@ -29,7 +29,7 @@ This documentation walks through the *entire lifecycle* of the project:
 
 ## Quick Links
 
-- 🎓 [Presentation Slides](slides/)
+- 🎓 [Presentation Slides](https://threed2y.github.io/URBAN-INEQUALITY-IN-BARODA/slides/)
 - 📂 [Source Code on GitHub](https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA)
 
 ---
