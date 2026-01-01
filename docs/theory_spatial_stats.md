@@ -1,36 +1,30 @@
-# Spatial Autocorrelation
+# Spatial Dependence and Autocorrelation
 
-## Why Spatial Statistics?
+Spatial data behaves differently from traditional statistical data.
+Observations located near one another often share similar characteristics.
 
-Standard statistics assume independence.
-Spatial data violates this assumption.
+This tendency, known as spatial dependence, violates the assumption of
+independence used in classical statistics.
 
-Nearby areas tend to be similar.
+<div class="note">
+Ignoring spatial dependence can lead to misleading conclusions.
+</div>
 
----
+## Global Spatial Autocorrelation
 
-## Moran’s I
+Global measures such as Moran’s I assess whether similar values are clustered
+across space or distributed randomly.
 
-Global Moran’s I measures whether:
-- similar values cluster spatially
+A positive Moran’s I indicates spatial clustering.
 
-Positive values → clustering  
-Negative values → dispersion
+## Local Spatial Association
 
----
+Local Indicators of Spatial Association (LISA) allow us to identify specific
+areas where high or low values cluster together.
 
-## Local Indicators (LISA)
+These tools help reveal persistent zones of advantage and deprivation.
 
-LISA identifies:
-- High–High clusters
-- Low–Low clusters
-- Spatial outliers
-
-This reveals **spatial traps**.
-
----
-
-## References
+## Key References
 
 - Moran (1950)
-- Anselin (1995), *Local Indicators of Spatial Association*
+- Anselin (1995)

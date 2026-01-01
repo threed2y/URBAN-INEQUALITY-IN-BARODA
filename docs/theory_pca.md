@@ -1,30 +1,29 @@
-# Index Construction using PCA
+# Composite Index Construction using PCA
 
-## Problem
+Urban inequality is multidimensional. No single indicator can fully capture
+differences in access and opportunity.
 
-Composite indices often rely on:
-- arbitrary weights
-- subjective judgement
+Composite indices provide a way to summarize multiple related indicators into
+a single, interpretable measure.
 
----
+<div class="callout">
+The challenge lies not in combining indicators, but in doing so objectively.
+</div>
 
-## PCA Solution
+## Why Principal Component Analysis?
 
-Principal Component Analysis:
-- transforms correlated indicators
-- extracts dominant variance structure
-- provides objective weights
+Principal Component Analysis (PCA) transforms correlated variables into
+uncorrelated components. The first component captures the dominant pattern of
+variation across indicators.
 
----
+This makes PCA well-suited for constructing data-driven indices.
 
-## Interpretation
+## Justification
 
-The first component represents
-the dominant dimension of opportunity.
-
----
+Using PCA avoids subjective weighting and improves transparency and
+replicability — key requirements in academic research.
 
 ## References
 
-- Jolliffe (2002), *Principal Component Analysis*
-- OECD (2008), *Handbook on Composite Indicators*
+- Jolliffe (2002)
+- OECD (2008)

@@ -1,40 +1,32 @@
 # Network-Based Accessibility
 
-## Core Idea
+Access to urban services depends not only on distance, but on how people move
+through the city.
 
-Cities function as **networks**, not open planes.
+Accessibility describes how easily individuals can reach essential services
+given the structure of transport networks and travel constraints.
 
-Roads constrain:
-- movement,
-- travel time,
-- reachable opportunity sets.
+<div class="callout">
+In practice, opportunity is shaped by roads, intersections, and travel time —
+not straight lines on a map.
+</div>
 
----
+## Cities as Networks
 
-## Network vs Euclidean Distance
+Urban environments function as interconnected networks. Roads and intersections
+guide movement, influence travel time, and shape daily experience.
 
-Euclidean distance assumes:
-- straight-line travel
-- no barriers
+Modeling cities as networks allows us to represent these constraints
+realistically.
 
-Network distance reflects:
-- real paths
-- intersections
-- congestion proxies
+## Why Euclidean Distance Falls Short
 
----
+Straight-line distance ignores barriers, connectivity, and infrastructure
+layout. Network-based measures offer a closer approximation of how cities are
+actually navigated.
 
-## Graph Representation
+## Academic Foundations
 
-- Nodes → intersections
-- Edges → road segments
-- Weights → travel time
-
-Shortest-path algorithms estimate accessibility.
-
----
-
-## References
-
-- Porta et al. (2006), *The network analysis of urban streets*
-- Boeing (2017), *OSMnx*
+- Hansen (1959)
+- Porta et al. (2006)
+- Boeing (2017)

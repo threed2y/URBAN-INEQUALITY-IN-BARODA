@@ -1,33 +1,35 @@
 # Spatial Inequality
 
-## Concept
+Urban inequality is not only about *who* has more or less — it is also about
+*where* these differences occur.
 
-Spatial inequality refers to systematic differences in access to
-resources, services, and opportunities **across geographic space**.
+Spatial inequality refers to persistent differences in access to essential
+resources and opportunities across geographic space. In cities, this often
+means that residents of certain neighborhoods consistently experience better
+access to healthcare, education, transport, and employment than others.
 
-Unlike individual inequality, spatial inequality is:
-- persistent,
-- location-dependent,
-- often self-reinforcing.
+<div class="callout">
+Spatial inequality is inherently place-based. Location itself becomes a source
+of advantage or disadvantage.
+</div>
 
----
+## Spatial Justice Perspective
 
-## Why Space Matters
+Scholars of spatial justice argue that social outcomes cannot be separated
+from the spatial organization of cities. Urban space reflects historical,
+economic, and political processes that shape who benefits and who is left out.
 
-People do not experience cities uniformly.
-Access depends on:
-- proximity,
-- connectivity,
-- mobility constraints.
+Cities are therefore not neutral containers — they actively structure
+opportunity.
 
-Thus, inequality must be studied **spatially**, not only socially.
+## Relevance to This Study
 
----
+In rapidly growing Indian cities, city-wide averages often conceal localized
+deprivation. This research adopts a spatial inequality perspective to uncover
+these hidden patterns at the ward level.
 
 ## Key References
 
-- Harvey, D. (1973). *Social Justice and the City*
-- Soja, E. (2010). *Seeking Spatial Justice*
-- Sen, A. (1999). *Development as Freedom*
-
-*This project operationalizes spatial inequality through accessibility.*
+- Harvey (1973)
+- Soja (2010)
+- Sen (1999)

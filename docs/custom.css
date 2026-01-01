@@ -1,0 +1,53 @@
+/* Typography */
+body {
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  line-height: 1.7;
+}
+
+/* Headings */
+.markdown-section h1 {
+  font-size: 2.2rem;
+  margin-top: 2.5rem;
+}
+.markdown-section h2 {
+  font-size: 1.6rem;
+  margin-top: 2rem;
+}
+.markdown-section h3 {
+  font-size: 1.25rem;
+}
+
+/* Cards */
+.callout {
+  background: #f6f8fa;
+  border-left: 5px solid #3b82f6;
+  padding: 1rem 1.2rem;
+  margin: 1.5rem 0;
+  border-radius: 6px;
+}
+
+/* Soft emphasis blocks */
+.note {
+  background: #fff7ed;
+  border-left: 5px solid #fb923c;
+  padding: 1rem 1.2rem;
+  margin: 1.5rem 0;
+  border-radius: 6px;
+}
+
+/* Quote styling */
+blockquote {
+  border-left: 4px solid #64748b;
+  color: #475569;
+  font-style: italic;
+}
+
+/* Code blocks */
+pre {
+  border-radius: 8px;
+}
+
+/* Sidebar polish */
+.sidebar {
+  font-size: 0.95rem;
+}

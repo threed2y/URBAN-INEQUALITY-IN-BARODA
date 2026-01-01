@@ -26,3 +26,6 @@
 
 - **Repository**
   - [GitHub](https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA)
+
+  **Scope**
+- [Scope & Limitations](theory_scope.md)
