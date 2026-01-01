@@ -8,6 +8,7 @@
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/white.css">
+  <link rel="stylesheet" href="custom-slides.css">
 
   <style>
     .reveal section {
@@ -40,10 +41,13 @@
 
 <script>
   Reveal.initialize({
-    hash: true,
-    slideNumber: true,
-    plugins: [ RevealMarkdown, RevealMath.KaTeX ]
-  });
+  hash: true,
+  slideNumber: true,
+  transition: 'fade',
+  backgroundTransition: 'fade',
+  plugins: [ RevealMarkdown, RevealMath.KaTeX ]
+});
+
 </script>
 </body>
 </html>
