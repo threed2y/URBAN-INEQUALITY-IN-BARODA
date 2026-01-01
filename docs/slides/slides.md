@@ -7,26 +7,27 @@ Master’s Student — Statistics
 The Maharaja Sayajirao University of Baroda
 
 Note:
-Introduce yourself and the motivation briefly.
+Brief intro. Mention thesis context and motivation.
 ---
 ## Motivation
 
-- Urban inequality is unevenly distributed
-- City-level averages mask local deprivation
-- Infrastructure is experienced spatially
+- Urban inequality is spatially uneven
+- City-wide averages hide local deprivation
+- Infrastructure is experienced through movement
 
-**Core idea:** Access, not availability, defines opportunity.
+**Core Idea:**  
+Access, not availability, defines opportunity.
 ---
 ## Research Questions
 
-- Is access to services spatially equitable?
+- Is access to essential services spatially equitable?
 - Do deprived wards form persistent clusters?
 - How does network-based accessibility differ from Euclidean distance?
 - Can opportunity be measured objectively?
 ---
 ## Conceptual Framework
 
-- City as a **road network**
+- City modeled as a **road network**
 - Opportunity measured via **travel time**
 - Inequality tested using **spatial statistics**
 --
@@ -36,7 +37,7 @@ Introduce yourself and the motivation briefly.
 2. Accessibility computation  
 3. Spatial dependence analysis
 ---
-## Data
+## Data & Study Area
 
 - 19 administrative wards (post-2011)
 - OpenStreetMap road network
@@ -48,9 +49,15 @@ Introduce yourself and the motivation briefly.
 - ~120,000 edges  
 - Travel-time weighted
 ---
-## Methodology: Accessibility
+## Study Area
 
-- Graph-based city representation
+![Ward boundaries](assets/maps/study_area_wards.png)
+
+Administrative wards used for analysis.
+---
+## Methodology: Network Accessibility
+
+- Graph-based representation of city
 - Shortest-path algorithms
 - Travel-time based access
 
@@ -59,7 +66,7 @@ Cities are navigated, not flown over.
 ---
 ## Urban Opportunity Index (UOI)
 
-- Standardized indicators
+- Indicators standardized
 - PCA-based aggregation
 - Objective, variance-driven weights
 --
@@ -69,12 +76,18 @@ Cities are navigated, not flown over.
 - Captures multidimensional access
 - Statistically interpretable
 ---
+## Urban Opportunity Index Map
+
+![UOI choropleth](assets/maps/uoi_choropleth.png)
+
+Higher values indicate greater access to services.
+---
 ## Spatial Validation
 
 - Global Moran’s I
 - Local Moran’s I (LISA)
 
-Tests whether inequality is random or structured.
+Tests whether inequality is random or spatially structured.
 --
 ### LISA Identifies
 
@@ -82,26 +95,36 @@ Tests whether inequality is random or structured.
 - Low–Low clusters (deprivation)
 - Spatial outliers
 ---
+## LISA Cluster Map
+
+![LISA clusters](assets/maps/lisa_clusters.png)
+
+Spatial traps and privilege corridors are visible.
+---
+## Global Spatial Autocorrelation
+
+![Moran's I scatterplot](assets/figures/morans_scatter.png)
+
+Positive slope indicates spatial dependence.
+---
+## PCA Diagnostics
+
+![PCA scree plot](assets/figures/pca_scree.png)
+
+First component captures majority variance → used for UOI.
+---
 ## Key Findings
 
 - Inequality is spatially structured
-- Western wards show opportunity clusters
-- Central wards show deprivation traps
+- Western wards show opportunity clustering
+- Central wards exhibit deprivation traps
 - Transport connectivity is critical
----
-## Maps & Visuals
-
-- Urban Opportunity Index map
-- LISA cluster map
-- Moran’s I scatterplot
-
-*(Maps shown during presentation)*
 ---
 ## Policy Implications
 
-1. Targeted ward-level intervention
-2. Transport as an equity lever
-3. Spatial diagnostics over city averages
+1. Targeted ward-level intervention  
+2. Transport as an equity lever  
+3. Spatial diagnostics > city averages
 ---
 ## Phase 2: Validation
 

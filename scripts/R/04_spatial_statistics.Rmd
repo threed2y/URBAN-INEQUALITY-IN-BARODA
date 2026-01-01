@@ -40,7 +40,7 @@ cli::cli_alert_info("Total wards analysed: {nrow(wards)}")
 # -----------------------------------------------------------------------------
 cli::cli_h2("Spatial Neighbour Definition")
 
-nb <- st_contiguity(wards)
+nb <- st_contiguity(wards) # Sfdep package function
 lw <- nb2listw(nb, style = "W", zero.policy = TRUE)
 
 cli::cli_alert_info("Average neighbours per ward: {round(mean(card(nb)), 2)}")
@@ -102,7 +102,7 @@ cli::cli_h2("Map Generation")
 
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
-tmap_mode("plot")
+tmap_mode("plot") # tmap mode
 
 map_uoi <- tm_shape(wards) +
   tm_polygons("UOI_Score",
@@ -130,6 +130,27 @@ tmap_save(map_uoi, file.path(output_dir, "01_UOI_Map.png"))
 tmap_save(map_lisa, file.path(output_dir, "02_LISA_Cluster_Map.png"))
 
 cli::cli_alert_success("All spatial statistics completed successfully")
+
+# 6. GENERATE MORAN'S SCATTER PLOT ----------------------------------------
+message("-> Generating Moran's Scatter Plot...")
+
+# Save as PNG
+png(filename = "output/maps/03_Moran_Scatter.png", width = 800, height = 600)
+
+# Create the standard Moran Plot
+moran.plot(wards$UOI_Score, lw,
+           labels = as.character(wards$ward_id), 
+           pch = 19, 
+           col = "gray50",
+           xlab = "Standardized UOI Score (Ward)", 
+           ylab = "Lagged UOI Score (Neighbors)",
+           main = "Moran's I Scatter Plot: Testing for Clustering")
+
+# Add reference lines
+abline(h = 0, v = 0, lty = 2, col = "gray80")
+
+dev.off() # Close the graphics device
+message("✅ Moran's Scatter Plot saved to output/maps/03_Moran_Scatter.png")
 
 ```
 

@@ -142,5 +142,31 @@ print(kable(city_stats, format = "simple"))
 
 cli::cli_alert_success("UOI construction completed successfully")
 
+# 9. GENERATE SCREE PLOT --------------------------------------------------
+message("-> Generating PCA Scree Plot...")
+
+# Create a clean data frame for plotting
+scree_data <- data.frame(
+  PC = paste0("PC", 1:3),
+  Variance = summary(pca_result)$importance[2,] * 100
+)
+
+# Plot using ggplot
+p_scree <- ggplot(scree_data, aes(x = PC, y = Variance)) +
+  geom_bar(stat = "identity", fill = "#2c3e50", width = 0.6) +
+  geom_text(aes(label = paste0(round(Variance, 1), "%")), 
+            vjust = -0.5, size = 4) +
+  geom_line(group = 1, color = "red", linetype = "dashed", linewidth = 1) +
+  geom_point(color = "red", size = 3) +
+  labs(title = "PCA Scree Plot: Variance Explained",
+       subtitle = "PC1 captures the majority of accessibility information",
+       y = "Variance Explained (%)",
+       x = "Principal Component") +
+  theme_minimal()
+
+# Save
+ggsave("output/maps/00_PCA_Scree_Plot.png", p_scree, width = 6, height = 4)
+message("✅ Scree Plot saved to output/maps/00_PCA_Scree_Plot.png")
+
 ```
 
