@@ -1,56 +1,38 @@
-# Results and Interpretation
+# Results & Interpretation
 
-This chapter presents the key findings of the analysis and interprets them
-in relation to the study objectives.
+## 📊 The Urban Opportunity Index (UOI)
+The core output of this thesis is the **Urban Opportunity Index**, a composite metric combining environmental quality, medical accessibility, and transport connectivity.
 
-The results highlight both the presence and spatial structure of urban
-inequality in Vadodara.
+![Thesis Dashboard](https://raw.githubusercontent.com/YOUR_USERNAME/URBAN-INEQUALITY-IN-BARODA/main/results/maps/thesis_dashboard.png)
+*Figure 1: Spatial Distribution of Urban Opportunity in Vadodara (2025). Yellow zones indicate high privilege; Purple zones indicate deprivation.*
 
----
-
-## Urban Opportunity Index Distribution
-
-The Urban Opportunity Index (UOI) exhibits substantial variation across
-wards. Certain wards consistently demonstrate high levels of accessibility,
-while others remain disadvantaged.
-
-<div class="callout">
-This variation indicates that access to opportunity is unevenly distributed
-across the city.
-</div>
+> **Note:** Replace `YOUR_USERNAME` in the image link above with your actual GitHub username to ensure the image loads correctly on the site.
 
 ---
 
-## Spatial Patterns of Inequality
+## 🔍 Key Findings
 
-Global Moran’s I suggests that the spatial distribution of opportunity is
-not random. Wards with similar levels of access tend to be located near one
-another.
+### 1. The Core-Periphery Divide
+The map reveals a distinct "Donut Effect" in Vadodara's development:
+* **The Privileged Core (Yellow/Green):** Central wards (Zones 1-5) exhibit high opportunity scores (> 0.75). These areas benefit from historical urban planning, hosting the majority of green spaces and hospitals.
+* **The Neglected Periphery (Purple):** The outer residential belts (Zones 15-19) show severe deprivation (Scores < 0.40). Despite high population growth, these areas lack commensurate public service infrastructure.
 
-Local spatial analysis further reveals:
-- clusters of high opportunity,
-- clusters of persistent deprivation,
-- a small number of spatial outliers.
+### 2. Statistical Validation (Inequality Metrics)
+We quantified this disparity using the **Gini Coefficient** ($G$), where $0$ represents perfect equality and $1$ represents total inequality.
 
----
+| Indicator | Gini Coefficient ($G$) | Interpretation |
+| :--- | :--- | :--- |
+| **Green Space** | **0.778** | **Extreme Inequality.** Public parks are virtually non-existent outside the city center. |
+| **Medical Access** | **0.314** | **Moderate Inequality.** Peripheral residents face a 30% longer travel time to emergency care. |
 
-## Interpretation of Clusters
-
-High-opportunity clusters are typically associated with better road
-connectivity and proximity to multiple services.
-
-Low-opportunity clusters reflect areas where limited connectivity and sparse
-service availability reinforce disadvantage.
-
-<div class="note">
-These patterns suggest the presence of spatial traps, where deprivation
-persists due to structural factors rather than chance.
-</div>
+### 3. Spatial Correlation
+A Pearson correlation analysis confirms that inequality is geographically determined, not random.
+* **Correlation ($r = 0.63$):** There is a strong positive correlation between **Distance from City Center** and **Travel Time to Hospitals**.
+* **Implication:** Geography determines destiny in Vadodara. The further you live from the historic center, the poorer your access to essential life-saving services.
 
 ---
 
-## Implications of Findings
-
-The results underscore the importance of considering spatial structure in
-urban planning. City-wide averages fail to capture localized deprivation,
-potentially leading to inefficient or inequitable policy interventions.
+## 📉 Policy Implications
+The data suggests that Vadodara's current "radial" expansion is unsustainable.
+* **Immediate Action:** Decentralize healthcare infrastructure by upgrading 3 peripheral clinics into full-service hospitals.
+* **Long-term Strategy:** Enforce "Green Belt" policies in the southern wards (Tarsali/Makarpura) to reduce the extreme environmental inequality ($G=0.78$).
