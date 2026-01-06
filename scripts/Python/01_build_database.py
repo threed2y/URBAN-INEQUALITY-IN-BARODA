@@ -1,121 +1,49 @@
-# File: scripts/python/01_build_database.py
-# Purpose: Build the master spatial database and verify ward count.
-
-import pandas as pd
 import geopandas as gpd
 import os
 import sys
 
 # --- CONFIGURATION ---
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-RAW_DIR = os.path.join(BASE_DIR, "data", "raw")
-INTERIM_DIR = os.path.join(BASE_DIR, "data", "interim")
-OUTPUT_GPKG = os.path.join(INTERIM_DIR, "vadodara_project.gpkg")
+# We look specifically for your digitized file
+RAW_FILE = "data/raw/wards_19_digitized.gpkg"
+OUTPUT_DIR = "data/interim"
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, "vadodara_project.gpkg")
+TARGET_CRS = "EPSG:32643"  # UTM Zone 43N (Meters)
 
-TARGET_CRS = "EPSG:32643"  # UTM Zone 43N (Gujarat)
 
-print("\n--- STEP 1: BUILDING MASTER SPATIAL DATABASE ---\n")
+def build_database():
+    print("--- STEP 1: BUILDING SPATIAL DATABASE ---")
 
-os.makedirs(INTERIM_DIR, exist_ok=True)
+    # 1. Check if the raw file exists
+    if not os.path.exists(RAW_FILE):
+        print(f"❌ Critical Error: Could not find '{RAW_FILE}'")
+        print("   -> Make sure you are running this from the Project Root folder!")
+        sys.exit(1)
 
-# Remove old GPKG to avoid layer conflicts
-if os.path.exists(OUTPUT_GPKG):
-    os.remove(OUTPUT_GPKG)
-    print("🧹 Old GeoPackage removed.")
+    print(f"-> Loading raw map: {RAW_FILE}")
 
-layers_to_save = {}
-
-# -------------------------------------------------
-# 1. PROCESS WARDS
-# -------------------------------------------------
-ward_path = os.path.join(RAW_DIR, "wards.geojson")
-
-if not os.path.exists(ward_path):
-    print(f"❌ CRITICAL ERROR: wards.geojson not found in {RAW_DIR}")
-    sys.exit(1)
-
-print(f"Reading {ward_path}...")
-wards = gpd.read_file(ward_path)
-
-ward_count = len(wards)
-print(f"📊 Wards Found: {ward_count}")
-
-if ward_count == 19:
-    print("✅ SUCCESS: 19-Ward structure confirmed.")
-elif ward_count == 12:
-    print("⚠️ WARNING: Old 2011 Census ward map detected.")
-else:
-    print(f"ℹ️ Note: {ward_count} ward polygons found.")
-
-# Geometry cleaning
-wards = wards[~wards.geometry.is_empty]
-wards["geometry"] = wards.geometry.make_valid()
-
-# CRS standardization
-wards = wards.to_crs(TARGET_CRS)
-
-# Area calculation (sq km)
-wards["area_sqkm"] = wards.geometry.area / 1_000_000
-
-print(
-    f"📐 Area stats — min: {wards.area_sqkm.min():.2f}, "
-    f"max: {wards.area_sqkm.max():.2f} sq.km"
-)
-
-layers_to_save["wards"] = wards
-
-# -------------------------------------------------
-# 2. PROCESS SERVICE POINTS
-# -------------------------------------------------
-service_files = {
-    "hospitals": "hospitals.csv",
-    "schools": "schools.csv",
-    "transport": "transport.csv"
-}
-
-for layer_name, filename in service_files.items():
-    file_path = os.path.join(RAW_DIR, filename)
-
-    if not os.path.exists(file_path):
-        print(f"⚠️ {filename} not found. Skipping.")
-        continue
-
-    print(f"Processing {layer_name}...")
-
+    # 2. Load the data
     try:
-        df = pd.read_csv(file_path)
-
-        required_cols = {"latitude", "longitude"}
-        if not required_cols.issubset(df.columns):
-            raise ValueError(f"Missing columns: {required_cols - set(df.columns)}")
-
-        # Drop bad / missing coordinates
-        df = df.dropna(subset=["latitude", "longitude"])
-
-        # Remove duplicate points
-        df = df.drop_duplicates(subset=["latitude", "longitude"])
-
-        gdf = gpd.GeoDataFrame(
-            df,
-            geometry=gpd.points_from_xy(df.longitude, df.latitude),
-            crs="EPSG:4326"
-        )
-
-        gdf = gdf.to_crs(TARGET_CRS)
-        layers_to_save[layer_name] = gdf
-
-        print(f"  ➜ {len(gdf)} valid points added.")
-
+        wards = gpd.read_file(RAW_FILE)
     except Exception as e:
-        print(f"❌ Error processing {filename}: {e}")
+        print(f"❌ Error reading file: {e}")
+        sys.exit(1)
 
-# -------------------------------------------------
-# 3. SAVE TO GEOPACKAGE
-# -------------------------------------------------
-print(f"\n💾 Writing layers to {OUTPUT_GPKG}...")
+    print(f"   Found {len(wards)} wards.")
 
-for name, gdf in layers_to_save.items():
-    gdf.to_file(OUTPUT_GPKG, layer=name, driver="GPKG")
+    # 3. Standardize CRS (Reproject to Meters)
+    if wards.crs.to_string() != TARGET_CRS:
+        print(f"-> Reprojecting from {wards.crs.to_string()} to {TARGET_CRS}...")
+        wards = wards.to_crs(TARGET_CRS)
+    else:
+        print(f"-> CRS is already correct ({TARGET_CRS}).")
 
-print("\n✅ DONE! Spatial database ready:")
-print("   data/interim/vadodara_project.gpkg\n")
+    # 4. Save to Master Database
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    print(f"-> Saving to {OUTPUT_FILE}...")
+    wards.to_file(OUTPUT_FILE, layer="wards", driver="GPKG")
+
+    print("✅ SUCCESS: Database built successfully.")
+
+
+if __name__ == "__main__":
+    build_database()

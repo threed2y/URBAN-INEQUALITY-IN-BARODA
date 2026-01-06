@@ -135,7 +135,7 @@ cli::cli_alert_success("All spatial statistics completed successfully")
 message("-> Generating Moran's Scatter Plot...")
 
 # Save as PNG
-png(filename = "output/maps/03_Moran_Scatter.png", width = 800, height = 600)
+png(filename = "~/Downloads/URBAN-INEQUALITY-IN-BARODA/output/maps/03_Moran_Scatter.png", width = 800, height = 600)
 
 # Create the standard Moran Plot
 moran.plot(wards$UOI_Score, lw,

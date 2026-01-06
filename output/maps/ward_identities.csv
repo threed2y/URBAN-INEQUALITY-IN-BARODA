@@ -1,0 +1,20 @@
+Ward_ID,Status,Score,Identified_Area
+19,HIGH (Privileged),0.906,Nava Bazaar (Area)
+3,HIGH (Privileged),0.736,Manjalpur (Area)
+9,HIGH (Privileged),0.699,"Alkapuri, Gotri, Saiyed Vasna (Area)"
+17,HIGH (Privileged),0.61,Wadi (Area)
+7,HIGH (Privileged),0.608,Palash Hospital (Landmark)
+16,MEDIUM,0.592,Padma Maternity Hospital (Landmark)
+10,MEDIUM,0.521,"Ashwamegh Nagar, Tandalja (Area)"
+8,MEDIUM,0.485,Shree Krishna Maternity Hospital & Infertility Centre (Landmark)
+13,MEDIUM,0.48,Near Gotri Road
+2,MEDIUM,0.476,Metro Hospital And Research Institute (Landmark)
+11,MEDIUM,0.452,Chandramouleshwar mahadev temple (Landmark)
+14,MEDIUM,0.444,Bhayli (Area)
+18,MEDIUM,0.443,"Ankur Children Hospital, Vihar Road (Landmark)"
+4,MEDIUM,0.433,Gorwa (Area)
+12,MEDIUM,0.414,Near Vadodara Bypass
+5,MEDIUM,0.407,Satyam Hospital - Valpoi Sattari (Landmark)
+15,MEDIUM,0.405,Sayaji Park (Area)
+1,LOW (Deprived),0.318,Anmol Children's Hospital (Landmark)
+6,LOW (Deprived),0.307,Chapad (Area)
