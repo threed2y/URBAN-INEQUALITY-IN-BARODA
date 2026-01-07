@@ -3,7 +3,7 @@
 ## 📊 The Urban Opportunity Index (UOI)
 The core output of this thesis is the **Urban Opportunity Index**, a composite metric combining environmental quality, medical accessibility, and transport connectivity.
 
-![Thesis Dashboard](https://raw.githubusercontent.com/threed2y/URBAN-INEQUALITY-IN-BARODA/main/output/maps/thesis_dashboard_v2.png)
+![Thesis Dashboard](https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA/blob/main/output/maps/thesis_dashboard_v2.png)
 *Figure 1: Spatial Distribution of Urban Opportunity in Vadodara (2025). Yellow zones indicate high privilege; Purple zones indicate deprivation.*
 
 
