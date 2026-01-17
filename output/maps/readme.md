@@ -1,0 +1,1 @@
+"We used Voronoi Tessellation to create a politically neutral, mathematically consistent division of the city. This allows us to measure inequality based on spatial proximity rather than arbitrary administrative lines."
