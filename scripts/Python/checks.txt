@@ -1,0 +1,94 @@
+python3 Python/01_build_database.py                                                                                                                                    
+--- STEP 1: BUILDING SPATIAL DATABASE ---                                         
+-> Loading raw map: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/raw/wards_19_digitized.gpkg
+   Found 19 wards.
+-> Reprojecting from EPSG:4326 to EPSG:32643...
+-> Saving to /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/interim/vadodara_project.gpkg...
+✅ SUCCESS: Database built successfully.
+
+python3 Python/01b_validate_database.py
+
+--- STEP 1B: VALIDATING SPATIAL DATABASE ---
+Checking: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/interim/vadodara_project.gpkg
+✅ GeoPackage found.
+✅ Layers found: ['wards']
+⚠️  WARNING: Missing layers: ['roads', 'buildings', 'water', 'poi', 'hospitals', 'schools']
+✅ CRS Check (wards): EPSG:32643
+
+--- STEP 1B: FETCH URBAN WARD INDICATORS
+ Processing Valid Ward: 2...
+      [Built: 0.0%]  [Green: 0.0%]
+
+   Processing Valid Ward: 1...
+      [Built: 0.0%]  [Green: 0.0%]
+
+   Processing Valid Ward: 8...
+      [Built: 0.0%]  [Green: 0.0%]
+
+   Processing Valid Ward: 9...
+      [Built: 0.0%]  [Green: 0.0%]
+
+   Processing Valid Ward: 10...
+      [Built: 0.0%]  [Green: 0.0%]
+
+   Processing Valid Ward: 11...
+      [Built: 0.0%]  [Green: 0.0%]
+
+✅ SUCCESS: Processed 19 valid wards. Saved to /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/ward_indicators.csv
+
+ python3 Python/01_data_mining_10km.py
+--- STARTING NEW PROJECT: 10KM RADIUS ANALYSIS ---
+📍 Center: (22.297314, 73.206192)
+⭕ Radius: 10000 meters
+✅ Boundary Created.
+🚗 Downloading Road Network...
+tj Downloading Buildings...
+💧 Downloading Water Bodies...
+🏥 Downloading Services (Hospitals, Schools, Parks)...
+💾 Saving to /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/interim/vadodara_10km.gpkg...
+✅ DATA MINING COMPLETE.
+   You now have a clean digital twin of the 10km zone.
+
+   python3 Python/02_generate_wards_9km.py
+--- STEP 2: GENERATING SYNTHETIC WARDS (9KM - FIXED) ---
+-> Finding 19 density centers...
+-> Creating Voronoi Geometry...
+✅ Created 19 Wards (Filtered from 19).
+💾 Saved to /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/interim/vadodara_9km_wards.gpkg
+
+ python3 Python/03_accessibility_engine.py
+--- STEP 3: ACCESSIBILITY ENGINE (STRICT HIGHWAY MODE) ---
+-> Loading Spatial Database...                                                                        -> Building Network Graph...                                                                          -> Extracting Strict Highway Skeleton...                                                                 ✅ Identified 510 Highway Segments.
+   Examples: ['Vadodara Bypass Flyover' 'Vadodara Bypass' 'Makarpura Main Road'
+ 'Lalbagh Flyover' 'Susen Circle']
+   Ward 1: Hosp=5.06m, Hwy=5.91m (Dist: 2298m)                                                           Ward 2: Hosp=3.83m, Hwy=8.63m (Dist: 3355m)                                                           Ward 3: Hosp=4.07m, Hwy=8.42m (Dist: 3273m)                                                           Ward 4: Hosp=3.47m, Hwy=10.36m (Dist: 4027m)                                                          Ward 5: Hosp=2.27m, Hwy=4.38m (Dist: 1701m)
+   Ward 6: Hosp=3.66m, Hwy=0.87m (Dist: 339m)
+   Ward 7: Hosp=7.54m, Hwy=4.4m (Dist: 1711m)
+   Ward 8: Hosp=2.72m, Hwy=0.34m (Dist: 133m)                                                            Ward 9: Hosp=3.07m, Hwy=3.81m (Dist: 1481m)                                                           Ward 10: Hosp=3.14m, Hwy=4.13m (Dist: 1605m)
+   Ward 11: Hosp=3.72m, Hwy=2.41m (Dist: 936m)
+   Ward 12: Hosp=5.19m, Hwy=0.21m (Dist: 82m)
+   Ward 13: Hosp=6.34m, Hwy=1.95m (Dist: 759m)                                                           Ward 14: Hosp=3.68m, Hwy=6.92m (Dist: 2690m)                                                          Ward 15: Hosp=13.21m, Hwy=0.43m (Dist: 166m)
+   Ward 16: Hosp=11.54m, Hwy=6.93m (Dist: 2696m)
+   Ward 17: Hosp=5.42m, Hwy=2.93m (Dist: 1140m)
+   Ward 18: Hosp=3.71m, Hwy=3.14m (Dist: 1222m)
+   Ward 19: Hosp=11.28m, Hwy=5.99m (Dist: 2330m)
+
+   python3 Python/03b_audit_data.py
+--- STEP 3b: CROSS-CHECKING DATA INTEGRITY (FIXED) ---
+-> Loaded 19 Wards.
+-> Loaded Accessibility Data for 19 wards.                                                                                                                                                                  ========================================                                                                     DATA HEALTH REPORT
+========================================
+✅ No missing values found.
+✅ All travel times look realistic.
+--- STATISTICS (Minutes) ---
+       hospitals_min  schools_min  transport_node_min  highway_access_min
+count          19.00        19.00               19.00               19.00
+mean            5.42        36.04               85.33                4.32                             std             3.21        24.66               41.88                3.01                             min             2.27         5.60               25.86                0.21
+25%             3.57        16.48               55.71                2.18
+50%             3.83        24.23               83.44                4.13
+75%             5.88        53.02              105.95                6.46                                        185.34               10.36
+========================================
+💾 Master Audit File saved to:
+   /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/master_data_audit.csv
+
+

@@ -1,0 +1,42 @@
+==================================================
+       URBAN INEQUALITY IN VADODARA: RESULTS      
+==================================================
+
+1. CITY-WIDE OVERVIEW
+------------------------------
+Total Wards Analyzed: 19
+Average Opportunity Score (UOI): 45.50 / 100
+Average Flood Risk: 44.67%
+Average Hospital Access Time: 5.4 mins
+Average School Access Time:   36.0 mins
+
+2. INEQUALITY METRICS
+------------------------------
+Gini Coefficient (Opportunity): 0.289
+   -> INTERPRETATION: Low Inequality
+The 'Privilege Gap' (Top 10% vs Bottom 10%): 4.7x
+   (Residents in top wards have 4.7 times more opportunity than bottom wards.)
+
+3. THE VULNERABILITY TRAP (CORRELATION)
+------------------------------
+Correlation (Flood Risk vs. Opportunity): 0.277
+Statistical Significance (p-value): 0.2505
+   -> RESULT: No significant correlation found (or p-value > 0.05).
+
+4. WARD RANKINGS
+------------------------------
+TOP 5 WARDS (Highest Opportunity):
+   Ward 10.0: Score 74.41 (Flood: 56.95%)
+   Ward 11.0: Score 71.33 (Flood: 67.34%)
+   Ward 5.0: Score 70.39 (Flood: 23.54%)
+   Ward 9.0: Score 68.63 (Flood: 45.32%)
+   Ward 6.0: Score 68.34 (Flood: 66.88%)
+
+BOTTOM 5 WARDS (Lowest Opportunity):
+   Ward 16.0: Score 14.75 (Flood: 35.77%)
+   Ward 15.0: Score 14.89 (Flood: 49.37%)
+   Ward 19.0: Score 14.98 (Flood: 41.29%)
+   Ward 3.0: Score 15.31 (Flood: 31.21%)
+   Ward 7.0: Score 15.71 (Flood: 12.86%)
+
+==================================================
