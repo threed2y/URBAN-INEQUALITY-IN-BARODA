@@ -92,3 +92,23 @@ mean            5.42        36.04               85.33                4.32       
    /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/master_data_audit.csv
 
 
+ python3 Python/07_statistical_plots.py
+--- STEP 7: GENERATING STATISTICAL PLOTS ---
+-> Generating Correlation Matrix...
+-> Generating 'Inequality Trap' Scatter Plot...
+-> Generating Distribution Histogram...
+✅ Plots saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/figures
+   -> Correlation Coefficient (Flood vs UOI): 0.28
+❯ python3 Python/08_spatial_analysis.py
+--- STEP 8: SPATIAL STATISTICS (MORAN'S I) ---
+-> Building Spatial Weights Matrix (KNN=4)...
+-> Calculating Global Moran's I...
+
+   🌎 Global Moran's I: -0.165
+   📊 P-Value: 0.2050
+   ⚠️ No significant clustering found.
+
+-> Calculating Local Indicators of Spatial Association (LISA)...
+✅ Cluster Map saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/figures/04_lisa_cluster_map.png
+   🔴 High-High (Red) = Wealthy Clusters
+   🔵 Low-Low (Blue)  = Deprived Clusters (Structural Poverty
