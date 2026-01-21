@@ -117,14 +117,14 @@ def compile_results():
         f.write("TOP 5 WARDS (Highest Opportunity):\n")
         for idx, row in top5.iterrows():
             f.write(
-                f"   Ward {row['ward_id']}: Score {row['UOI_Score']} (Flood: {row['flood_risk_pct']}%)\n"
+                f"   Ward {row['ward_id']} ({row['ward_name']}): Score {row['UOI_Score']} (Flood: {row['flood_risk_pct']}%)\n"
             )
 
         f.write("\nBOTTOM 5 WARDS (Lowest Opportunity):\n")
         bot5 = df.sort_values(by="UOI_Score", ascending=True).head(5)
         for idx, row in bot5.iterrows():
             f.write(
-                f"   Ward {row['ward_id']}: Score {row['UOI_Score']} (Flood: {row['flood_risk_pct']}%)\n"
+                f"   Ward {row['ward_id']} ({row['ward_name']}): Score {row['UOI_Score']} (Flood: {row['flood_risk_pct']}%)\n"
             )
 
         f.write("\n")
