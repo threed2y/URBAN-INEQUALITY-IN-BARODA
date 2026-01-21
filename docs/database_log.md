@@ -1,35 +1,36 @@
-File: docs/database_log.md
-Step 1: Spatial Database Construction
+# 📂 Step 1: Spatial Database Construction
 
-Date: December 24, 2025 Objective: To standardize disparate raw data sources into a unified geospatial database for analysis.
-1. Inputs (Raw Data)
+**Date:** December 24, 2025
+**Objective:** To standardize disparate raw geospatial inputs into a unified, metric-projected database for downstream network analysis.
 
-The following datasets were manually collected and placed in data/raw/:
+## 1. Data Inputs (Raw)
+The following datasets were manually collected and staged in `data/raw/`:
 
-    hospitals.csv: Locations of government hospitals, UHCs, and UPHCs.
+| Dataset | Format | Description |
+| :--- | :--- | :--- |
+| **Hospitals** | `.csv` | Locations of government hospitals, Urban Health Centers (UHC), and Urban Primary Health Centers (UPHC). |
+| **Schools** | `.csv` | Locations of government and grant-in-aid higher secondary schools. |
+| **Transport** | `.csv` | Locations of major city bus depots and transit hubs. |
+| **Wards** | `.geojson` | Administrative boundaries of Vadodara (2011 Census definitions). |
 
-    schools.csv: Locations of government and grant-in-aid higher secondary schools.
+## 2. Methodology
 
-    transport.csv: Locations of major city bus depots and transit hubs.
+### A. Ingestion & Cleaning
+* Raw CSV files are ingested as Pandas DataFrames.
+* Administrative boundaries are loaded from GeoJSON format.
 
-    wards.geojson: Administrative boundaries of Vadodara (2011 Census definitions).
+### B. Spatial Conversion
+* Lat/Long coordinates (Columns: `latitude`, `longitude`) are converted into geometric Point objects using the `sf` (Simple Features) standard.
+* **Coordinate Reference System (CRS):** Initial assignment is **WGS84 (EPSG: 4326)**, the global standard for GPS data.
 
-2. Methodology
+### C. Projection Standardization
+* All layers are reprojected to **UTM Zone 43N (EPSG: 32643)**.
+* **Rationale:** WGS84 uses degrees (angular), which are unsuitable for distance calculations.  UTM 43N is the specific planar grid for Gujarat, enabling accurate Euclidean measurement in **meters**.
 
-    Data Cleaning: Raw CSVs are read as simple dataframes.
+### D. Consolidation
+* All standardized layers are serialized into a single **GeoPackage (`.gpkg`)**.
+* This ensures topological consistency and simplifies data management across the project pipeline.
 
-    Spatial Conversion: Lat/Long coordinates (WGS84) are converted to sf (Simple Features) point objects.
-
-    Projection Standardization: All layers are reprojected to UTM Zone 43N (EPSG: 32643). This is critical because:
-
-        Input data is in Degrees (Lat/Long), which cannot measure distance accurately.
-
-        UTM 43N is the specific metric grid for Gujarat, allowing for accurate calculations in meters.
-
-    Consolidation: All layers are saved into a single GeoPackage (.gpkg) to ensure data integrity.
-
-3. Outputs
-
-    File: data/processed/vadodara_db.gpkg
-
-    Layers: wards, hospitals, schools, transport.
+## 3. Outputs
+* **Primary Database:** `data/processed/vadodara_db.gpkg`
+* **Layers:** `wards` (Polygon), `hospitals` (Point), `schools` (Point), `transport` (Point).

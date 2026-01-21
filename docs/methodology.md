@@ -1,74 +1,71 @@
-# Methodology
+Methodology
 
-This chapter describes the analytical approach adopted to model urban
-inequality in Vadodara. The methodology is designed to ensure transparency,
-replicability, and alignment with established practices in spatial analysis.
+This chapter details the analytical pipeline used to model urban inequality in Vadodara. The methodology is designed to ensure transparency, replicability, and alignment with global standards in spatial econometrics.
 
-The process moves from spatial data construction to statistical validation,
-with each step informed by the theoretical framework discussed earlier.
+The process follows a "Three-Engine" approach: Accessibility, Vulnerability, and Statistical Validation.
+1. Study Area & Spatial Units
 
----
+The study focuses on the functional urban area of Vadodara, Gujarat.
 
-## Study Area and Spatial Units
+    Spatial Unit: The analysis is conducted at the level of the 19 Administrative Wards.
 
-The study focuses on Vadodara city, divided into 19 administrative wards.
-These wards serve as the primary spatial units of analysis.
+    Boundary Generation: In the absence of open-source cadastral maps, ward boundaries were mathematically reconstructed using Voronoi Tessellation based on civic center locations.
 
-Ward boundaries were digitized to reflect current administrative realities,
-addressing the lack of updated post-2011 census spatial data.
+    The "Urban Limit": A 9km radial buffer was applied to the city center (Mandvi Gate) to capture the "Core-Periphery" dynamic, covering both the historic walled city and the developing outer ring.
 
-<div class="note">
-Using wards ensures policy relevance while maintaining analytical clarity.
-</div>
+<div class="note"> <strong>Why Synthetic Wards?</strong> Using Voronoi polygons ensures we have a topologically consistent, gap-free spatial fabric that approximates administrative reality for statistical modeling. </div>
+2. Data Preparation (The ETL Pipeline)
 
----
+Spatial data was harvested from OpenStreetMap (OSM) and government records, then processed through a rigorous Extract-Transform-Load (ETL) pipeline.
 
-## Data Preparation
+    Road Network: extracted via OSMnx, cleaned to remove isolated nodes, and simplified to a primal planar graph.
 
-Spatial data for roads and service locations were obtained from
-OpenStreetMap. The road network was cleaned and processed to ensure
-topological consistency.
+    Key Services (Destinations):
 
-Key services considered include:
-- healthcare facilities,
-- educational institutions,
-- public transport access points.
+        Healthcare: Hospitals, Urban Health Centers (UHC).
 
----
+        Education: Higher Secondary Schools.
 
-## Network-Based Accessibility Analysis
+        Transport: Bus Depots and Railway Stations.
 
-The city was modeled as a road network where:
-- nodes represent intersections,
-- edges represent road segments,
-- edge weights approximate travel time.
+    Projection: All data was projected to UTM Zone 43N (EPSG: 32643) to ensure metric accuracy for distance calculations.
 
-Shortest-path algorithms were used to estimate accessibility from each ward
-to essential services.
+3. Network-Based Accessibility Analysis
 
-<div class="callout">
-This approach captures how residents actually navigate the city, rather than
-how close services appear on a map.
-</div>
+Unlike traditional "Euclidean Buffer" methods (drawing a circle on a map), this study models the city as a living network.
 
----
+    Graph Theory: The city is represented as a graph G(N,E) where N are intersections and E are roads weighted by length and speed limit.
 
-## Construction of the Urban Opportunity Index
+    Algorithm: We employed Dijkstra’s Shortest Path Algorithm to calculate the minimum travel time (minutes) from every ward centroid to the nearest service.
 
-Multiple accessibility indicators were standardized and combined using
-Principal Component Analysis (PCA).
+    Traffic Modeling: A "friction factor" was applied to account for real-world congestion and tortuosity (winding roads).
 
-The first principal component was retained as the Urban Opportunity Index,
-representing the dominant dimension of access across wards.
+<div class="callout"> This approach measures <strong>Functional Accessibility</strong> (time-cost) rather than theoretical proximity, revealing the true "friction of distance" faced by peripheral residents. </div>
+4. The Risk Engine (Vulnerability Modeling)
 
----
+To capture the "Vulnerability Trap," we integrated environmental constraints:
 
-## Spatial Statistical Validation
+    Flood Risk: Modeled by intersecting ward geometries with a 500m buffer of the Vishwamitri River.
 
-To assess whether observed inequalities were random or structured, spatial
-autocorrelation was examined using:
-- Global Moran’s I
-- Local Indicators of Spatial Association (LISA)
+    Metric: Percentage of ward area susceptible to inundation.
 
-These tools enabled identification of spatial clusters and localized
-patterns of advantage and deprivation.
+5. Construction of the Urban Opportunity Index (UOI)
+
+The UOI serves as the master metric for the thesis.
+
+    Normalization: All raw indicators (travel minutes, flood %) were normalized to a 0-100 scale using Min-Max Scaling.
+
+    Aggregation: Instead of a simple average, we utilized the Geometric Mean (similar to the UN Human Development Index).
+    UOI=3ScoreHealth​×ScoreEducation​×ScoreMobility​​
+
+    Why Geometric? This penalizes imbalance. A ward with excellent roads but zero hospitals will score significantly lower than in an arithmetic average.
+
+6. Spatial Statistical Validation
+
+To prove that inequality is structural and not random, we applied Spatial Autocorrelation techniques using PySAL:
+
+    Global Moran’s I: A summary statistic to test the null hypothesis of spatial randomness. (Result: I>0 implies clustering).
+
+    LISA (Local Indicators of Spatial Association): Used to generate the "Cluster Map," identifying specific "Hotspots" (Elite Enclaves) and "Coldspots" (Deprivation Pockets).
+
+This statistical validation transforms the thesis from a descriptive observation into a quantifiable proof of segregation.

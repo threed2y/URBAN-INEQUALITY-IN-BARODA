@@ -1,6 +1,5 @@
-Step 1: Creation of 19-Ward Base Map
+Creation of 19-Ward Base Map
 
-Date: December 31, 2025 Objective: To generate a topologically correct digital shapefile of the current 19 Administrative Wards of Vadodara.
 1. The Problem
 
     Publicly available datasets (DataMeet, etc.) only contain the 2011 Census Boundaries (12 Wards).
@@ -11,20 +10,51 @@ Date: December 31, 2025 Objective: To generate a topologically correct digital s
 
 2. Methodology (Primary Data Creation)
 
-    Source: Official "New Administrative Ward-19" PDF Map from VMC (Vadodara Municipal Corporation).
+    The Method: Voronoi Tesselation
 
-    Process:
+        To define the spatial boundaries of the 19 administrative wards in Vadodara, this study employed the Voronoi Tessellation (Thiessen Polygon) method.
 
-        Georeferencing: The PDF map will be overlaid onto a satellite basemap in QGIS and aligned using ground control points (GCPs) like major road intersections.
+        In the absence of open-source cadastral shapefiles from the municipal corporation, Voronoi tessellation is the standard scientific proxy for approximating administrative zones.
+        It partitions a plane into regions close to a specific set of "seed points."
 
-        Digitization: The 19 ward boundaries will be manually traced to create a new vector layer.
+    The Procedure:
 
-        Attribute Entry: Ward Names and IDs will be added manually.
+        The ward boundaries were computationally generated using the following algorithm:
 
-    Validation: Total area will be compared against official VMC figures to ensure accuracy.
+        1.Seed Point Identification:
 
-3. Output
+            Coordinates for the 19 Ward Centers were identified based on the location of Ward Offices and major civic clusters within Vadodara.
 
-    File: data/raw/wards_19.geojson
+            Tools: Geocoding via OpenStreetMap APIs.
 
-    CRS: EPSG:4326 (Lat/Long) -> Reprojected to EPSG:32643 (UTM 43N) for analysis.
+        2.Tessellation Generation:
+
+            The scipy.spatial.Voronoi algorithm was applied to these 19 seed points.
+
+            Logic: Mathematically, perpendicular bisectors are drawn between all seed points. The intersection of these bisectors forms polygons where every point inside the polygon is closer to its specific ward center than to any other ward center.
+
+        3.Spatial Clipping (The City Limit):
+
+            Since Voronoi polygons extend to infinity, a 9km Radial Buffer centered on Mandvi Gate (the historic city center) was used as a "Hard Clip."
+
+            Result: This restricts the analysis to the functional urban area (approx. 254 sq km), covering both the dense core and the developing periphery.
+
+        4.Geometric Standardization:
+
+        The resulting geometry was reprojected to EPSG:32643 (UTM Zone 43N) to ensure accurate calculation of density and travel distances in meters.
+
+3. Literature Context
+
+    The use of Voronoi diagrams as a proxy for administrative and service catchment areas is well-established in urban geography and spatial analysis.
+
+    Proximal Regions: Voronoi polygons represent the "natural catchment" of a center. In urban planning, this assumes that residents are most likely to access services or be governed by the administrative node closest to them (Aurenhammer, 1991).
+
+    Data Scarcity Solutions: Standard GIS literature (Burrough & McDonnell, 1998) cites Thiessen polygons as the primary method for qualitative spatial division when continuous boundary data is unavailable.
+
+    Service Area Analysis: The method is widely used in healthcare and retail geography to define "Hospital Service Areas" (HSAs) when patient data is aggregated by point locations (Dartmouth Atlas of Health Care).
+
+4. References
+
+    Aurenhammer, F. (1991). Voronoi diagrams—a survey of a fundamental geometric data structure. ACM Computing Surveys (CSUR).
+
+    Burrough, P. A., & McDonnell, R. A. (1998). Principles of Geographical Information Systems. Oxford University Press.

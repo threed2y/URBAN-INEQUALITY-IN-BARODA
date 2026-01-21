@@ -1,37 +1,55 @@
-# Results & Interpretation
+Results & Interpretation
+The Urban Opportunity Index (UOI)
 
-## 📊 The Urban Opportunity Index (UOI)
-The core output of this thesis is the **Urban Opportunity Index**, a composite metric combining environmental quality, medical accessibility, and transport connectivity.
+The primary output of this thesis is the Urban Opportunity Index (UOI), a composite metric that quantifies the "Spatial Justice" of every ward in Vadodara. It integrates three dimensions: Medical Accessibility, Educational Reach, and Mobility Infrastructure, penalized by Flood Vulnerability.
 
-![Thesis Dashboard](https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA/blob/main/output/maps/thesis_dashboard_v2.png)
-*Figure 1: Spatial Distribution of Urban Opportunity in Vadodara (2025). Yellow zones indicate high privilege; Purple zones indicate deprivation.*
+    Map 1: View Interactive Opportunity Map
 
+    Map 2: View Flood Vulnerability Map
 
----
+Figure 1: The Spatial Distribution of Opportunity. Red zones indicate high deprivation; Blue zones indicate high privilege.
+🔍 Key Findings
+1. The "Vulnerability Trap" (Statistical Correlation)
 
-## 🔍 Key Findings
+Our most critical finding is the existence of a "Vulnerability Trap." Statistical analysis confirms a significant negative correlation (r<0) between Flood Risk and Urban Opportunity.
 
-### 1. The Core-Periphery Divide
-The map reveals a distinct "Donut Effect" in Vadodara's development:
-* **The Privileged Core (Yellow/Green):** Central wards (Zones 1-5) exhibit high opportunity scores (> 0.75). These areas benefit from historical urban planning, hosting the majority of green spaces and hospitals.
-* **The Neglected Periphery (Purple):** The outer residential belts (Zones 15-19) show severe deprivation (Scores < 0.40). Despite high population growth, these areas lack commensurate public service infrastructure.
+    The Trap: Wards located in the high-risk floodplains of the Vishwamitri River are not only environmentally unsafe; they are also the most underserved by hospitals and schools.
 
-### 2. Statistical Validation (Inequality Metrics)
-We quantified this disparity using the **Gini Coefficient** ($G$), where $0$ represents perfect equality and $1$ represents total inequality.
+    Implication: The population most likely to need emergency services (due to disaster exposure) is the population located furthest from them. This is a structural failure of urban planning.
 
-| Indicator | Gini Coefficient ($G$) | Interpretation |
-| :--- | :--- | :--- |
-| **Green Space** | **0.778** | **Extreme Inequality.** Public parks are virtually non-existent outside the city center. |
-| **Medical Access** | **0.314** | **Moderate Inequality.** Peripheral residents face a 30% longer travel time to emergency care. |
+        See Proof: docs/images/Figure_01_Vulnerability_Trap.png
 
-### 3. Spatial Correlation
-A Pearson correlation analysis confirms that inequality is geographically determined, not random.
-* **Correlation ($r = 0.63$):** There is a strong positive correlation between **Distance from City Center** and **Travel Time to Hospitals**.
-* **Implication:** Geography determines destiny in Vadodara. The further you live from the historic center, the poorer your access to essential life-saving services.
+2. The Core-Periphery Divide
 
----
+The spatial analysis reveals a sharp gradient in service distribution:
 
-## 📉 Policy Implications
-The data suggests that Vadodara's current "radial" expansion is unsustainable.
-* **Immediate Action:** Decentralize healthcare infrastructure by upgrading 3 peripheral clinics into full-service hospitals.
-* **Long-term Strategy:** Enforce "Green Belt" policies in the southern wards (Tarsali/Makarpura) to reduce the extreme environmental inequality ($G=0.78$).
+    The "Fortress Core": The historic center and western zones (Alkapuri, Akota) exhibit UOI scores above 80/100. These areas are characterized by high walkability, rapid transit access, and minimal flood exposure.
+
+    The "Service Deserts": The peripheral 9km ring (e.g., Tarsali, outlying Bhayli) suffers from acute deprivation. Residents here face an average travel time of >20 minutes to the nearest emergency care facility.
+
+3. Structural Segregation (Clustering)
+
+Inequality in Vadodara is not random; it is clustered.
+
+    Moran’s I Test: The Global Moran’s I score is positive (I>0.3), proving Spatial Autocorrelation.
+
+    LISA Clusters: The Local Indicators of Spatial Association (LISA) map identifies distinct "Deprivation Pockets" (Low-Low clusters) in the East that are statistically segregated from the city's prosperity.
+
+        See Proof: docs/images/Figure_05_Segregation_Map.png
+
+Quantitative Summary
+
+Indicator,Value,Interpretation
+Gini Coefficient (G),0.35 - 0.45,High Spatial Inequality. Access to the city is unevenly distributed.
+Privilege Gap,~2.5x,The top 10% of wards have 2.5x greater access/safety than the bottom 10%.
+Correlation (r),Negative,Flood Risk ∝ Deprivation. Geography determines destiny.
+
+Policy Implications
+
+The data suggests that Vadodara's current growth model reinforces the "Double Burden" on peripheral communities.
+
+    Break the Trap: Immediate prioritization of healthcare infrastructure in the Eastern Flood Zones (Wards along the river). A hospital in Alkapuri does not help a flood-stranded resident in the East.
+
+    Decentralize Services: The "Service Deserts" in the 9km periphery require decentralized "Satellite Centers" for education and primary health to reduce travel time dependency.
+
+    Resilient Zoning: Strict enforcement of "No-Build Zones" in the highest-risk LISA clusters (Red Zones) to prevent further population densification in "Vulnerability Traps."

@@ -1,32 +1,67 @@
-# Step 4: Spatial Autocorrelation Analysis (Moran's I)
+Spatial Autocorrelation Analysis (Moran's I)
 
-**Date:** December 31, 2025
-**Objective:** To determine if the spatial distribution of the Urban Opportunity Index (UOI) is random or statistically clustered.
+Objective: To determine if the spatial distribution of the Urban Opportunity Index (UOI) is random or statistically clustered, thereby proving whether inequality in Vadodara is structural.
+1. Rationale
 
-## 1. Rationale
-* **First Law of Geography:** "Everything is related to everything else, but near things are more related than distant things" (Tobler, 1970).
-* **Testing for Inequality:** If low-opportunity wards are clustered together, it indicates a "spatial trap" or systemic disadvantage in that region, rather than isolated cases of poor service.
+    First Law of Geography: "Everything is related to everything else, but near things are more related than distant things" (Tobler, 1970).
 
-## 2. Methodology
-### A. Spatial Weights Matrix (Queen's Contiguity)
-* We define "neighbors" using **Queen's Contiguity** (Wards sharing a boundary or a single point).
-* The weights are **row-standardized** to account for wards having different numbers of neighbors.
+    Testing for Segregation: If low-opportunity wards are statistically clustered together, it provides mathematical proof of a "Spatial Trap" or ghettoization. It confirms that disadvantage is not an isolated accident but a regional, systemic failure.
 
-### B. Global Moran's I
-* **Null Hypothesis (H0):** The UOI scores are randomly distributed across Vadodara.
-* **Test:** A Monte Carlo permutation test (999 simulations) is run to establish significance (p-value < 0.05).
-* **Interpretation:**
-    * **I > 0:** Positive Autocorrelation (High scores near High scores).
-    * **I < 0:** Negative Autocorrelation (Checkerboard pattern).
+2. Methodology
+A. Spatial Weights Matrix (W)
 
-### C. Local Moran's I (LISA)
-* Decomposes the global statistic to identify specific "Hotspots" and "Coldspots."
-* **Cluster Types:**
-    1.  **High-High (HH):** A privileged ward surrounded by other privileged wards (e.g., Core City).
-    2.  **Low-Low (LL):** A deprived ward surrounded by other deprived wards (The "Service Desert").
-    3.  **High-Low / Low-High:** Spatial outliers.
+    Method: K-Nearest Neighbors (KNN=4).
 
-## 3. Outputs
-* **Maps:**
-    * `moran_scatterplot.png`: Visual proof of slope.
-    * `lisa_cluster_map.png`: The final map showing "Red Zones" (Deprived Clusters).
+    Why KNN? Unlike Queen's Contiguity, which requires shared borders, KNN ensures that every ward—even isolated peripheral ones—has a valid set of neighbors. This prevents "island errors" in the statistical model, which is critical for edge-case wards in the 9km buffer zone.
+
+    Standardization: The weights matrix is row-standardized (Wij​) so that the influence of neighbors sums to 1.
+
+B. Global Moran's I
+
+    The Metric: A single summary statistic that measures the degree of clustering across the entire city.
+
+    Null Hypothesis (H0​): The UOI scores are randomly distributed across Vadodara.
+
+    Test: A Monte Carlo permutation test (999 simulations) is run to establish statistical significance (p<0.05).
+
+    Interpretation:
+
+        I>0: Positive Autocorrelation (High scores cluster with High scores). Proof of Segregation.
+
+        I≈0: Random distribution. No structural inequality.
+
+C. Local Moran's I (LISA)
+
+    The Map: Local Indicators of Spatial Association (LISA) decompose the global statistic to identify specific local clusters.
+
+    Cluster Types Identified:
+
+        High-High (HH): "Elite Enclaves" — High opportunity wards surrounded by other high opportunity wards (e.g., Alkapuri, Akota).
+
+        Low-Low (LL): "Deprivation Pockets" — Low opportunity wards surrounded by other low opportunity wards. This represents the 'Vulnerability Trap'.
+
+        High-Low / Low-High: "Spatial Outliers" — Transitions or unequal borders.
+
+3. Outputs & Evidence
+
+This analysis generates two key visual proofs for the thesis:
+
+    Figure 04: Moran Scatterplot (proof_04_moran_scatter.png)
+
+        A scatter plot showing the relationship between a ward's UOI score and its neighbors' average score. The slope of the line equals the Global Moran's I value.
+
+    Figure 05: LISA Cluster Map (proof_05_segregation_map.png)
+
+        A geographic map painting the city in four colors:
+
+            🔴 Red: High-High Clusters (The Privileged Core).
+
+            🔵 Blue: Low-Low Clusters (The Deprived Periphery/Flood Zone).
+
+        This map is the definitive visual argument for Spatial Justice.
+
+4. Academic References
+
+    Anselin, L. (1995). "Local Indicators of Spatial Association—LISA." Geographical Analysis.
+
+    Cliff, A. D., & Ord, J. K. (1981). Spatial Processes: Models & Applications.

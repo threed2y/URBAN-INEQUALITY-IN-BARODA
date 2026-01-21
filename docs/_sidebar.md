@@ -5,7 +5,7 @@
   - [Spatial Inequality](theory_spatial_inequality.md)
   - [Network Accessibility](theory_networks.md)
   - [Spatial Autocorrelation](theory_spatial_stats.md)
-  - [Index Construction (PCA)](theory_pca.md)
+  - [Index Construction (IHDI)](theory_pca.md)
 
 - **Project Development**
   - [Ward Creation](ward_creation.md)
@@ -21,8 +21,8 @@
 - **Policy**
   - [Policy Implications](policy.md)
 
-- **Presentation**
-  - [Slides](slides/)
+- **Analysis Report**
+  - [Slides](analysis_report.md)
 
 - **Repository**
   - [GitHub](https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA)
