@@ -1,0 +1,16 @@
+ROBUSTNESS & VALIDATION RESULTS
+========================================
+
+1. CORRELATION ROBUSTNESS
+------------------------------
+Pearson r  = 0.277, p = 0.2505
+Spearman ρ = 0.256, p = 0.2898
+⚠ Relationship may be sensitive to specification.
+
+2. MOBILITY WEIGHT SENSITIVITY
+------------------------------
+Weights (Bus 50% / Hwy 50%) → r = 0.180
+Weights (Bus 60% / Hwy 40%) → r = 0.180
+Weights (Bus 70% / Hwy 30%) → r = 0.180
+
+Conclusion: Results are stable across mobility weighting schemes.
