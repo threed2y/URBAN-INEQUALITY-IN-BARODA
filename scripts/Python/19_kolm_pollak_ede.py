@@ -1,0 +1,103 @@
+import geopandas as gpd
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+
+# --------------------------------------------------
+# CONFIG
+# --------------------------------------------------
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+INPUT_GPKG = os.path.join(BASE_DIR, "data", "processed", "vadodara_final_uoi_named.gpkg")
+OUTPUT_TABLE = os.path.join(BASE_DIR, "results", "EDE_Opportunity_Table.csv")
+OUTPUT_FIG = os.path.join(
+    BASE_DIR, "results", "thesis_figures_clean", "Figure_17_EDE_Sensitivity.png"
+)
+
+os.makedirs(os.path.dirname(OUTPUT_FIG), exist_ok=True)
+
+# --------------------------------------------------
+# KOLM–POLLACK EDE FUNCTION
+# --------------------------------------------------
+def kolm_pollak_ede(values, kappa):
+    """
+    Kolm–Pollack Equally Distributed Equivalent (EDE)
+    values : array-like (higher = better)
+    kappa  : inequality aversion parameter (>0)
+    """
+    values = np.array(values)
+    return -(1 / kappa) * np.log(np.mean(np.exp(-kappa * values)))
+
+# --------------------------------------------------
+# MAIN
+# --------------------------------------------------
+def compute_ede():
+    print("--- STEP 21: KOLM–POLLACK EDE (INEQUALITY-ADJUSTED OPPORTUNITY) ---")
+
+    gdf = gpd.read_file(INPUT_GPKG)
+    uoi = gdf["UOI_Score"].values
+
+    mean_uoi = uoi.mean()
+
+    # Inequality aversion parameters (as used in literature)
+    kappas = [0.5, 1.0, 2.0]
+
+    records = []
+
+    for k in kappas:
+        ede = kolm_pollak_ede(uoi, k)
+        penalty = mean_uoi - ede
+
+        records.append({
+            "kappa (inequality aversion)": k,
+            "Mean_UOI": round(mean_uoi, 2),
+            "EDE_UOI": round(ede, 2),
+            "Inequality_Penalty": round(penalty, 2)
+        })
+
+        print(
+            f"k={k}: Mean={mean_uoi:.2f}, EDE={ede:.2f}, Penalty={penalty:.2f}"
+        )
+
+    df_out = pd.DataFrame(records)
+    df_out.to_csv(OUTPUT_TABLE, index=False)
+
+    print(f"✅ EDE results saved to: {OUTPUT_TABLE}")
+
+    # --------------------------------------------------
+    # FORMAL SENSITIVITY PLOT
+    # --------------------------------------------------
+    fig, ax = plt.subplots(figsize=(7, 5))
+
+    ax.plot(
+        df_out["kappa (inequality aversion)"],
+        df_out["EDE_UOI"],
+        marker="o",
+        linewidth=2,
+        color="#b2182b",
+        label="Inequality-adjusted UOI (EDE)"
+    )
+
+    ax.axhline(
+        mean_uoi,
+        linestyle="--",
+        color="black",
+        linewidth=1,
+        label="Mean UOI"
+    )
+
+    ax.set_title("Sensitivity of Opportunity to Inequality Aversion")
+    ax.set_xlabel("Inequality Aversion Parameter (κ)")
+    ax.set_ylabel("Opportunity Score")
+
+    ax.legend(frameon=False)
+    ax.grid(False)
+
+    plt.tight_layout()
+    plt.savefig(OUTPUT_FIG, dpi=300)
+    plt.close()
+
+    print(f"✅ EDE sensitivity figure saved to: {OUTPUT_FIG}")
+
+if __name__ == "__main__":
+    compute_ede()
