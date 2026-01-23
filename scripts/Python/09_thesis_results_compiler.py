@@ -4,149 +4,158 @@ import numpy as np
 import os
 from scipy.stats import pearsonr, linregress
 
-# --- CONFIGURATION ---
+# --------------------------------------------------
+# CONFIGURATION
+# --------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# This must match the output from Step 5
-INPUT_GPKG = os.path.join(BASE_DIR, "data", "processed", "vadodara_final_uoi.gpkg")
+INPUT_GPKG = os.path.join(
+    BASE_DIR, "data", "processed", "vadodara_final_uoi_balanced.gpkg"
+)
 OUTPUT_REPORT = os.path.join(BASE_DIR, "results", "FINAL_THESIS_RESULTS.txt")
 OUTPUT_CSV = os.path.join(BASE_DIR, "results", "ward_rankings.csv")
 
 
+# --------------------------------------------------
+# GINI COEFFICIENT
+# --------------------------------------------------
 def gini(array):
-    """Calculate the Gini coefficient of a numpy array."""
-    # Standard Gini formula
-    array = array.flatten()
-    if np.amin(array) < 0:
-        array -= np.amin(array)
+    array = np.array(array, dtype=float).flatten()
+    if np.any(array < 0):
+        array -= np.min(array)
     array = np.sort(array)
-    index = np.arange(1, array.shape[0] + 1)
-    n = array.shape[0]
-    return (np.sum((2 * index - n - 1) * array)) / (n * np.sum(array))
+    n = len(array)
+    index = np.arange(1, n + 1)
+    return np.sum((2 * index - n - 1) * array) / (n * np.sum(array))
 
 
+# --------------------------------------------------
+# MAIN
+# --------------------------------------------------
 def compile_results():
-    print("--- STEP 9: COMPILING FINAL THESIS RESULTS (FIXED) ---")
+    print("--- STEP 9 (FINAL): THESIS RESULTS COMPILATION ---")
 
-    # 1. Verification
     if not os.path.exists(INPUT_GPKG):
-        print(f"❌ Error: Input file not found:\n   {INPUT_GPKG}")
-        print("👉 Solution: Run 'python3 scripts/python/05_calculate_uoi.py' first.")
-        return
+        raise FileNotFoundError("Balanced UOI file not found.")
 
-    # 2. Load Data
-    print(f"-> Loading Data from {os.path.basename(INPUT_GPKG)}...")
+    # --------------------------------------------------
+    # LOAD & CLEAN DATA
+    # --------------------------------------------------
     gdf = gpd.read_file(INPUT_GPKG)
     df = pd.DataFrame(gdf.drop(columns="geometry"))
 
-    # 3. Generate Report
-    print("-> Calculating Statistics...")
-    with open(OUTPUT_REPORT, "w") as f:
-        f.write("==================================================\n")
-        f.write("       URBAN INEQUALITY IN VADODARA: RESULTS      \n")
-        f.write("==================================================\n\n")
+    # Critical safety step
+    df = df.dropna(subset=["UOI_Score"]).reset_index(drop=True)
+    n = len(df)
 
-        # --- SECTION A: DESCRIPTIVE STATISTICS ---
+    print(f"-> Wards included in analysis: {n}")
+
+    # --------------------------------------------------
+    # WRITE RESULTS REPORT
+    # --------------------------------------------------
+    with open(OUTPUT_REPORT, "w") as f:
+        f.write("=" * 50 + "\n")
+        f.write(" URBAN OPPORTUNITY & INEQUALITY IN VADODARA\n")
+        f.write("=" * 50 + "\n\n")
+
+        # --------------------------------------------------
+        # 1. CITY OVERVIEW
+        # --------------------------------------------------
         f.write("1. CITY-WIDE OVERVIEW\n")
         f.write("-" * 30 + "\n")
-        f.write(f"Total Wards Analyzed: {len(df)}\n")
+        f.write(f"Total Wards Analysed: {n}\n")
+        f.write(f"Mean Urban Opportunity Index (UOI): {df['UOI_Score'].mean():.2f}\n")
+        f.write(f"Mean Flood Risk: {df['flood_risk_pct'].mean():.2f}%\n")
         f.write(
-            f"Average Opportunity Score (UOI): {df['UOI_Score'].mean():.2f} / 100\n"
-        )
-        f.write(f"Average Flood Risk: {df['flood_risk_pct'].mean():.2f}%\n")
-        f.write(
-            f"Average Hospital Access Time: {df['hospitals_min'].mean():.1f} mins\n"
+            f"Mean Hospital Access Time: {df['hospitals_min'].mean():.1f} minutes\n"
         )
         f.write(
-            f"Average School Access Time:   {df['schools_min'].mean():.1f} mins\n\n"
+            f"Mean School Access Time:   {df['schools_min'].mean():.1f} minutes\n\n"
         )
 
-        # --- SECTION B: INEQUALITY METRICS ---
+        # --------------------------------------------------
+        # 2. INEQUALITY METRICS
+        # --------------------------------------------------
         f.write("2. INEQUALITY METRICS\n")
         f.write("-" * 30 + "\n")
 
-        # Gini Coefficient
-        gini_score = gini(df["UOI_Score"].values)
+        gini_score = gini(df["UOI_Score"])
         f.write(f"Gini Coefficient (Opportunity): {gini_score:.3f}\n")
-        if gini_score > 0.4:
-            f.write("   -> INTERPRETATION: High Inequality (Severe Structural Gaps)\n")
-        elif gini_score > 0.3:
-            f.write("   -> INTERPRETATION: Moderate Inequality\n")
-        else:
-            f.write("   -> INTERPRETATION: Low Inequality\n")
 
-        # The "Gap" (Top 10% vs Bottom 10%)
+        if gini_score > 0.4:
+            f.write("Interpretation: High inequality (severe structural gaps).\n")
+        elif gini_score > 0.3:
+            f.write("Interpretation: Moderate inequality.\n")
+        else:
+            f.write("Interpretation: Relatively low inequality.\n")
+
         top_10 = df["UOI_Score"].quantile(0.90)
         bot_10 = df["UOI_Score"].quantile(0.10)
-        gap_ratio = top_10 / bot_10 if bot_10 > 0 else 0
-        f.write(f"The 'Privilege Gap' (Top 10% vs Bottom 10%): {gap_ratio:.1f}x\n")
-        f.write(
-            f"   (Residents in top wards have {gap_ratio:.1f} times more opportunity than bottom wards.)\n\n"
-        )
+        gap_ratio = top_10 / bot_10 if bot_10 > 0 else np.nan
 
-        # --- SECTION C: THE VULNERABILITY TRAP ---
-        f.write("3. THE VULNERABILITY TRAP (CORRELATION)\n")
+        f.write(f"Privilege Gap (Top 10% / Bottom 10%): {gap_ratio:.1f}×\n\n")
+
+        # --------------------------------------------------
+        # 3. VULNERABILITY TRAP
+        # --------------------------------------------------
+        f.write("3. FLOOD RISK AND OPPORTUNITY RELATIONSHIP\n")
         f.write("-" * 30 + "\n")
+
         r, p = pearsonr(df["flood_risk_pct"], df["UOI_Score"])
-        slope, intercept, r_value, p_value, std_err = linregress(
-            df["flood_risk_pct"], df["UOI_Score"]
-        )
+        slope, _, _, _, _ = linregress(df["flood_risk_pct"], df["UOI_Score"])
 
-        f.write(f"Correlation (Flood Risk vs. Opportunity): {r:.3f}\n")
-        f.write(f"Statistical Significance (p-value): {p:.4f}\n")
+        f.write(f"Pearson Correlation (r): {r:.3f}\n")
+        f.write(f"P-value: {p:.4f}\n")
 
-        if p < 0.05 and r < 0:
-            f.write("   -> RESULT: Statistically Significant Negative Correlation.\n")
+        if p < 0.05:
             f.write(
-                "   -> PROOF: As Flood Risk increases, Access to Services decreases.\n"
-            )
-            f.write(
-                f"   -> MAGNITUDE: For every 10% increase in Flood Risk, Opportunity drops by {abs(slope) * 10:.1f} points.\n"
+                "Result: Statistically significant negative association.\n"
+                f"Interpretation: A 10% increase in flood risk is associated with "
+                f"a {abs(slope) * 10:.1f}-point reduction in UOI.\n\n"
             )
         else:
-            f.write(
-                "   -> RESULT: No significant correlation found (or p-value > 0.05).\n"
-            )
-        f.write("\n")
+            f.write("Result: No statistically significant relationship detected.\n\n")
 
-        # --- SECTION D: WARD RANKINGS ---
-        f.write("4. WARD RANKINGS\n")
+        # --------------------------------------------------
+        # 4. WARD RANKINGS (IDENTIFIER ONLY)
+        # --------------------------------------------------
+        f.write("4. WARD RANKINGS (BY UOI SCORE)\n")
         f.write("-" * 30 + "\n")
 
-        # Top 5
-        top5 = df.sort_values(by="UOI_Score", ascending=False).head(5)
-        f.write("TOP 5 WARDS (Highest Opportunity):\n")
-        for idx, row in top5.iterrows():
+        top5 = df.sort_values("UOI_Score", ascending=False).head(5)
+        bot5 = df.sort_values("UOI_Score", ascending=True).head(5)
+
+        f.write("Top 5 Wards:\n")
+        for _, r_ in top5.iterrows():
             f.write(
-                f"   Ward {row['ward_id']} ({row['ward_name']}): Score {row['UOI_Score']} (Flood: {row['flood_risk_pct']}%)\n"
+                f"  Ward {int(r_['ward_id'])}: "
+                f"UOI = {r_['UOI_Score']:.2f}, Flood Risk = {r_['flood_risk_pct']:.1f}%\n"
             )
 
-        f.write("\nBOTTOM 5 WARDS (Lowest Opportunity):\n")
-        bot5 = df.sort_values(by="UOI_Score", ascending=True).head(5)
-        for idx, row in bot5.iterrows():
+        f.write("\nBottom 5 Wards:\n")
+        for _, r_ in bot5.iterrows():
             f.write(
-                f"   Ward {row['ward_id']} ({row['ward_name']}): Score {row['UOI_Score']} (Flood: {row['flood_risk_pct']}%)\n"
+                f"  Ward {int(r_['ward_id'])}: "
+                f"UOI = {r_['UOI_Score']:.2f}, Flood Risk = {r_['flood_risk_pct']:.1f}%\n"
             )
 
-        f.write("\n")
-        f.write("==================================================\n")
+        f.write("\n" + "=" * 50 + "\n")
 
-    # 4. Save Ranking CSV
-    cols_to_save = [
-        "ward_id",
-        "UOI_Score",
-        "Score_Health",
-        "Score_Edu",
-        "Score_Mobility",
-        "flood_risk_pct",
-    ]
-    # Check if cols exist before saving
-    cols_present = [c for c in cols_to_save if c in df.columns]
-    df[cols_present].sort_values(by="UOI_Score", ascending=False).to_csv(
-        OUTPUT_CSV, index=False
-    )
+    # --------------------------------------------------
+    # SAVE RANKINGS CSV
+    # --------------------------------------------------
+    df[
+        [
+            "ward_id",
+            "UOI_Score",
+            "Score_Health",
+            "Score_Edu",
+            "Score_Mobility",
+            "flood_risk_pct",
+        ]
+    ].sort_values("UOI_Score", ascending=False).to_csv(OUTPUT_CSV, index=False)
 
-    print(f"✅ Thesis Results Compiled: {OUTPUT_REPORT}")
-    print(f"✅ Ward Rankings Saved:     {OUTPUT_CSV}")
+    print(f"✅ Final results report saved: {OUTPUT_REPORT}")
+    print(f"✅ Ward rankings CSV saved:  {OUTPUT_CSV}")
 
 
 if __name__ == "__main__":

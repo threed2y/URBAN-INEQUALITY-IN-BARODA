@@ -1,4 +1,4 @@
-kappa (inequality aversion),Mean_UOI,EDE_UOI,Inequality_Penalty
-0.5,45.5,17.5,28.0
-1.0,45.5,16.32,29.18
-2.0,45.5,15.68,29.82
+kappa,Mean_UOI_(0-1),EDE_UOI_(0-1),Inequality_Penalty
+0.1,0.112,0.109,0.003
+0.25,0.112,0.104,0.008
+0.5,0.112,0.097,0.015

@@ -8,7 +8,9 @@ import os
 # CONFIG
 # --------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-INPUT_GPKG = os.path.join(BASE_DIR, "data", "processed", "vadodara_final_uoi_named.gpkg")
+INPUT_GPKG = os.path.join(
+    BASE_DIR, "data", "processed", "vadodara_final_uoi_balanced.gpkg"
+)
 OUTPUT_TABLE = os.path.join(BASE_DIR, "results", "EDE_Opportunity_Table.csv")
 OUTPUT_FIG = os.path.join(
     BASE_DIR, "results", "thesis_figures_clean", "Figure_17_EDE_Sensitivity.png"
@@ -16,17 +18,19 @@ OUTPUT_FIG = os.path.join(
 
 os.makedirs(os.path.dirname(OUTPUT_FIG), exist_ok=True)
 
+
 # --------------------------------------------------
 # KOLM–POLLACK EDE FUNCTION
 # --------------------------------------------------
 def kolm_pollak_ede(values, kappa):
     """
-    Kolm–Pollack Equally Distributed Equivalent (EDE)
-    values : array-like (higher = better)
+    Kolm–Pollak Equally Distributed Equivalent (EDE)
+    values : normalized opportunity scores (0–1, higher = better)
     kappa  : inequality aversion parameter (>0)
     """
-    values = np.array(values)
+    values = np.asarray(values)
     return -(1 / kappa) * np.log(np.mean(np.exp(-kappa * values)))
+
 
 # --------------------------------------------------
 # MAIN
@@ -35,12 +39,25 @@ def compute_ede():
     print("--- STEP 21: KOLM–POLLACK EDE (INEQUALITY-ADJUSTED OPPORTUNITY) ---")
 
     gdf = gpd.read_file(INPUT_GPKG)
-    uoi = gdf["UOI_Score"].values
+
+    # --------------------------------------------------
+    # CLEAN & NORMALIZE (CRITICAL)
+    # --------------------------------------------------
+    uoi = gdf["UOI_Score"].dropna().values
+
+    # Normalize to [0,1] for welfare interpretation
+    uoi = (uoi - uoi.min()) / (uoi.max() - uoi.min())
+
+    # Numerical stability only
+    uoi = uoi + 1e-6
 
     mean_uoi = uoi.mean()
 
-    # Inequality aversion parameters (as used in literature)
-    kappas = [0.5, 1.0, 2.0]
+    # --------------------------------------------------
+    # INEQUALITY AVERSION PARAMETERS
+    # (Appropriate for normalized data)
+    # --------------------------------------------------
+    kappas = [0.1, 0.25, 0.5]
 
     records = []
 
@@ -48,16 +65,16 @@ def compute_ede():
         ede = kolm_pollak_ede(uoi, k)
         penalty = mean_uoi - ede
 
-        records.append({
-            "kappa (inequality aversion)": k,
-            "Mean_UOI": round(mean_uoi, 2),
-            "EDE_UOI": round(ede, 2),
-            "Inequality_Penalty": round(penalty, 2)
-        })
-
-        print(
-            f"k={k}: Mean={mean_uoi:.2f}, EDE={ede:.2f}, Penalty={penalty:.2f}"
+        records.append(
+            {
+                "kappa": k,
+                "Mean_UOI_(0-1)": round(mean_uoi, 3),
+                "EDE_UOI_(0-1)": round(ede, 3),
+                "Inequality_Penalty": round(penalty, 3),
+            }
         )
+
+        print(f"k={k}: Mean={mean_uoi:.3f}, EDE={ede:.3f}, Penalty={penalty:.3f}")
 
     df_out = pd.DataFrame(records)
     df_out.to_csv(OUTPUT_TABLE, index=False)
@@ -70,12 +87,12 @@ def compute_ede():
     fig, ax = plt.subplots(figsize=(7, 5))
 
     ax.plot(
-        df_out["kappa (inequality aversion)"],
-        df_out["EDE_UOI"],
+        df_out["kappa"],
+        df_out["EDE_UOI_(0-1)"],
         marker="o",
         linewidth=2,
         color="#b2182b",
-        label="Inequality-adjusted UOI (EDE)"
+        label="Inequality-adjusted Opportunity (EDE)",
     )
 
     ax.axhline(
@@ -83,12 +100,12 @@ def compute_ede():
         linestyle="--",
         color="black",
         linewidth=1,
-        label="Mean UOI"
+        label="Mean Opportunity",
     )
 
     ax.set_title("Sensitivity of Opportunity to Inequality Aversion")
     ax.set_xlabel("Inequality Aversion Parameter (κ)")
-    ax.set_ylabel("Opportunity Score")
+    ax.set_ylabel("Opportunity (Normalized 0–1)")
 
     ax.legend(frameon=False)
     ax.grid(False)
@@ -98,6 +115,7 @@ def compute_ede():
     plt.close()
 
     print(f"✅ EDE sensitivity figure saved to: {OUTPUT_FIG}")
+
 
 if __name__ == "__main__":
     compute_ede()

@@ -9,12 +9,17 @@ from splot.esda import lisa_cluster
 # CONFIG
 # --------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-UOI_GPKG = os.path.join(BASE_DIR, "data", "processed", "vadodara_final_uoi_named.gpkg")
-TYPOLOGY_GPKG = os.path.join(
-    BASE_DIR, "data", "processed", "vadodara_final_typology_named.gpkg"
-)
-OUTPUT_DIR = os.path.join(BASE_DIR, "results", "thesis_maps_clean")
 
+UOI_GPKG = os.path.join(
+    BASE_DIR, "data", "processed", "vadodara_final_uoi_balanced.gpkg"
+)
+
+# ⬇️ IMPORTANT: NO NAMED FILES IN ANALYSIS
+TYPOLOGY_GPKG = os.path.join(
+    BASE_DIR, "data", "processed", "vadodara_final_typology.gpkg"
+)
+
+OUTPUT_DIR = os.path.join(BASE_DIR, "results", "thesis_maps_clean")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
@@ -87,6 +92,9 @@ def export_lisa_clean():
     print("-> Exporting clean LISA map...")
     gdf = gpd.read_file(UOI_GPKG)
 
+    # CRITICAL: remove NaNs before spatial stats
+    gdf = gdf.dropna(subset=["UOI_Score"]).reset_index(drop=True)
+
     w = KNN.from_dataframe(gdf, k=4)
     w.transform = "r"
     y = gdf["UOI_Score"].values
@@ -104,7 +112,7 @@ def export_lisa_clean():
 
 
 # --------------------------------------------------
-# MAP 4: WARD TYPOLOGY (CATEGORICAL)
+# MAP 4: WARD TYPOLOGY (CATEGORICAL, ID-ONLY)
 # --------------------------------------------------
 def export_typology_clean():
     print("-> Exporting clean typology map...")

@@ -2,91 +2,142 @@ import os
 import shutil
 import datetime
 
-# --- CONFIGURATION ---
+# --------------------------------------------------
+# CONFIGURATION
+# --------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 RESULTS_DIR = os.path.join(BASE_DIR, "results")
-PROOFS_DIR = os.path.join(RESULTS_DIR, "thesis_proofs")
+FIGURES_DIR = os.path.join(RESULTS_DIR, "thesis_figures_clean")
 DOCS_DIR = os.path.join(BASE_DIR, "docs")
 
+MAPS_DIR = os.path.join(DOCS_DIR, "maps")
+IMAGES_DIR = os.path.join(DOCS_DIR, "images")
 
+os.makedirs(MAPS_DIR, exist_ok=True)
+os.makedirs(IMAGES_DIR, exist_ok=True)
+
+# --------------------------------------------------
+# SINGLE SOURCE OF TRUTH (UPDATED FIGURES)
+# --------------------------------------------------
+FIGURES = {
+    "vulnerability": "Figure_14_Flood_vs_UOI.png",
+    "distribution": "Figure_15_UOI_Distribution.png",
+    "lorenz": "Figure_16_Lorenz_Curve.png",
+    "lisa": "Figure_18_LISA_Clusters.png",
+}
+
+INTERACTIVE_MAPS = [
+    "map_01_opportunity_index.html",
+    "map_02_flood_vulnerability.html",
+]
+
+
+# --------------------------------------------------
+# MAIN
+# --------------------------------------------------
 def update_site():
-    print("--- STEP 11: UPDATING GITHUB PAGES ---")
+    print("--- STEP 11 (FINAL): UPDATING GITHUB PAGES ---")
 
-    # 1. Ensure Directories Exist
-    maps_dir = os.path.join(DOCS_DIR, "maps")
-    img_dir = os.path.join(DOCS_DIR, "images")
-    os.makedirs(maps_dir, exist_ok=True)
-    os.makedirs(img_dir, exist_ok=True)
+    build_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    # 2. Sync Interactive Maps
-    print("-> Syncing Maps...")
-    # We specifically look for the professional maps we made in Step 6
-    target_maps = ["map_01_opportunity_index.html", "map_02_flood_vulnerability.html"]
-
-    for map_name in target_maps:
-        src = os.path.join(RESULTS_DIR, map_name)
+    # --------------------------------------------------
+    # 1. SYNC INTERACTIVE MAPS
+    # --------------------------------------------------
+    print("-> Syncing interactive maps...")
+    for m in INTERACTIVE_MAPS:
+        src = os.path.join(RESULTS_DIR, m)
+        dst = os.path.join(MAPS_DIR, m)
         if os.path.exists(src):
-            dst = os.path.join(maps_dir, map_name)
             shutil.copy2(src, dst)
-            print(f"   + Updated: docs/maps/{map_name}")
+            print(f"   ✓ {m}")
         else:
-            print(f"   ⚠️ Warning: Could not find {map_name}. Run Step 6.")
+            print(f"   ⚠️ Missing map: {m}")
 
-    # 3. Sync Statistical Proofs
-    print("-> Syncing Graphs...")
-    if os.path.exists(PROOFS_DIR):
-        for f in os.listdir(PROOFS_DIR):
-            if f.endswith(".png"):
-                src = os.path.join(PROOFS_DIR, f)
-                dst = os.path.join(img_dir, f)
-                shutil.copy2(src, dst)
-                print(f"   + Updated: docs/images/{f}")
-    else:
-        print("   ⚠️ Warning: No proofs folder found. Run Step 10.")
+    # --------------------------------------------------
+    # 2. SYNC STATISTICAL FIGURES
+    # --------------------------------------------------
+    print("-> Syncing statistical figures...")
+    missing = []
 
-    # 4. Generate 'Analysis Report' Page
-    # We create a specific Markdown file for these results so we don't overwrite your main index.
+    for key, fname in FIGURES.items():
+        src = os.path.join(FIGURES_DIR, fname)
+        dst = os.path.join(IMAGES_DIR, fname)
+        if os.path.exists(src):
+            shutil.copy2(src, dst)
+            print(f"   ✓ {fname}")
+        else:
+            missing.append(fname)
+
+    if missing:
+        print("⚠️ Missing expected figures:")
+        for f in missing:
+            print(f"   - {f}")
+
+    # --------------------------------------------------
+    # 3. GENERATE ANALYSIS REPORT (MARKDOWN)
+    # --------------------------------------------------
     report_path = os.path.join(DOCS_DIR, "analysis_report.md")
-    print(f"-> Generating Report Page: {report_path}")
+    print(f"-> Generating analysis report: {report_path}")
 
     with open(report_path, "w") as f:
-        f.write("---\nlayout: default\ntitle: Spatial Analysis Results\n---\n\n")
-        f.write("# 🏙️ Spatial Analysis Findings\n")
-        f.write(f"*Last Updated: {datetime.date.today()}*\n\n")
+        f.write("---\n")
+        f.write("layout: default\n")
+        f.write("title: Spatial Analysis Results\n")
+        f.write("---\n\n")
 
-        f.write("## 1. Interactive Maps\n")
+        f.write("# Spatial Analysis of Urban Opportunity in Vadodara\n\n")
+        f.write(f"*Build timestamp: {build_time}*\n\n")
         f.write(
-            "Explore the spatial distribution of opportunity and risk in Vadodara.\n\n"
+            "*All results are based on the balanced Urban Opportunity Index (UOI).*\n\n"
         )
-        f.write("| **Opportunity Map** | **Vulnerability Map** |\n")
+
+        # --------------------------------------------------
+        # MAPS
+        # --------------------------------------------------
+        f.write("## 1. Interactive Spatial Maps\n\n")
+        f.write("| Opportunity Index | Flood Vulnerability |\n")
         f.write("| :---: | :---: |\n")
         f.write(
-            "| [**Launch Map**](maps/map_01_opportunity_index.html) | [**Launch Map**](maps/map_02_flood_vulnerability.html) |\n"
+            "| [Launch Map](maps/map_01_opportunity_index.html) | "
+            "[Launch Map](maps/map_02_flood_vulnerability.html) |\n\n"
         )
-        f.write("| *Shows Access to Health/Edu* | *Shows Flood Risk Zones* |\n\n")
 
-        f.write("## 2. Statistical Evidence\n")
-        f.write("### The 'Vulnerability Trap'\n")
+        # --------------------------------------------------
+        # STATISTICAL EVIDENCE
+        # --------------------------------------------------
+        f.write("## 2. Statistical Evidence\n\n")
+
+        f.write("### 2.1 Flood Risk and Opportunity\n\n")
         f.write(
-            "There is a statistically significant negative correlation between Flood Risk and Urban Opportunity. "
-            "As flood risk increases, access to critical services decreases.\n\n"
+            "This figure evaluates the relationship between flood exposure and "
+            "urban opportunity across analytical wards.\n\n"
         )
-        f.write("![Vulnerability Trap](images/Figure_01_Vulnerability_Trap.png)\n\n")
+        f.write(f"![Flood vs Opportunity](images/{FIGURES['vulnerability']})\n\n")
 
-        f.write("### Structural Inequality (Lorenz Curve)\n")
+        f.write("### 2.2 Distribution of Urban Opportunity\n\n")
         f.write(
-            "The gap between the red curve (Vadodara) and the black line (Perfect Equality) represents the 'Privilege Gap'.\n\n"
+            "The distribution illustrates variation in opportunity levels, "
+            "indicating unequal access within the city.\n\n"
         )
-        f.write("![Lorenz Curve](images/Figure_03_Lorenz_Curve.png)\n\n")
+        f.write(f"![Distribution](images/{FIGURES['distribution']})\n\n")
 
-        f.write("### Spatial Segregation\n")
+        f.write("### 2.3 Inequality in Opportunity (Lorenz Curve)\n\n")
         f.write(
-            "Inequality is not random. The LISA Cluster map identifies 'Deprivation Pockets' (Blue) that are structurally separated from 'Elite Enclaves' (Red).\n\n"
+            "Deviation from the line of perfect equality reflects the degree of "
+            "inequality in opportunity distribution.\n\n"
         )
-        f.write("![Segregation Map](images/Figure_05_Segregation_Map.png)\n")
+        f.write(f"![Lorenz Curve](images/{FIGURES['lorenz']})\n\n")
 
-    print("\n✅ Site Updated!")
-    print("   👉 Check 'docs/analysis_report.md' to see your generated page.")
+        f.write("### 2.4 Spatial Clustering of Opportunity\n\n")
+        f.write(
+            "Local Indicators of Spatial Association (LISA) reveal statistically "
+            "significant clusters of high and low opportunity.\n\n"
+        )
+        f.write(f"![LISA](images/{FIGURES['lisa']})\n")
+
+    print("\n✅ GitHub Pages site successfully updated.")
+    print("👉 Review: docs/analysis_report.md")
 
 
 if __name__ == "__main__":

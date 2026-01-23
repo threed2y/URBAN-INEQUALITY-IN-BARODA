@@ -1,42 +1,41 @@
 ==================================================
-       URBAN INEQUALITY IN VADODARA: RESULTS      
+ URBAN OPPORTUNITY & INEQUALITY IN VADODARA
 ==================================================
 
 1. CITY-WIDE OVERVIEW
 ------------------------------
-Total Wards Analyzed: 19
-Average Opportunity Score (UOI): 45.50 / 100
-Average Flood Risk: 44.67%
-Average Hospital Access Time: 5.4 mins
-Average School Access Time:   36.0 mins
+Total Wards Analysed: 19
+Mean Urban Opportunity Index (UOI): 7.34
+Mean Flood Risk: 43.74%
+Mean Hospital Access Time: 5.0 minutes
+Mean School Access Time:   33.5 minutes
 
 2. INEQUALITY METRICS
 ------------------------------
-Gini Coefficient (Opportunity): 0.289
-   -> INTERPRETATION: Low Inequality
-The 'Privilege Gap' (Top 10% vs Bottom 10%): 4.7x
-   (Residents in top wards have 4.7 times more opportunity than bottom wards.)
+Gini Coefficient (Opportunity): 0.832
+Interpretation: High inequality (severe structural gaps).
+Privilege Gap (Top 10% / Bottom 10%): 2877.8×
 
-3. THE VULNERABILITY TRAP (CORRELATION)
+3. FLOOD RISK AND OPPORTUNITY RELATIONSHIP
 ------------------------------
-Correlation (Flood Risk vs. Opportunity): 0.277
-Statistical Significance (p-value): 0.2505
-   -> RESULT: No significant correlation found (or p-value > 0.05).
+Pearson Correlation (r): -0.052
+P-value: 0.8341
+Result: No statistically significant relationship detected.
 
-4. WARD RANKINGS
+4. WARD RANKINGS (BY UOI SCORE)
 ------------------------------
-TOP 5 WARDS (Highest Opportunity):
-   Ward 10.0: Score 74.41 (Flood: 56.95%)
-   Ward 11.0: Score 71.33 (Flood: 67.34%)
-   Ward 5.0: Score 70.39 (Flood: 23.54%)
-   Ward 9.0: Score 68.63 (Flood: 45.32%)
-   Ward 6.0: Score 68.34 (Flood: 66.88%)
+Top 5 Wards:
+  Ward 11: UOI = 65.32, Flood Risk = 20.1%
+  Ward 15: UOI = 39.49, Flood Risk = 68.3%
+  Ward 19: UOI = 26.10, Flood Risk = 52.9%
+  Ward 6: UOI = 1.00, Flood Risk = 66.1%
+  Ward 8: UOI = 0.95, Flood Risk = 43.5%
 
-BOTTOM 5 WARDS (Lowest Opportunity):
-   Ward 16.0: Score 14.75 (Flood: 35.77%)
-   Ward 15.0: Score 14.89 (Flood: 49.37%)
-   Ward 19.0: Score 14.98 (Flood: 41.29%)
-   Ward 3.0: Score 15.31 (Flood: 31.21%)
-   Ward 7.0: Score 15.71 (Flood: 12.86%)
+Bottom 5 Wards:
+  Ward 1: UOI = 0.01, Flood Risk = 44.8%
+  Ward 3: UOI = 0.01, Flood Risk = 38.4%
+  Ward 7: UOI = 0.01, Flood Risk = 18.4%
+  Ward 5: UOI = 0.01, Flood Risk = 50.4%
+  Ward 9: UOI = 0.01, Flood Risk = 52.4%
 
 ==================================================

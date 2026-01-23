@@ -89,3 +89,11 @@ def audit_data():
 
 if __name__ == "__main__":
     audit_data()
+
+
+"""
+NOTE:
+This analysis measures flood EXPOSURE, not flood HAZARD.
+It is based on proximity to river systems and built density,
+and does not incorporate hydrodynamic or elevation modeling.
+"""

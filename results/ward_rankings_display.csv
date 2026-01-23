@@ -1,0 +1,20 @@
+ward_id,representative_area,UOI_Score,Score_Health,Score_Edu,Score_Mobility,flood_risk_pct,note
+11,Waghodia Road,65.32,1.0,0.631,0.4416,20.11,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+15,Nizampura,39.49,1.0,0.98675,0.0623999999999999,68.34,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+19,Central Vadodara,26.1,1.0,0.1147500000000001,0.1549714285714285,52.88,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+6,Akota,1.0,1.0,1.0,0.0,66.13,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+8,Manjalpur,0.95,1.0,0.8625,0.0,43.53,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+16,Ajwa Road,0.91,1.0,0.756,0.0,21.46,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+4,Karelibaug,0.9,0.9895,0.72675,0.0,15.47,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+13,Sama,0.89,1.0,0.6940000000000001,0.0,38.22,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+12,Harni,0.87,1.0,0.64725,0.0,68.3,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+2,Sayajigunj,0.83,0.94075,0.6005,0.0,82.15,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+17,Dabhoi Road,0.83,1.0,0.5655,0.0,52.02,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+14,Chhani,0.8,1.0,0.517,0.0,18.16,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+10,Makarpura,0.51,1.0,0.1355,0.0,51.42,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+3,Fatehgunj,0.01,0.89025,0.0,0.0,38.41,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+1,Gotri,0.01,0.8945,0.0,0.0,44.76,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+9,Tarsali,0.01,0.9825,0.0,0.0,52.37,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+7,Atladara,0.01,0.96975,0.0,0.0,18.43,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+5,Alkapuri,0.01,0.924,0.0,0.0,50.4,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.
+18,Vasna,0.01,1.0,0.0,0.0,28.46,Representative area names are indicative only. Rankings are computed exclusively using synthetic ward IDs.

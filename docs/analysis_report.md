@@ -3,54 +3,40 @@ layout: default
 title: Spatial Analysis Results
 ---
 
-# 📊 Results: Spatial Analysis & Statistical Evidence
-*Last Updated: 2026-01-20*
+# Spatial Analysis of Urban Opportunity in Vadodara
 
-This page presents the empirical findings of the **Urban Opportunity Index (UOI)** analysis. By combining network-based accessibility metrics with environmental risk data, we have quantified the structural inequality present in Vadodara.
+*Build timestamp: 2026-01-23 16:28*
 
----
+*All results are based on the balanced Urban Opportunity Index (UOI).*
 
-## 1. Interactive Dashboards
-These high-resolution maps allow for a ward-by-ward inspection of the city's spatial divide.
+## 1. Interactive Spatial Maps
 
-| **The Opportunity Map** | **The Vulnerability Map** |
+| Opportunity Index | Flood Vulnerability |
 | :---: | :---: |
-| [**🚀 Launch Full Screen**](maps/map_01_opportunity_index.html) | [**🚀 Launch Full Screen**](maps/map_02_flood_vulnerability.html) |
-| *Visualizes the UOI Score (Green=High, Red=Low).* | *Visualizes Flood Risk & Population Density.* |
+| [Launch Map](maps/map_01_opportunity_index.html) | [Launch Map](maps/map_02_flood_vulnerability.html) |
 
----
+## 2. Statistical Evidence
 
-## 2. Statistical Proofs
+### 2.1 Flood Risk and Opportunity
 
-### A. The "Vulnerability Trap" (Correlation Analysis)
-**Hypothesis:** *Do flood-prone areas have worse access to essential services?*
+This figure evaluates the relationship between flood exposure and urban opportunity across analytical wards.
 
-Our analysis confirms a **statistically significant negative correlation** between Flood Risk and Urban Opportunity. The trend line (blue) demonstrates that as a ward's exposure to flooding increases (x-axis), its access to hospitals and schools decreases (y-axis).
+![Flood vs Opportunity](images/Figure_14_Flood_vs_UOI.png)
 
-![Vulnerability Trap](images/Figure_01_Vulnerability_Trap.png)
-*Figure 1: Scatter plot showing the "Vulnerability Trap." The negative slope indicates that environmental safety and social opportunity are inversely related.*
+### 2.2 Distribution of Urban Opportunity
 
----
+The distribution illustrates variation in opportunity levels, indicating unequal access within the city.
 
-### B. Structural Inequality (Lorenz Curve)
-**Hypothesis:** *How unequally are resources distributed across the population?*
+![Distribution](images/Figure_15_UOI_Distribution.png)
 
-The **Lorenz Curve** visualizes the distribution of opportunity.
-* **The Diagonal Line:** Represents perfect equality (where 10% of the population has 10% of the opportunity).
-* **The Red Curve:** Represents the actual distribution in Vadodara.
-* **The Gap:** The area between the diagonal and the red curve represents the **Inequality Gap** (quantified by the Gini Coefficient).
+### 2.3 Inequality in Opportunity (Lorenz Curve)
 
-![Lorenz Curve](images/Figure_03_Lorenz_Curve.png)
-*Figure 2: The Lorenz Curve for Vadodara. The significant "sag" in the curve highlights that a small percentage of wards control a large share of the city's accessibility resources.*
+Deviation from the line of perfect equality reflects the degree of inequality in opportunity distribution.
 
----
+![Lorenz Curve](images/Figure_16_Lorenz_Curve.png)
 
-### C. Spatial Segregation (Cluster Analysis)
-**Hypothesis:** *Is inequality random, or is it clustered?*
+### 2.4 Spatial Clustering of Opportunity
 
-Using **Local Indicators of Spatial Association (LISA)**, we identified statistically significant clusters of segregation.
-* **🔴 Red Clusters (High-High):** "Elite Enclaves." Wealthy wards surrounded by other wealthy wards.
-* **🔵 Blue Clusters (Low-Low):** "Deprivation Pockets." Disadvantaged wards surrounded by other disadvantaged wards. This proves that poverty in Vadodara is **spatially trapped**.
+Local Indicators of Spatial Association (LISA) reveal statistically significant clusters of high and low opportunity.
 
-![Segregation Map](images/Figure_05_Segregation_Map.png)
-*Figure 3: LISA Cluster Map. The stark separation between the Red (West) and Blue (East) zones visually confirms the "Core-Periphery" divide.*
+![LISA](images/Figure_18_LISA_Clusters.png)

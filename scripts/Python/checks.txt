@@ -112,3 +112,105 @@ mean            5.42        36.04               85.33                4.32       
 ✅ Cluster Map saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/figures/04_lisa_cluster_map.png
    🔴 High-High (Red) = Wealthy Clusters
    🔵 Low-Low (Blue)  = Deprived Clusters (Structural Poverty
+
+
+ python3 Python/05_calculate_uoi.py
+--- STEP 5 (FINAL): URBAN OPPORTUNITY INDEX ---
+✅ Final balanced UOI saved:
+   /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/vadodara_final_uoi_balanced.gpkg
+   Includes flood risk & building density (single source of truth)
+❯ python3 Python/06_dashboard_generator.py
+--- STEP 6 (FINAL): THESIS MAPS ---
+✅ Thesis-grade maps generated successfully.
+❯ python3 Python/07_statistical_plots.py
+❯ python3 Python/08_spatial_analysis.py
+--- STEP 8 (FINAL): SPATIAL AUTOCORRELATION (MORAN’S I) ---
+-> Wards included in spatial analysis: 19
+-> Building spatial weights matrix (KNN = 4)...
+-> Computing Global Moran’s I...
+
+   Global Moran’s I = 0.085
+   p-value          = 0.1020
+-> Computing Local Indicators of Spatial Association (LISA)...
+✅ LISA cluster map saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/thesis_figures_clean/Figure_18_LISA_Clusters.png
+   🔴 High–High → Advantaged clusters
+   🔵 Low–Low   → Structurally deprived clusters
+❯ python3 Python/09_thesis_results_compiler.py
+--- STEP 9 (FINAL): THESIS RESULTS COMPILATION ---
+-> Wards included in analysis: 19
+✅ Final results report saved: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/FINAL_THESIS_RESULTS.txt
+✅ Ward rankings CSV saved:  /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/ward_rankings.csv
+❯ python3 Python/10_generate_proofs.py
+--- STEP 9 (FINAL): THESIS RESULTS COMPILATION ---
+-> Wards included in analysis: 19
+✅ Final results report saved: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/FINAL_THESIS_RESULTS.txt
+✅ Ward rankings CSV saved:  /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/ward_rankings.csv
+❯ python3 Python/11_update_site.py
+--- STEP 11 (FINAL): UPDATING GITHUB PAGES ---
+-> Syncing interactive maps...
+   ✓ map_01_opportunity_index.html
+   ✓ map_02_flood_vulnerability.html
+-> Syncing statistical figures...
+   ✓ Figure_14_Flood_vs_UOI.png
+   ✓ Figure_15_UOI_Distribution.png
+   ✓ Figure_16_Lorenz_Curve.png
+   ✓ Figure_18_LISA_Clusters.png
+-> Generating analysis report: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/docs/analysis_report.md
+
+✅ GitHub Pages site successfully updated.
+👉 Review: docs/analysis_report.md
+❯ python3 Python/12_robustness_checks.py
+--- STEP 11A (FINAL): ROBUSTNESS & VALIDATION CHECKS ---
+✅ Robustness report saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/robustness_checks.txt
+❯ python3 Python/13_vulnerability_index.py
+--- STEP 12: COMPOSITE VULNERABILITY INDEX (CVI) ---
+✅ CVI dataset saved to:
+   /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/vadodara_final_uoi_cvi.gpkg
+   CVI interpretation: higher values = higher composite vulnerability
+❯ python3 Python/14_ward_typology.py
+--- STEP 13: WARD TYPOLOGY (UOI–FLOOD) ---
+✅ Typology dataset saved to:
+   /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/data/processed/vadodara_final_typology.gpkg
+❯ python3 Python/15A_ward_reference_table.py
+--- STEP 15A: CREATING WARD REFERENCE TABLE (NON-ANALYTICAL) ---
+✅ Ward reference table saved to:
+   /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/ward_reference_table.csv
+   ✔ No analytical datasets were modified.
+   ✔ Safe for citation, appendix use, and interpretation tables.
+❯ python3 Python/15_export_images.py
+-> Exporting UOI Map...
+-> Exporting Flood Risk Map...
+-> Exporting LISA Segregation Map...
+-> Exporting Ward Typology Map...
+❯ python3 Python/16_validation_ward.py
+--- STEP 16: VALIDATING WARD REFERENCE TABLE (NON-ANALYTICAL) ---
+✅ Ward reference table is complete, unique, and consistent.
+   ✔ All 19 synthetic wards accounted for
+   ✔ No unexpected or duplicate IDs
+   ✔ No analytical datasets were modified
+   ✔ Names remain external interpretive metadata only                                              ❯ python3 Python/17_presentation_view_wards.py
+--- STEP 17A: GENERATING DISPLAY-ONLY RANKING TABLE ---
+✅ Display-only ranking table created:
+   /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/ward_rankings_display.csv                 ✔ No analytical datasets were modified
+   ✔ Names are external interpretive metadata only
+❯ python3 Python/18_export_labeled_thesis_maps.py
+-> Exporting clean UOI map...
+-> Exporting clean flood map...
+-> Exporting clean LISA map...
+-> Exporting clean typology map...
+❯ python3 Python/19_kolm_pollak_ede.py
+--- STEP 21: KOLM–POLLACK EDE (INEQUALITY-ADJUSTED OPPORTUNITY) ---
+k=0.1: Mean=0.112, EDE=0.109, Penalty=0.003
+k=0.25: Mean=0.112, EDE=0.104, Penalty=0.008
+k=0.5: Mean=0.112, EDE=0.097, Penalty=0.015                                                        ✅ EDE results saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/EDE_Opportunity_Table.csv
+✅ EDE sensitivity figure saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/thesis_figures_clean/Figure_17_EDE_Sensitivity.png
+❯ python3 Python/20_pillar_Dominance_Check.py
+--- REFINEMENT 1: PILLAR DOMINANCE CHECK (ROBUST) ---
+
+PILLAR DOMINANCE RESULTS (LEAVE-ONE-OUT)                                                             Removed_Pillar  Correlation_Level  Correlation_Rank
+0         Health              0.989             0.983
+1            Edu              0.965             0.838
+2       Mobility              0.264             0.840
+
+✅ Saved to: /home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/results/Pillar_Dominance_Check.csv
+⚠️  WARNING: One pillar materially affects rankings.
