@@ -1,8 +1,41 @@
-geopandas
-pandas
-osmnx
-networkx
-scipy
-shapely
-fiona
-pyproj
+# -----------------------------
+# Core scientific stack
+# -----------------------------
+numpy>=1.24
+pandas>=2.0
+scipy>=1.11
+
+# -----------------------------
+# Geospatial stack
+# -----------------------------
+geopandas>=0.14
+shapely>=2.0
+pyogrio>=0.7
+fiona>=1.9
+pyproj>=3.6
+
+# -----------------------------
+# Spatial analysis
+# -----------------------------
+libpysal>=4.9
+esda>=2.5
+splot>=1.1
+
+# -----------------------------
+# Network & accessibility
+# -----------------------------
+osmnx>=1.9
+networkx>=3.2
+
+# -----------------------------
+# Visualization (static + maps)
+# -----------------------------
+matplotlib>=3.8
+seaborn>=0.13
+folium>=0.15
+branca>=0.7
+
+# -----------------------------
+# Utilities
+# -----------------------------
+tqdm>=4.66
