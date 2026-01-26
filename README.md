@@ -1,4 +1,4 @@
-![Baroda-Midnight](URBAN-INEQUALITY-IN-BARODA/data/City-bus/posters/baroda_midnight_blue_20260126_173308.png)
+![Baroda-Midnight](https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA/blob/main/data/City-bus/posters/baroda_midnight_blue_20260126_173308.png)
 
 # Modeling Urban Inequality in Vadodara
 
