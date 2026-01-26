@@ -1,5 +1,5 @@
-import pandas as pd
 import geopandas as gpd
+import pandas as pd
 import numpy as np
 import os
 
@@ -10,17 +10,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 WARDS_FILE = os.path.join(BASE_DIR, "data", "interim", "vadodara_9km_wards.gpkg")
 TRAVEL_FILE = os.path.join(BASE_DIR, "data", "processed", "ward_travel_times.csv")
 RISK_FILE = os.path.join(BASE_DIR, "data", "processed", "ward_risk_metrics.csv")
+TRANSIT_FILE = os.path.join(BASE_DIR, "data", "processed", "ward_transit_metrics.csv")
+
 OUTPUT_GPKG = os.path.join(
     BASE_DIR, "data", "processed", "vadodara_final_uoi_balanced.gpkg"
 )
 
+
 # --------------------------------------------------
-# NORMALIZATION (0–1, INVERSE)
+# NORMALIZATION
 # --------------------------------------------------
-def normalize_inverse(series, min_target, max_target):
-    clipped = series.clip(lower=min_target, upper=max_target)
-    norm = (clipped - min_target) / (max_target - min_target)
-    return 1 - norm
+def normalize(series):
+    return (
+        (series - series.min()) / (series.max() - series.min())
+        if series.max() != series.min()
+        else series * 0
+    )
 
 
 # --------------------------------------------------
@@ -29,46 +34,28 @@ def normalize_inverse(series, min_target, max_target):
 def calculate_uoi():
     print("--- STEP 5 (FINAL): URBAN OPPORTUNITY INDEX ---")
 
-    if not os.path.exists(TRAVEL_FILE) or not os.path.exists(RISK_FILE):
-        raise FileNotFoundError("❌ Run Steps 3 & 4 before Step 5.")
+    wards = gpd.read_file(WARDS_FILE)
+    travel = pd.read_csv(TRAVEL_FILE)
+    risk = pd.read_csv(RISK_FILE)
+    transit = pd.read_csv(TRANSIT_FILE)
 
-    # --------------------------------------------------
-    # LOAD DATA
-    # --------------------------------------------------
-    gdf_wards = gpd.read_file(WARDS_FILE)
-    df_travel = pd.read_csv(TRAVEL_FILE)
-    df_risk = pd.read_csv(RISK_FILE)
-
-    # --------------------------------------------------
-    # STANDARDIZE RISK COLUMN NAMES (CRITICAL FIX)
-    # --------------------------------------------------
-    if "flood_exposure_pct" in df_risk.columns:
-        df_risk = df_risk.rename(columns={"flood_exposure_pct": "flood_risk_pct"})
-
-    required_risk_cols = {"flood_risk_pct", "building_density_pct"}
-    if not required_risk_cols.issubset(df_risk.columns):
-        raise KeyError(
-            f"Risk file missing required columns: {required_risk_cols - set(df_risk.columns)}"
-        )
-
-    # --------------------------------------------------
-    # MERGE ALL DATA
-    # --------------------------------------------------
     df = (
-        gdf_wards
-        .merge(df_travel, on="ward_id", how="inner")
-        .merge(df_risk, on="ward_id", how="inner")
+        wards.merge(travel, on="ward_id")
+        .merge(risk, on="ward_id")
+        .merge(transit, on="ward_id", how="left")
     )
 
     # --------------------------------------------------
-    # SUB-SCORES (0–1)
+    # SUB-SCORES
     # --------------------------------------------------
-    df["Score_Health"] = normalize_inverse(df["hospitals_min"], 5, 45)
-    df["Score_Edu"] = normalize_inverse(df["schools_min"], 5, 45)
+    df["Score_Health"] = 1 - normalize(df["hospitals_min"])
+    df["Score_Edu"] = 1 - normalize(df["schools_min"])
 
-    score_bus = normalize_inverse(df["transport_node_min"], 5, 40)
-    score_hwy = normalize_inverse(df["highway_access_min"], 5, 30)
-    df["Score_Mobility"] = 0.6 * score_bus + 0.4 * score_hwy
+    # Mobility = bus + highway
+    bus_score = df["bus_access_score"].fillna(0)
+    hwy_score = 1 - normalize(df["highway_access_min"])
+
+    df["Score_Mobility"] = 0.6 * bus_score + 0.4 * hwy_score
 
     # --------------------------------------------------
     # FINAL UOI (GEOMETRIC MEAN)
@@ -83,32 +70,12 @@ def calculate_uoi():
     df["UOI_Score"] = (df["UOI_Score"] * 100).round(2)
 
     # --------------------------------------------------
-    # FINAL DATASET (SINGLE SOURCE OF TRUTH)
-    # --------------------------------------------------
-    keep_cols = [
-        "ward_id",
-        "UOI_Score",
-        "Score_Health",
-        "Score_Edu",
-        "Score_Mobility",
-        "hospitals_min",
-        "schools_min",
-        "transport_node_min",
-        "highway_access_min",
-        "flood_risk_pct",
-        "building_density_pct",
-        "geometry",
-    ]
-
-    df = df[keep_cols].dropna().reset_index(drop=True)
-
-    # --------------------------------------------------
     # SAVE
     # --------------------------------------------------
     df.to_file(OUTPUT_GPKG, driver="GPKG")
 
-    print(f"✅ Final balanced UOI saved:\n   {OUTPUT_GPKG}")
-    print("   Includes flood risk & building density (single source of truth)")
+    print(f"✅ Balanced UOI saved → {OUTPUT_GPKG}")
+    print("   Transit integrated via bus stop density (supply-side)")
 
 
 if __name__ == "__main__":
