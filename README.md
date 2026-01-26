@@ -18,6 +18,5 @@ https://github.com/originalankur/maptoposter
 https://github.com/jhsu98/json-splitter
 
 3. Everything Baroda :-
-https://github.com/open-vadodara/maps
-https://github.com/open-vadodara/smart-city-bus
+https://github.com/open-vadodara
 
