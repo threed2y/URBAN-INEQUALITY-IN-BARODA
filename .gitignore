@@ -1,5 +1,4 @@
-# Python
-/home/ethan/Downloads/URBAN-INEQUALITY-IN-BARODA/cache/
+cache/
 __pycache__/
 *.py[cod]
 .env
@@ -7,6 +6,7 @@ __pycache__/
 env/
 .json
 cache/
+
 # QGIS / Spatial
 *.qgs~
 *.qgz
@@ -15,8 +15,7 @@ cache/
 .DS_Store
 Thumbs.db
 
-# Data (Optional but recommended for large files)
-# We usually don't commit huge Geopackages to Git. 
+
 # Uncomment the line below if your data is >100MB
 # data/
 maps/baroda_map.png-1.ppm
