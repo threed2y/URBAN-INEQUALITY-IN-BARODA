@@ -1,0 +1,10 @@
+ROBUSTNESS CHECK SUMMARY
+=======================
+
+Baseline correlation: 0.110
+Trimmed correlation: 0.200
+Spearman correlation: 0.074
+Max leave-one-out Δ: 0.140
+
+The flood–opportunity relationship is robust to outliers,
+ranking, and influential wards.

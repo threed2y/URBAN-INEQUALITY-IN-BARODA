@@ -1,0 +1,5 @@
+Test,Value
+Baseline Pearson Corr,0.11
+Trimmed (5%) Corr,0.2
+Spearman Rank Corr,0.074
+Max Leave-One-Out Δ,0.14

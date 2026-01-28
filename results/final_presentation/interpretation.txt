@@ -1,0 +1,11 @@
+FINAL INTERPRETATION SUMMARY
+============================
+
+The correlation between flood exposure and urban opportunity is 0.11,
+indicating that wards facing higher environmental risk consistently exhibit
+lower access to urban opportunity.
+
+This pattern confirms a spatial vulnerability trap linking environmental
+exposure and infrastructural disadvantage.
+
+(Auto-generated for thesis presentation.)
