@@ -1,142 +1,177 @@
 import geopandas as gpd
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
-from scipy.stats import pearsonr
+import seaborn as sns
 import os
+import sys
 
 # --------------------------------------------------
 # CONFIG
 # --------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-INPUT_GPKG = os.path.join(
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+UOI_GPKG = os.path.join(
     BASE_DIR, "data", "processed", "vadodara_final_uoi_balanced.gpkg"
 )
-OUTPUT_DIR = os.path.join(BASE_DIR, "results", "thesis_figures_clean")
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# --------------------------------------------------
-# COMMON STYLE (THESIS STANDARD)
-# --------------------------------------------------
-plt.rcParams.update(
-    {
-        "font.size": 11,
-        "axes.titlesize": 14,
-        "axes.labelsize": 12,
-        "axes.edgecolor": "black",
-        "axes.linewidth": 0.8,
-        "xtick.labelsize": 10,
-        "ytick.labelsize": 10,
-    }
-)
+FLOOD_CSV = os.path.join(BASE_DIR, "data", "processed", "ward_risk_metrics.csv")
 
-# --------------------------------------------------
-# LOAD DATA
-# --------------------------------------------------
-gdf = gpd.read_file(INPUT_GPKG)
-df = pd.DataFrame(gdf.drop(columns="geometry"))
+OUT_DIR = os.path.join(BASE_DIR, "results", "thesis_figures_clean")
+
+os.makedirs(OUT_DIR, exist_ok=True)
+
+sns.set_theme(style="whitegrid", context="talk")
 
 
-# ==================================================
-# FIGURE 14: FLOOD RISK vs OPPORTUNITY
-# ==================================================
+# --------------------------------------------------
+# LOAD + MERGE (HARD SCHEMA LOCK)
+# --------------------------------------------------
+def load_analysis_df():
+    # ---- existence checks (fail fast) ----
+    if not os.path.exists(UOI_GPKG):
+        sys.exit(f"❌ Missing file: {UOI_GPKG}")
+
+    if not os.path.exists(FLOOD_CSV):
+        sys.exit(f"❌ Missing file: {FLOOD_CSV}")
+
+    gdf = gpd.read_file(UOI_GPKG)
+    flood = pd.read_csv(FLOOD_CSV)
+
+    # ---- normalize column names ----
+    flood.columns = flood.columns.str.strip()
+
+    # ---- schema lock ----
+    REQUIRED_COLS = {"ward_id", "flood_exposure_pct"}
+
+    if not REQUIRED_COLS.issubset(flood.columns):
+        sys.exit(
+            f"❌ Flood CSV schema mismatch.\n"
+            f"Expected: {REQUIRED_COLS}\n"
+            f"Found: {set(flood.columns)}"
+        )
+
+    # ---- type alignment ----
+    gdf["ward_id"] = gdf["ward_id"].astype(int)
+    flood["ward_id"] = flood["ward_id"].astype(int)
+
+    df = gdf.merge(
+        flood[["ward_id", "flood_exposure_pct"]],
+        on="ward_id",
+        how="left",
+    )
+
+    if df["flood_exposure_pct"].isna().any():
+        print("⚠️ Warning: Some wards missing flood data")
+
+    return pd.DataFrame(df.drop(columns="geometry"))
+
+
+# --------------------------------------------------
+# 1. FLOOD × UOI (VULNERABILITY TRAP)
+# --------------------------------------------------
 def plot_vulnerability_trap():
-    df_plot = df[["flood_risk_pct", "UOI_Score"]].dropna()
+    df = load_analysis_df()
+    df = df.dropna(subset=["flood_exposure_pct", "UOI_Score"])
 
-    x = df_plot["flood_risk_pct"].values
-    y = df_plot["UOI_Score"].values
+    plt.figure(figsize=(7, 6))
 
-    r, p = pearsonr(x, y)
-
-    fig, ax = plt.subplots(figsize=(7, 5))
-    ax.scatter(x, y, color="#b2182b", alpha=0.7, s=60, zorder=3)
-
-    # Regression line
-    m, c = np.polyfit(x, y, 1)
-    xx = np.linspace(x.min(), x.max(), 100)
-    ax.plot(xx, m * xx + c, color="#2166ac", linewidth=2, zorder=2)
-
-    ax.set_title("Flood Risk vs Urban Opportunity")
-    ax.set_xlabel("Flood Risk (% of Ward Area)")
-    ax.set_ylabel("Urban Opportunity Index (UOI)")
-
-    ax.text(
-        0.02,
-        0.95,
-        f"Pearson r = {r:.2f}\np = {p:.3f}",
-        transform=ax.transAxes,
-        va="top",
+    sns.scatterplot(
+        data=df,
+        x="flood_exposure_pct",
+        y="UOI_Score",
+        s=90,
+        color="#2166ac",
+        edgecolor="black",
+        alpha=0.85,
     )
 
-    ax.text(
-        0.02,
-        0.82,
-        f"n = {len(x)} wards",
-        transform=ax.transAxes,
+    sns.regplot(
+        data=df,
+        x="flood_exposure_pct",
+        y="UOI_Score",
+        scatter=False,
+        color="#b2182b",
+        line_kws={"linewidth": 2},
     )
 
+    plt.xlabel("Flood Exposure (% of Ward Area)")
+    plt.ylabel("Urban Opportunity Index (UOI)")
+    plt.title("Flood Exposure vs Urban Opportunity")
+
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "Figure_14_Flood_vs_UOI.png"), dpi=300)
+    plt.savefig(
+        os.path.join(OUT_DIR, "Figure_14_Flood_vs_UOI.png"),
+        dpi=300,
+        bbox_inches="tight",
+    )
     plt.close()
 
 
-# ==================================================
-# FIGURE 15: DISTRIBUTION OF OPPORTUNITY
-# ==================================================
-def plot_distribution():
-    values = df["UOI_Score"].dropna()
+# --------------------------------------------------
+# 2. UOI DISTRIBUTION
+# --------------------------------------------------
+def plot_uoi_distribution():
+    df = load_analysis_df()
 
-    # Quantile-based bins (robust for small n)
-    bins = np.quantile(values, np.linspace(0, 1, 7))
+    plt.figure(figsize=(7, 5))
 
-    fig, ax = plt.subplots(figsize=(7, 5))
-    ax.hist(values, bins=bins, color="#2166ac", edgecolor="black")
+    sns.histplot(
+        df["UOI_Score"].dropna(),
+        bins=12,
+        kde=True,
+        color="#3288bd",
+        edgecolor="black",
+    )
 
-    ax.axvline(values.mean(), color="black", linestyle="--", label="Mean")
-    ax.axvline(values.median(), color="grey", linestyle=":", label="Median")
-
-    ax.set_title("Distribution of Urban Opportunity")
-    ax.set_xlabel("Urban Opportunity Index (UOI)")
-    ax.set_ylabel("Number of Wards")
-    ax.legend(frameon=False)
+    plt.xlabel("Urban Opportunity Index (UOI)")
+    plt.ylabel("Number of Wards")
+    plt.title("Distribution of Urban Opportunity")
 
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "Figure_15_UOI_Distribution.png"), dpi=300)
+    plt.savefig(
+        os.path.join(OUT_DIR, "Figure_15_UOI_Distribution.png"),
+        dpi=300,
+        bbox_inches="tight",
+    )
     plt.close()
 
 
-# ==================================================
-# FIGURE 16: LORENZ CURVE (INEQUALITY)
-# ==================================================
-def plot_lorenz():
-    values = np.sort(df["UOI_Score"].dropna().values)
+# --------------------------------------------------
+# 3. LORENZ CURVE
+# --------------------------------------------------
+def plot_lorenz_curve():
+    df = load_analysis_df()
+    x = df["UOI_Score"].dropna().sort_values().values
+    n = len(x)
 
-    cum_values = np.cumsum(values)
-    cum_values = np.insert(cum_values, 0, 0)
-    cum_values = cum_values / cum_values[-1]
+    cum_x = x.cumsum() / x.sum()
+    cum_pop = [i / n for i in range(1, n + 1)]
 
-    cum_pop = np.linspace(0, 1, len(cum_values))
+    plt.figure(figsize=(6, 6))
+    plt.plot([0] + cum_pop, [0] + list(cum_x), linewidth=2, color="#2166ac")
+    plt.plot([0, 1], [0, 1], "--", color="black")
 
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.plot(cum_pop, cum_values, color="#b2182b", linewidth=2, label="Observed")
-    ax.plot([0, 1], [0, 1], linestyle="--", color="black", label="Perfect Equality")
-
-    ax.fill_between(cum_pop, cum_pop, cum_values, color="#b2182b", alpha=0.15)
-
-    ax.set_title("Lorenz Curve of Urban Opportunity")
-    ax.set_xlabel("Cumulative Share of Wards (Lowest to Highest UOI)")
-    ax.set_ylabel("Cumulative Share of Opportunity")
-    ax.legend(frameon=False)
+    plt.xlabel("Cumulative Share of Wards")
+    plt.ylabel("Cumulative Share of Opportunity")
+    plt.title("Inequality in Urban Opportunity")
 
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "Figure_16_Lorenz_Curve.png"), dpi=300)
+    plt.savefig(
+        os.path.join(OUT_DIR, "Figure_16_Lorenz_Curve.png"),
+        dpi=300,
+        bbox_inches="tight",
+    )
     plt.close()
 
 
-# ==================================================
-# RUN ALL
-# ==================================================
+# --------------------------------------------------
+# RUN
+# --------------------------------------------------
 if __name__ == "__main__":
+    print("--- STEP 7: STATISTICAL FIGURES ---")
+
     plot_vulnerability_trap()
-    plot_distribution()
-    plot_lorenz()
+    plot_uoi_distribution()
+    plot_lorenz_curve()
+
+    print("✅ All statistical figures generated successfully")
