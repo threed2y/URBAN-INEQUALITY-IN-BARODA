@@ -4,7 +4,7 @@
 
 **Master’s Thesis Project** **Department of Statistics** **The Maharaja Sayajirao University of Baroda**
 
-![Thesis Dashboard](output/maps/thesis_dashboard_v2.png)
+![Thesis Dashboard](Interactive/Bivariate_UOI_Flood_Toggle.html)
 *(Above: The Urban Opportunity Index Map, visualizing the divide between the privileged core and the vulnerable periphery.)*
 
 ---
@@ -34,7 +34,7 @@ This project moves beyond simple density mapping to model the city as a complex,
 
 ## 🗺️ Explore the Findings
 
-### [**🌍 Launch Interactive Maps**](maps/map_01_opportunity_index.html)
+### [**🌍 Launch Interactive Maps**](Interactive/UOI_Physical_Satellite.html)
 Explore the high-resolution, interactive visualizations of the city.
 * **Opportunity Map:** See which wards are "Privileged" vs. "Deprived."
 * **Vulnerability Map:** See the "Blue Corridor" of flood risk along the Vishwamitri.

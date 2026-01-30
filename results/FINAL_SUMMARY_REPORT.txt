@@ -1,0 +1,33 @@
+URBAN INEQUALITY IN VADODARA – FINAL SUMMARY REPORT
+=======================================================
+
+1. STUDY EXTENT
+-------------------------
+Total wards analysed: 19
+
+2. URBAN OPPORTUNITY INDEX (UOI)
+-------------------------
+Mean UOI:   54.08
+Median UOI: 63.07
+Minimum:   0.55
+Maximum:   90.89
+
+3. INEQUALITY IN OPPORTUNITY
+-------------------------
+Gini coefficient (UOI): 0.294
+Kolm–Pollak EDE (normalized):
+  κ = 0.5 → EDE = 0.566
+  κ = 1.0 → EDE = 0.538
+  κ = 2.0 → EDE = 0.479
+
+4. FLOOD EXPOSURE × OPPORTUNITY
+-------------------------
+Pearson r:  0.110 (p = 0.6528)
+Spearman ρ: 0.074 (p = 0.7643)
+
+5. SPATIAL AUTOCORRELATION
+-------------------------
+Global Moran’s I: 0.089
+P-value (permutation): 0.1400
+
+END OF REPORT

@@ -13,7 +13,7 @@ title: Spatial Analysis Results
 
 | Opportunity Index | Flood Vulnerability |
 | :---: | :---: |
-| [Launch Map](maps/map_01_opportunity_index.html) | [Launch Map](maps/map_02_flood_vulnerability.html) |
+| [Launch Map](interactive/UOI_Physical_Satellite.html) | [Launch Map](maps/Flood_Physical_Satellite.html) |
 
 ## 2. Statistical Evidence
 
@@ -21,22 +21,22 @@ title: Spatial Analysis Results
 
 This figure evaluates the relationship between flood exposure and urban opportunity across analytical wards.
 
-![Flood vs Opportunity](images/Figure_14_Flood_vs_UOI.png)
+![Flood vs Opportunity](figures/Figure_05_Flood_vs_UOI.png)
 
 ### 2.2 Distribution of Urban Opportunity
 
 The distribution illustrates variation in opportunity levels, indicating unequal access within the city.
 
-![Distribution](images/Figure_15_UOI_Distribution.png)
+![Distribution](figures/02_UOI_Distribution.png)
 
 ### 2.3 Inequality in Opportunity (Lorenz Curve)
 
 Deviation from the line of perfect equality reflects the degree of inequality in opportunity distribution.
 
-![Lorenz Curve](images/Figure_16_Lorenz_Curve.png)
+![Lorenz Curve](figures/Figure_06_Lorenz_Curve.png)
 
 ### 2.4 Spatial Clustering of Opportunity
 
 Local Indicators of Spatial Association (LISA) reveal statistically significant clusters of high and low opportunity.
 
-![LISA](images/Figure_18_LISA_Clusters.png)
+![LISA](figures/Figure_07_LISA_Clusters.png)

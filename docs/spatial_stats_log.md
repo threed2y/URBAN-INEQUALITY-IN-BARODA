@@ -46,11 +46,13 @@ C. Local Moran's I (LISA)
 
 This analysis generates two key visual proofs for the thesis:
 
-    Figure 04: Moran Scatterplot (proof_04_moran_scatter.png)
+    Figure 04: Moran Scatterplot
+    ![MORAN'S OI](figures/proof_04_moran_scatter.png)
 
         A scatter plot showing the relationship between a ward's UOI score and its neighbors' average score. The slope of the line equals the Global Moran's I value.
 
-    Figure 05: LISA Cluster Map (proof_05_segregation_map.png)
+    Figure 05: LISA Cluster Map
+    ![LISA MAP](figures/Figure_07_LISA_Clusters.png)
 
         A geographic map painting the city in four colors:
 
