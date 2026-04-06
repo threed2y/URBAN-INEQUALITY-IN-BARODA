@@ -25,7 +25,7 @@ plt.rcParams.update({"font.size": 11, "axes.titlesize": 15, "axes.labelsize": 12
 # LOAD DATA
 # --------------------------------------------------
 gdf = gpd.read_file(INPUT_GPKG)
-gdf = gdf.dropna(subset=["UOI_Score", "flood_risk_pct"]).reset_index(drop=True)
+gdf = gdf.dropna(subset=["UOI_Score", "flood_exposure_pct"]).reset_index(drop=True)
 
 
 # --------------------------------------------------
@@ -56,7 +56,7 @@ def fig_uoi_map():
 def fig_flood_map():
     fig, ax = plt.subplots(figsize=(9, 9))
     gdf.plot(
-        column="flood_risk_pct",
+        column="flood_exposure_pct",
         cmap="Blues",
         linewidth=0.4,
         edgecolor="black",
@@ -75,14 +75,14 @@ def fig_flood_map():
 # --------------------------------------------------
 def fig_typology():
     uoi_m = gdf["UOI_Score"].median()
-    flood_m = gdf["flood_risk_pct"].median()
+    flood_m = gdf["flood_exposure_pct"].median()
 
     def classify(r):
-        if r["UOI_Score"] < uoi_m and r["flood_risk_pct"] > flood_m:
+        if r["UOI_Score"] < uoi_m and r["flood_exposure_pct"] > flood_m:
             return "Low Opportunity / High Risk"
-        if r["UOI_Score"] > uoi_m and r["flood_risk_pct"] < flood_m:
+        if r["UOI_Score"] > uoi_m and r["flood_exposure_pct"] < flood_m:
             return "High Opportunity / Low Risk"
-        if r["UOI_Score"] > uoi_m and r["flood_risk_pct"] > flood_m:
+        if r["UOI_Score"] > uoi_m and r["flood_exposure_pct"] > flood_m:
             return "High Opportunity / High Risk"
         return "Low Opportunity / Low Risk"
 
@@ -127,7 +127,7 @@ def fig_ranked_uoi():
 # FIGURE 5: FLOOD vs OPPORTUNITY
 # --------------------------------------------------
 def fig_scatter():
-    x = gdf["flood_risk_pct"]
+    x = gdf["flood_exposure_pct"]
     y = gdf["UOI_Score"]
     r, p = pearsonr(x, y)
 

@@ -16,8 +16,17 @@ OUTPUT_FILE = os.path.join(BASE_DIR, "results", "robustness_checks.txt")
 
 # --------------------------------------------------
 # NORMALIZATION (SAME AS UOI PIPELINE)
+# FIX I-09: bounds are now derived from the actual data distribution
+# (5th–95th percentile) rather than hardcoded [5,40] / [5,30] values
+# that may fall outside the real data range.
 # --------------------------------------------------
-def normalize_inverse(series, min_target, max_target):
+def normalize_inverse(series, min_target=None, max_target=None):
+    if min_target is None:
+        min_target = series.quantile(0.05)
+    if max_target is None:
+        max_target = series.quantile(0.95)
+    if max_target == min_target:
+        return pd.Series(np.zeros(len(series)), index=series.index)
     clipped = series.clip(lower=min_target, upper=max_target)
     norm = (clipped - min_target) / (max_target - min_target)
     return 1 - norm  # higher = better
@@ -42,8 +51,8 @@ def run_robustness():
         # ==================================================
         # 1. PEARSON vs SPEARMAN (MONOTONICITY)
         # ==================================================
-        pear_r, pear_p = pearsonr(df["flood_risk_pct"], df["UOI_Score"])
-        spear_r, spear_p = spearmanr(df["flood_risk_pct"], df["UOI_Score"])
+        pear_r, pear_p = pearsonr(df["flood_exposure_pct"], df["UOI_Score"])
+        spear_r, spear_p = spearmanr(df["flood_exposure_pct"], df["UOI_Score"])
 
         f.write("1. CORRELATION ROBUSTNESS (Flood Risk vs UOI)\n")
         f.write("-" * 50 + "\n")
@@ -64,9 +73,9 @@ def run_robustness():
         f.write("-" * 50 + "\n")
         f.write("Recomputing mobility scores using alternative weights:\n\n")
 
-        # NORMALIZED COMPONENTS (same scale as UOI)
-        score_bus = normalize_inverse(df["transport_node_min"], 5, 40)
-        score_hwy = normalize_inverse(df["highway_access_min"], 5, 30)
+        # NORMALIZED COMPONENTS — bounds derived from data (5th–95th percentile)
+        score_bus = normalize_inverse(df["transport_node_min"])
+        score_hwy = normalize_inverse(df["highway_access_min"])
 
         weight_sets = [(0.5, 0.5), (0.6, 0.4), (0.7, 0.3)]
 

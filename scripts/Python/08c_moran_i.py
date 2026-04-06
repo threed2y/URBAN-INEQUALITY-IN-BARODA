@@ -42,8 +42,8 @@ w.transform = "r"
 y = gdf["UOI_Score"].values
 
 # Moran
-moran = Moran(y, w)
-local = Moran_Local(y, w)
+moran = Moran(y, w, permutations=9999)
+local = Moran_Local(y, w, permutations=9999)
 
 
 # --------------------------------------------------
@@ -65,6 +65,14 @@ gdf["lisa_cluster"] = [lisa_label(local.q[i], local.p_sim[i]) for i in range(len
 # Spatial lag for scatter plot
 gdf["spatial_lag"] = w.sparse @ y
 
+# FIX I-13: standard Moran scatter requires DEMEANED axes.
+# Plotting raw UOI_Score shifts the quadrant boundaries, mislabelling
+# which wards fall in HH / LL / HL / LH quadrants.
+y_mean   = gdf["UOI_Score"].mean()
+lag_mean = gdf["spatial_lag"].mean()
+gdf["uoi_demeaned"] = gdf["UOI_Score"] - y_mean
+gdf["lag_demeaned"] = gdf["spatial_lag"] - lag_mean
+
 # --------------------------------------------------
 # 1. MORAN SCATTER PLOT (COLORED BY LISA)
 # --------------------------------------------------
@@ -73,8 +81,8 @@ plt.figure(figsize=(7, 7))
 for cluster, color in COLORS.items():
     sub = gdf[gdf["lisa_cluster"] == cluster]
     plt.scatter(
-        sub["UOI_Score"],
-        sub["spatial_lag"],
+        sub["uoi_demeaned"],
+        sub["lag_demeaned"],
         label=cluster,
         color=color,
         edgecolor="black",
@@ -82,12 +90,13 @@ for cluster, color in COLORS.items():
         alpha=0.85,
     )
 
+# Quadrant dividers at 0 are correct once both axes are demeaned
 plt.axhline(0, color="black", linestyle="--", linewidth=1)
 plt.axvline(0, color="black", linestyle="--", linewidth=1)
 
-plt.xlabel("Urban Opportunity Index (UOI)")
-plt.ylabel("Spatial Lag of UOI")
-plt.title(f"Moran’s I Scatter Plot (I = {moran.I:.3f}, p = {moran.p_sim:.3f})")
+plt.xlabel("UOI Score (demeaned)")
+plt.ylabel("Spatial Lag of UOI (demeaned)")
+plt.title(f"Moran's I Scatter Plot (I = {moran.I:.3f}, p = {moran.p_sim:.3f})")
 
 plt.legend(frameon=False)
 plt.tight_layout()

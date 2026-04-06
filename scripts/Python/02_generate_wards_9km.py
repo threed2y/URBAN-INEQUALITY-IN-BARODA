@@ -41,6 +41,17 @@ def generate_wards():
 
     points = gpd.GeoDataFrame(geometry=midpoints, crs=PROJECT_CRS)
 
+    # FIX I-07: Clip midpoints to boundary BEFORE sampling.
+    # Without this, off-boundary KMeans seeds generate Voronoi regions
+    # that clip to slivers, producing artefact wards.
+    points = points[points.geometry.within(boundary_poly)].copy()
+
+    if len(points) < NUM_WARDS * 5:
+        raise ValueError(
+            f"❌ Too few road midpoints inside boundary ({len(points)}). "
+            "Cannot reliably generate seeds. Check boundary / road data."
+        )
+
     # Spatial thinning to reduce noise
     points = points.sample(frac=0.3, random_state=RANDOM_STATE)
 
@@ -88,7 +99,7 @@ def generate_wards():
     # 6. Metadata (Critical for Thesis)
     # --------------------------------------------------
     wards["generation_method"] = "Road-density-informed Voronoi"
-    wards["seed_method"] = "KMeans on road midpoints"
+    wards["seed_method"] = "KMeans on road midpoints (boundary-clipped)"
     wards["num_wards"] = NUM_WARDS
     wards["crs"] = PROJECT_CRS
 

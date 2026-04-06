@@ -46,16 +46,18 @@ def run_spatial_stats():
     # --------------------------------------------------
     print("-> Computing Global Moran’s I...")
     y = gdf["UOI_Score"].values
-    moran = Moran(y, w)
+    moran = Moran(y, w, permutations=9999)
 
     print(f"\n   Global Moran’s I = {moran.I:.3f}")
-    print(f"   p-value          = {moran.p_sim:.4f}")
+    print(f"   E[I] (expected)  = {moran.EI:.4f}  (= -1/(n-1) = {-1/(n-1):.4f})")
+    print(f"   z-score          = {moran.z_sim:.3f}")
+    print(f"   p-value          = {moran.p_sim:.4f}")  (9999 permutations)
 
     # --------------------------------------------------
     # 4. LOCAL MORAN’S I (LISA)
     # --------------------------------------------------
     print("-> Computing Local Indicators of Spatial Association (LISA)...")
-    m_local = Moran_Local(y, w)
+    m_local = Moran_Local(y, w, permutations=9999)
 
     fig, ax = plt.subplots(figsize=(10, 8))
 
@@ -71,6 +73,8 @@ def run_spatial_stats():
     ax.set_title(
         "Spatial Clustering of Urban Opportunity\n"
         f"(Global Moran’s I = {moran.I:.2f}, n = {n})",
+    print(f"   E[I] (expected)  = {moran.EI:.4f}  (= -1/(n-1) = {-1/(n-1):.4f})")
+    print(f"   z-score          = {moran.z_sim:.3f}")
         fontsize=14,
     )
 

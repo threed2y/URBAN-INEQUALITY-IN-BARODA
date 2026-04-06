@@ -26,7 +26,7 @@ def rich_tooltip():
         fields=[
             "ward_id",
             "UOI_Score",
-            "flood_risk_pct",
+            "flood_exposure_pct",
             "building_density_pct",
             "hospitals_min",
             "schools_min",
@@ -117,7 +117,7 @@ def map_flood():
         tiles="CartoDB dark_matter",
     )
 
-    vmax = gdf["flood_risk_pct"].quantile(0.95)
+    vmax = gdf["flood_exposure_pct"].quantile(0.95)
 
     cmap = cm.LinearColormap(
         colors=["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"],
@@ -128,7 +128,7 @@ def map_flood():
 
     def style(feature):
         return {
-            "fillColor": cmap(feature["properties"]["flood_risk_pct"]),
+            "fillColor": cmap(feature["properties"]["flood_exposure_pct"]),
             "color": "#ffffff",
             "weight": 0.4,
             "fillOpacity": 0.9,

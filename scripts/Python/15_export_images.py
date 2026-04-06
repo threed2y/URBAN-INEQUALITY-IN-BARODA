@@ -82,15 +82,15 @@ def export_flood_map():
     print("-> Exporting Flood Risk Map...")
     gdf = gpd.read_file(UOI_GPKG)
 
-    gdf = gdf.dropna(subset=["flood_risk_pct"])
+    gdf = gdf.dropna(subset=["flood_exposure_pct"])
     if gdf.crs.is_geographic:
         gdf = gdf.to_crs(PROJECT_CRS)
 
-    vmax = gdf["flood_risk_pct"].quantile(0.95)
+    vmax = gdf["flood_exposure_pct"].quantile(0.95)
 
     fig, ax = plt.subplots(figsize=(10, 10))
     gdf.plot(
-        column="flood_risk_pct",
+        column="flood_exposure_pct",
         cmap="Blues",
         vmin=0,
         vmax=vmax,

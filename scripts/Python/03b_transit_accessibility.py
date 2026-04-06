@@ -52,10 +52,23 @@ def build_transit_metrics():
 
     df = pd.DataFrame(stops_raw)
 
-    # Parse "lon lat"
+    # FIX I-01: LATLAN field stores "lat lon" (latitude first).
+    # Original code assigned coords[0] to "lon" — fully swapped.
+    # All bus stops were plotted in wrong locations, corrupting the ward spatial join.
     coords = df["LATLAN"].str.split(" ", expand=True)
-    df["lon"] = coords[0].astype(float)
-    df["lat"] = coords[1].astype(float)
+    df["lat"] = coords[0].astype(float)   # first token is latitude
+    df["lon"] = coords[1].astype(float)   # second token is longitude
+
+    # Sanity check — Vadodara bounding box: lat 22.2–22.5, lon 72.9–73.4
+    lat_ok = df["lat"].between(22.0, 22.6).all()
+    lon_ok = df["lon"].between(72.7, 73.6).all()
+    if not lat_ok or not lon_ok:
+        raise ValueError(
+            "❌ Bus stop coordinates fall outside Vadodara bounding box.\n"
+            f"   lat range: {df['lat'].min():.4f}–{df['lat'].max():.4f} (expect 22.0–22.6)\n"
+            f"   lon range: {df['lon'].min():.4f}–{df['lon'].max():.4f} (expect 72.7–73.6)\n"
+            "   Check LATLAN field token order in all_stops.json."
+        )
 
     stops = gpd.GeoDataFrame(
         df,

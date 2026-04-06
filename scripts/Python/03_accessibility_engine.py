@@ -17,12 +17,16 @@ PROJECT_CRS = "EPSG:32643"
 
 DRIVE_SPEED_KMPH = 35
 WALK_SPEED_KMPH = 4.5
-TRAFFIC_FACTOR = 1.3
-HUMAN_ERROR_FACTOR = 1.1
+TRAFFIC_FACTOR = 1.3        # congestion multiplier on travel time
+HUMAN_ERROR_FACTOR = 1.1    # routing/behavioural correction
 TERMINAL_PENALTY_MINS = 2.0
 
-METERS_PER_MIN_DRIVE = (DRIVE_SPEED_KMPH * 1000) / 60
-METERS_PER_MIN_WALK = (WALK_SPEED_KMPH * 1000) / 60
+# FIX I-06: Apply TRAFFIC_FACTOR to the effective drive speed so ALL
+# drive-time calculations (hospital, highway) are consistently congestion-
+# adjusted — not just the hospital terminal penalty.
+EFFECTIVE_DRIVE_SPEED_KMPH = DRIVE_SPEED_KMPH / TRAFFIC_FACTOR   # ~26.9 km/h
+METERS_PER_MIN_DRIVE = (EFFECTIVE_DRIVE_SPEED_KMPH * 1000) / 60
+METERS_PER_MIN_WALK  = (WALK_SPEED_KMPH * 1000) / 60
 
 
 def calculate_access():
@@ -38,8 +42,20 @@ def calculate_access():
     # FILTER POIs
     # --------------------------------------------------
     hospitals = pois[pois["amenity"] == "hospital"].copy()
-    schools = pois[pois["amenity"].isin(["school", "college", "university"])].copy()
-    transport = pois[pois["amenity"].isin(["bus_station", "bus_stop"])].copy()
+    schools   = pois[pois["amenity"].isin(["school", "college", "university"])].copy()
+
+    # FIX I-11: OSM tags bus stops as highway=bus_stop (not amenity=bus_stop).
+    # The old filter found zero nodes and masked failure with a 45-min fallback.
+    transport = pois[
+        pois["amenity"].isin(["bus_station"]) |
+        (pois.get("highway",         pd.Series(dtype=str)) == "bus_stop") |
+        (pois.get("public_transport", pd.Series(dtype=str)).isin(["stop_position", "station"]))
+    ].copy()
+
+    if transport.empty:
+        print("   ⚠️  No bus/transit nodes found in POI layer — transport times will use fallback (45 min).")
+    else:
+        print(f"   ✅ {len(transport)} bus/transit nodes found.")
 
     for df in (hospitals, schools, transport):
         df["geometry"] = df.geometry.centroid
@@ -57,7 +73,8 @@ def calculate_access():
     hwy_edges = edges[
         edges["highway"].astype(str).str.contains("motorway|trunk|primary", regex=True)
     ]
-    hwy_geom = hwy_edges.unary_union
+    # FIX I-10: unary_union is deprecated in Shapely 2.x — use union_all()
+    hwy_geom = hwy_edges.union_all()
 
     # --------------------------------------------------
     # HELPER FUNCTION
@@ -93,11 +110,12 @@ def calculate_access():
         ward_id = ward["ward_id"]
         access_pt = ward.geometry.representative_point()
 
+        # TERMINAL_PENALTY: human_error only — traffic already baked into METERS_PER_MIN_DRIVE
         t_hosp = network_time(
             access_pt,
             hospitals,
             METERS_PER_MIN_DRIVE,
-            penalty=TERMINAL_PENALTY_MINS * TRAFFIC_FACTOR * HUMAN_ERROR_FACTOR,
+            penalty=TERMINAL_PENALTY_MINS * HUMAN_ERROR_FACTOR,
         )
 
         t_school = network_time(access_pt, schools, METERS_PER_MIN_WALK)

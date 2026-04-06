@@ -63,7 +63,7 @@ def spatial_diagnostics_all(df, w, variables, out_path):
 
     for var in variables:
         y = df[var].values
-        moran = Moran(y, w)
+        moran = Moran(y, w, permutations=9999)
 
         rows.append(
             {
@@ -172,8 +172,8 @@ def export_spatial_statistics():
 
     y = df["UOI_Score"].values
 
-    moran = Moran(y, w)
-    local = Moran_Local(y, w)
+    moran = Moran(y, w, permutations=9999)
+    local = Moran_Local(y, w, permutations=9999)
 
     df["local_moran_I"] = local.Is
     df["spatial_lag_uoi"] = local.z_sim

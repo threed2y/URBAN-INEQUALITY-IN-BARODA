@@ -66,7 +66,7 @@ def tooltip():
         fields=[
             "ward_id",
             "UOI_Score",
-            "flood_risk_pct",
+            "flood_exposure_pct",
             "building_density_pct",
             "hospitals_min",
             "schools_min",
@@ -97,14 +97,14 @@ def build_bivariate_map():
     gdf = gpd.read_file(INPUT_GPKG).to_crs("EPSG:4326")
 
     uoi_thr = gdf["UOI_Score"].median()
-    flood_thr = gdf["flood_risk_pct"].median()
+    flood_thr = gdf["flood_exposure_pct"].median()
 
     def classify(row):
-        if row["UOI_Score"] >= uoi_thr and row["flood_risk_pct"] < flood_thr:
+        if row["UOI_Score"] >= uoi_thr and row["flood_exposure_pct"] < flood_thr:
             return "High Opportunity / Low Risk"
-        if row["UOI_Score"] >= uoi_thr and row["flood_risk_pct"] >= flood_thr:
+        if row["UOI_Score"] >= uoi_thr and row["flood_exposure_pct"] >= flood_thr:
             return "High Opportunity / High Risk"
-        if row["UOI_Score"] < uoi_thr and row["flood_risk_pct"] < flood_thr:
+        if row["UOI_Score"] < uoi_thr and row["flood_exposure_pct"] < flood_thr:
             return "Low Opportunity / Low Risk"
         return "Low Opportunity / High Risk"
 

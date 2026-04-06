@@ -64,7 +64,7 @@ def compile_results():
         f.write("-" * 30 + "\n")
         f.write(f"Total Wards Analysed: {n}\n")
         f.write(f"Mean Urban Opportunity Index (UOI): {df['UOI_Score'].mean():.2f}\n")
-        f.write(f"Mean Flood Risk: {df['flood_risk_pct'].mean():.2f}%\n")
+        f.write(f"Mean Flood Risk: {df['flood_exposure_pct'].mean():.2f}%\n")
         f.write(
             f"Mean Hospital Access Time: {df['hospitals_min'].mean():.1f} minutes\n"
         )
@@ -100,8 +100,8 @@ def compile_results():
         f.write("3. FLOOD RISK AND OPPORTUNITY RELATIONSHIP\n")
         f.write("-" * 30 + "\n")
 
-        r, p = pearsonr(df["flood_risk_pct"], df["UOI_Score"])
-        slope, _, _, _, _ = linregress(df["flood_risk_pct"], df["UOI_Score"])
+        r, p = pearsonr(df["flood_exposure_pct"], df["UOI_Score"])
+        slope, _, _, _, _ = linregress(df["flood_exposure_pct"], df["UOI_Score"])
 
         f.write(f"Pearson Correlation (r): {r:.3f}\n")
         f.write(f"P-value: {p:.4f}\n")
@@ -128,14 +128,14 @@ def compile_results():
         for _, r_ in top5.iterrows():
             f.write(
                 f"  Ward {int(r_['ward_id'])}: "
-                f"UOI = {r_['UOI_Score']:.2f}, Flood Risk = {r_['flood_risk_pct']:.1f}%\n"
+                f"UOI = {r_['UOI_Score']:.2f}, Flood Risk = {r_['flood_exposure_pct']:.1f}%\n"
             )
 
         f.write("\nBottom 5 Wards:\n")
         for _, r_ in bot5.iterrows():
             f.write(
                 f"  Ward {int(r_['ward_id'])}: "
-                f"UOI = {r_['UOI_Score']:.2f}, Flood Risk = {r_['flood_risk_pct']:.1f}%\n"
+                f"UOI = {r_['UOI_Score']:.2f}, Flood Risk = {r_['flood_exposure_pct']:.1f}%\n"
             )
 
         f.write("\n" + "=" * 50 + "\n")
@@ -150,7 +150,7 @@ def compile_results():
             "Score_Health",
             "Score_Edu",
             "Score_Mobility",
-            "flood_risk_pct",
+            "flood_exposure_pct",
         ]
     ].sort_values("UOI_Score", ascending=False).to_csv(OUTPUT_CSV, index=False)
 

@@ -68,7 +68,7 @@ def export_flood_clean():
 
     fig, ax = setup_ax("Flood Vulnerability (% Area Exposed)")
     gdf.plot(
-        column="flood_risk_pct",
+        column="flood_exposure_pct",
         cmap="Blues",
         linewidth=0.4,
         edgecolor="black",

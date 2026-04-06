@@ -52,7 +52,7 @@ def rich_tooltip():
         fields=[
             "ward_id",
             "UOI_Score",
-            "flood_risk_pct",
+            "flood_exposure_pct",
             "building_density_pct",
             "hospitals_min",
             "schools_min",
@@ -129,7 +129,7 @@ def map_flood():
     m = folium.Map(location=[center.y, center.x], zoom_start=12, tiles=None)
     add_basemaps(m)
 
-    vmax = gdf["flood_risk_pct"].quantile(0.95)
+    vmax = gdf["flood_exposure_pct"].quantile(0.95)
 
     cmap = cm.LinearColormap(
         colors=["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"],
@@ -139,7 +139,7 @@ def map_flood():
     )
 
     def style(feature):
-        risk = feature["properties"]["flood_risk_pct"]
+        risk = feature["properties"]["flood_exposure_pct"]
         norm = min(risk / vmax, 1)
         opacity = max(0.35, 0.85 - 0.5 * norm)
 

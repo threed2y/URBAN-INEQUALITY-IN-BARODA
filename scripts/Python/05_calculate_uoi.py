@@ -46,28 +46,33 @@ def calculate_uoi():
     )
 
     # --------------------------------------------------
-    # SUB-SCORES
+    # SUB-SCORES  (all explicitly clipped to [0,1])
     # --------------------------------------------------
-    df["Score_Health"] = 1 - normalize(df["hospitals_min"])
-    df["Score_Edu"] = 1 - normalize(df["schools_min"])
+    # FIX I-02: clip each sub-score to [0,1] before the geometric mean so all
+    # three components are guaranteed to be on the same scale.
+    df["Score_Health"] = (1 - normalize(df["hospitals_min"])).clip(0, 1)
+    df["Score_Edu"]    = (1 - normalize(df["schools_min"])).clip(0, 1)
 
-    # Mobility = bus + highway
-    bus_score = df["bus_access_score"].fillna(0)
-    hwy_score = 1 - normalize(df["highway_access_min"])
+    # Mobility = bus (supply-side density) + highway (network access)
+    bus_score = df["bus_access_score"].fillna(0).clip(0, 1)
+    hwy_score = (1 - normalize(df["highway_access_min"])).clip(0, 1)
 
-    df["Score_Mobility"] = 0.6 * bus_score + 0.4 * hwy_score
+    df["Score_Mobility"] = (0.6 * bus_score + 0.4 * hwy_score).clip(0, 1)
 
     # --------------------------------------------------
-    # FINAL UOI (GEOMETRIC MEAN)
+    # FINAL UOI — GEOMETRIC MEAN (stays on [0,1])
     # --------------------------------------------------
+    # FIX I-03: UOI_Score remains on [0,1] for all analytics.
+    # UOI_Display (0-100) is for maps and tables only.
+    # Downstream scripts must use UOI_Score for normalize(), pearsonr(), Moran().
     eps = 1e-6
     df["UOI_Score"] = (
-        (df["Score_Health"] + eps)
-        * (df["Score_Edu"] + eps)
+        (df["Score_Health"]   + eps)
+        * (df["Score_Edu"]    + eps)
         * (df["Score_Mobility"] + eps)
     ) ** (1 / 3)
 
-    df["UOI_Score"] = (df["UOI_Score"] * 100).round(2)
+    df["UOI_Display"] = (df["UOI_Score"] * 100).round(2)
 
     # --------------------------------------------------
     # SAVE

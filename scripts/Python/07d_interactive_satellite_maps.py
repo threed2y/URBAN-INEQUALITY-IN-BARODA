@@ -26,7 +26,7 @@ def rich_tooltip():
         fields=[
             "ward_id",
             "UOI_Score",
-            "flood_risk_pct",
+            "flood_exposure_pct",
             "building_density_pct",
             "hospitals_min",
             "schools_min",
@@ -149,7 +149,7 @@ def map_flood():
     gdf = gpd.read_file(INPUT_GPKG).to_crs("EPSG:4326")
     center = gdf.geometry.union_all().centroid
 
-    flood_max = gdf["flood_risk_pct"].quantile(0.95)
+    flood_max = gdf["flood_exposure_pct"].quantile(0.95)
 
     m = folium.Map(
         location=[center.y, center.x],
@@ -167,7 +167,7 @@ def map_flood():
     )
 
     def style_flood(feature):
-        risk = feature["properties"]["flood_risk_pct"]
+        risk = feature["properties"]["flood_exposure_pct"]
 
         norm = min(risk / flood_max, 1)
 
