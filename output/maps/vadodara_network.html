@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Vadodara Flood Network</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#05080F;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;color:#C8D8F0}
+
+/* ── layout ── */
+#app{display:flex;flex-direction:column;height:100vh}
+#topbar{height:48px;background:#08101E;border-bottom:1px solid #0F1E38;display:flex;align-items:center;padding:0 16px;gap:14px;flex-shrink:0;z-index:10}
+#main{flex:1;display:flex;overflow:hidden}
+#sidebar{width:256px;background:#070D1C;border-right:1px solid #0F1E38;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+#canvas-area{flex:1;position:relative;overflow:hidden}
+#statusbar{height:28px;background:#05080F;border-top:1px solid #0A1528;display:flex;align-items:center;padding:0 14px;gap:20px;font-size:10px;color:#1E3050;flex-shrink:0}
+
+/* ── topbar ── */
+.brand{font-size:14px;font-weight:700;color:#4A9EFF;letter-spacing:.04em}
+.brand-sub{font-size:10px;color:#1E3A5A;letter-spacing:.1em;text-transform:uppercase}
+.tb-sep{flex:1}
+.mode-group{display:flex;gap:2px;background:#0A1428;border:1px solid #0F1E38;border-radius:8px;padding:3px}
+.mode-btn{padding:5px 14px;border-radius:6px;font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;border:none;background:transparent;color:#2A4870;transition:all .2s}
+.mode-btn.active{background:#112240;color:#5AB4FF}
+.mode-btn:hover:not(.active){color:#4A80A0}
+
+/* ── sidebar sections ── */
+.sb-scroll{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:12px}
+.sb-scroll::-webkit-scrollbar{width:4px}
+.sb-scroll::-webkit-scrollbar-track{background:transparent}
+.sb-scroll::-webkit-scrollbar-thumb{background:#0F1E38;border-radius:99px}
+.sec-title{font-size:9px;font-weight:700;letter-spacing:.14em;color:#1A3050;text-transform:uppercase;padding-bottom:6px;border-bottom:1px solid #0A1828;margin-bottom:6px}
+
+/* ── timeline ── */
+#tl-wrap{padding:0 2px}
+.tl-track{position:relative;height:6px;background:#091424;border-radius:99px;margin:8px 0 4px}
+.tl-fill{position:absolute;top:0;left:0;height:100%;border-radius:99px;background:linear-gradient(to right,#1A5090,#4A9EFF);transition:width .3s}
+.tl-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#4A9EFF;border:2px solid #05080F;cursor:pointer;transition:left .3s}
+.tl-steps{display:flex;justify-content:space-between;margin-top:4px}
+.tl-step{width:5px;height:5px;border-radius:50%;background:#0A1828;cursor:pointer;transition:background .15s}
+.tl-step.done{background:#1A4080}
+.tl-step.active{background:#4A9EFF}
+.tl-label{font-size:10px;color:#4A9EFF;margin-top:6px;text-align:center;font-weight:600}
+.tl-intensity{font-size:9px;color:#1A3050;text-align:center;margin-top:2px}
+
+/* ── intensity bar ── */
+.intensity-bar{height:24px;background:#060E1C;border-radius:6px;overflow:hidden;position:relative;margin-top:4px}
+.intensity-fill{height:100%;border-radius:6px;transition:width .4s,background .4s}
+.intensity-val{position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:#fff}
+
+/* ── animate btn ── */
+#btn-play{width:100%;padding:7px 0;border-radius:8px;border:1px solid #0F2040;background:#070F1E;font-size:11px;font-weight:700;letter-spacing:.08em;color:#2A5080;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+#btn-play:hover{background:#0F1E38;color:#4A9EFF;border-color:#1A3A6A}
+#btn-play.playing{background:#200A0A;color:#F87171;border-color:#4A1A1A}
+.play-icon{width:0;height:0;border-style:solid;border-width:5px 0 5px 9px;border-color:transparent transparent transparent currentColor;transition:all .2s}
+.stop-icon{width:8px;height:8px;background:currentColor;border-radius:1px}
+
+/* ── layer toggles ── */
+.layer-row{display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;user-select:none}
+.layer-row:hover .layer-label{color:#7A9ABB}
+.layer-swatch{width:12px;height:4px;border-radius:99px;flex-shrink:0}
+.layer-label{font-size:11px;color:#3A5878;flex:1;transition:color .15s}
+.toggle{width:26px;height:14px;border-radius:99px;background:#0A1428;border:1px solid #0F1E38;position:relative;cursor:pointer;transition:background .15s;flex-shrink:0}
+.toggle.on{background:#112240;border-color:#1A3A6A}
+.toggle::after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#1A3050;top:2px;left:2px;transition:all .15s}
+.toggle.on::after{background:#4A9EFF;left:14px}
+
+/* ── kpi grid ── */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.kpi{background:#060E1C;border:1px solid #0A1828;border-radius:8px;padding:8px 10px;position:relative;overflow:hidden}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ac,#1A3A7A);border-radius:8px 8px 0 0}
+.kv{font-size:17px;font-weight:700;color:#8AB4D8;line-height:1.1}
+.kl{font-size:8px;color:#1A3050;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+
+/* ── ward list ── */
+.ward-item{display:flex;align-items:center;gap:7px;padding:5px 6px;border-radius:6px;cursor:pointer;transition:background .1s;border:1px solid transparent}
+.ward-item:hover,.ward-item.sel{background:#0A1428;border-color:#0F1E38}
+.ward-risk{width:4px;height:28px;border-radius:99px;flex-shrink:0}
+.ward-info{flex:1;min-width:0}
+.ward-name{font-size:11px;color:#4A7090;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ward-stat{font-size:9px;color:#1A3050;margin-top:1px}
+.ward-flood{font-size:10px;font-weight:700;flex-shrink:0}
+
+/* ── canvas overlays ── */
+canvas{position:absolute;top:0;left:0;pointer-events:none}
+#main-canvas{pointer-events:all;cursor:crosshair}
+
+/* ── tooltip ── */
+#tip{position:absolute;background:#070F20;border:1px solid #0F2040;border-radius:10px;padding:10px 13px;font-size:11px;pointer-events:none;display:none;z-index:100;max-width:190px;backdrop-filter:blur(6px)}
+.tip-title{font-size:12px;font-weight:700;color:#5AACFF;margin-bottom:5px}
+.tip-row{display:flex;justify-content:space-between;gap:10px;line-height:1.8}
+.tip-k{color:#1E3858}
+.tip-v{color:#8AB4D8;font-weight:600}
+.tip-warn{color:#F87171;font-size:9px;font-weight:700;margin-top:4px;letter-spacing:.06em}
+
+/* ── ward detail panel ── */
+#wd-panel{position:absolute;top:14px;right:14px;width:186px;background:#060E1C;border:1px solid #0F2040;border-radius:12px;padding:12px 13px;display:none;z-index:20;backdrop-filter:blur(8px)}
+.wd-name{font-size:13px;font-weight:700;color:#5AACFF;margin-bottom:9px}
+.wd-row{margin-bottom:7px}
+.wd-label{font-size:8px;color:#1A3050;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px}
+.wd-val{font-size:13px;font-weight:700;color:#8AB4D8}
+.wd-bar-bg{height:3px;background:#0A1428;border-radius:99px;margin-top:3px}
+.wd-bar{height:100%;border-radius:99px;transition:width .4s}
+.wd-close{position:absolute;top:8px;right:10px;font-size:14px;color:#1A3050;cursor:pointer;line-height:1}
+.wd-close:hover{color:#4A8AB8}
+
+/* ── flood legend ── */
+#legend{position:absolute;bottom:14px;left:14px;background:#060E1CE0;border:1px solid #0A1828;border-radius:8px;padding:8px 11px;font-size:9px;z-index:20;display:flex;flex-direction:column;gap:4px}
+.leg-row{display:flex;align-items:center;gap:7px;color:#2A4870}
+.leg-line{border-radius:99px}
+
+/* ── diff badge ── */
+#diff-badge{position:absolute;top:14px;left:14px;background:#060E1CE0;border:1px solid #0A1828;border-radius:8px;padding:8px 12px;font-size:10px;z-index:20;display:none;min-width:160px}
+.db-title{font-size:8px;color:#1A3050;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.db-row{display:flex;justify-content:space-between;margin-bottom:2px}
+.db-k{color:#1A3050}
+.db-bad{color:#F87171;font-weight:700}
+.db-good{color:#34D399;font-weight:700}
+
+/* ── statusbar ── */
+.sb-item{display:flex;gap:5px;align-items:center}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:#34D399;animation:pulse 2.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+.sb-v{color:#3A6080;font-weight:600}
+.sb-mode{color:#4A9EFF;font-weight:700;letter-spacing:.08em;margin-left:auto}
+
+/* ── zoom controls ── */
+#zoom-btns{position:absolute;bottom:48px;right:14px;display:flex;flex-direction:column;gap:3px;z-index:20}
+.zoom-btn{width:26px;height:26px;background:#060E1C;border:1px solid #0A1828;border-radius:6px;color:#2A4870;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-weight:300;line-height:1}
+.zoom-btn:hover{background:#0A1428;color:#4A9EFF;border-color:#1A3A6A}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── TOPBAR ── -->
+<div id="topbar">
+  <div>
+    <div class="brand">VADODARA FLOOD NETWORK</div>
+    <div class="brand-sub">Hydrodynamic Simulation · SWMM + GCN·BYM2</div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="mode-group">
+    <button class="mode-btn active" id="btn-pre"  onclick="setMode('pre')">Pre-Storm</button>
+    <button class="mode-btn"        id="btn-post" onclick="setMode('post')">Post-Storm</button>
+    <button class="mode-btn"        id="btn-diff" onclick="setMode('diff')">Δ Difference</button>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<div id="main">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-scroll">
+
+      <!-- Timeline -->
+      <div>
+        <div class="sec-title">Storm Timeline</div>
+        <div id="tl-wrap">
+          <div class="tl-track" id="tl-track">
+            <div class="tl-fill" id="tl-fill" style="width:0%"></div>
+            <div class="tl-thumb" id="tl-thumb" style="left:0%"></div>
+          </div>
+          <div class="tl-steps" id="tl-steps"></div>
+          <div class="tl-label" id="tl-label">0h — Dry</div>
+          <div class="tl-intensity">Storm intensity</div>
+          <div class="intensity-bar" style="margin-top:4px">
+            <div class="intensity-fill" id="intens-fill" style="width:0%;background:#1A3A7A"></div>
+            <div class="intensity-val" id="intens-val">0%</div>
+          </div>
+        </div>
+        <div style="margin-top:8px">
+          <button id="btn-play" onclick="togglePlay()">
+            <span class="play-icon" id="play-icon"></span>
+            <span id="play-label">ANIMATE STORM</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Layers -->
+      <div>
+        <div class="sec-title">Layers</div>
+        <div class="layer-row" onclick="toggleLayer('wards')">
+          <div class="layer-swatch" style="background:#1A3A7A;height:10px;border-radius:3px;opacity:.7"></div>
+          <span class="layer-label">Ward zones</span>
+          <div class="toggle on" id="lt-wards"></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer('nodes')">
+          <div class="layer-swatch" style="background:#3A7AC0;border-radius:50%;width:10px;height:10px"></div>
+          <span class="layer-label">Intersections</span>
+          <div class="toggle on" id="lt-nodes"></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer('labels')">
+          <div class="layer-swatch" style="background:#2A5070"></div>
+          <span class="layer-label">Ward labels</span>
+          <div class="toggle on" id="lt-labels"></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer('floodOnly')">
+          <div class="layer-swatch" style="background:#F87171"></div>
+          <span class="layer-label">Flooded roads only</span>
+          <div class="toggle" id="lt-floodOnly"></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer('flow')">
+          <div class="layer-swatch" style="background:#F59E0B"></div>
+          <span class="layer-label">Flow particles</span>
+          <div class="toggle" id="lt-flow"></div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div>
+        <div class="sec-title">City Statistics</div>
+        <div class="kpi-grid">
+          <div class="kpi" style="--ac:#F87171"><div class="kv" id="kv-f">—</div><div class="kl">Roads Flooded</div></div>
+          <div class="kpi" style="--ac:#4A9EFF"><div class="kv" id="kv-d">—</div><div class="kl">Mean Depth</div></div>
+          <div class="kpi" style="--ac:#34D399"><div class="kv" id="kv-a">—</div><div class="kl">Access OK</div></div>
+          <div class="kpi" style="--ac:#A78BFA"><div class="kv" id="kv-w">—</div><div class="kl">Wards Hit</div></div>
+        </div>
+      </div>
+
+      <!-- Ward list -->
+      <div>
+        <div class="sec-title">Ward Risk Ranking</div>
+        <div id="ward-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CANVAS AREA -->
+  <div id="canvas-area">
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="main-canvas"></canvas>
+
+    <div id="tip"></div>
+    <div id="wd-panel"><span class="wd-close" onclick="clearSel()">✕</span></div>
+    <div id="diff-badge"></div>
+
+    <div id="legend">
+      <div style="font-size:8px;color:#1A3050;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px">Road type</div>
+      <div class="leg-row"><div class="leg-line" style="width:22px;height:4px;background:#5AACFF"></div>Arterial ring</div>
+      <div class="leg-row"><div class="leg-line" style="width:22px;height:3px;background:#2A70C0"></div>Primary</div>
+      <div class="leg-row"><div class="leg-line" style="width:22px;height:2px;background:#1A4A90"></div>Secondary</div>
+      <div class="leg-row"><div class="leg-line" style="width:22px;height:1.5px;background:#0F2E60"></div>Tertiary</div>
+      <div style="height:6px"></div>
+      <div class="leg-row"><div class="leg-line" style="width:22px;height:3px;background:#F87171"></div>Flooded</div>
+      <div class="leg-row"><div class="leg-line" style="width:22px;height:10px;background:rgba(248,113,113,.12);border-radius:3px"></div>Flood zone</div>
+    </div>
+
+    <div id="zoom-btns">
+      <button class="zoom-btn" onclick="zoom(1.25)" title="Zoom in">+</button>
+      <button class="zoom-btn" onclick="zoom(0.8)"  title="Zoom out">−</button>
+      <button class="zoom-btn" onclick="resetView()" title="Reset" style="font-size:11px;font-weight:700">⌂</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── STATUS BAR ── -->
+<div id="statusbar">
+  <div class="sb-item"><div class="sb-dot"></div></div>
+  <div class="sb-item">NODES <span class="sb-v" id="sb-n">61</span></div>
+  <div class="sb-item">EDGES <span class="sb-v" id="sb-e">207</span></div>
+  <div class="sb-item">WARDS <span class="sb-v">32</span></div>
+  <div class="sb-item">MODEL <span class="sb-v">GCN + BYM2 + SWMM 5.2</span></div>
+  <div class="sb-mode" id="sb-mode">PRE-STORM</div>
+</div>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const NET={"nodes":[{"id":0,"lat":22.2847,"lon":73.1512,"ward_id":0,"ntype":"ward"},{"id":1,"lat":22.2937,"lon":73.1632,"ward_id":1,"ntype":"ward"},{"id":2,"lat":22.2982,"lon":73.1762,"ward_id":2,"ntype":"ward"},{"id":3,"lat":22.3072,"lon":73.1962,"ward_id":3,"ntype":"ward"},{"id":4,"lat":22.3297,"lon":73.2012,"ward_id":4,"ntype":"ward"},{"id":5,"lat":22.3342,"lon":73.1712,"ward_id":5,"ntype":"ward"},{"id":6,"lat":22.2757,"lon":73.1862,"ward_id":6,"ntype":"ward"},{"id":7,"lat":22.3162,"lon":73.2162,"ward_id":7,"ntype":"ward"},{"id":8,"lat":22.2712,"lon":73.1962,"ward_id":8,"ntype":"ward"},{"id":9,"lat":22.3477,"lon":73.1812,"ward_id":9,"ntype":"ward"},{"id":10,"lat":22.3432,"lon":73.2062,"ward_id":10,"ntype":"ward"},{"id":11,"lat":22.3027,"lon":73.2062,"ward_id":11,"ntype":"ward"},{"id":12,"lat":22.3117,"lon":73.1612,"ward_id":12,"ntype":"ward"},{"id":13,"lat":22.3027,"lon":73.1762,"ward_id":13,"ntype":"ward"},{"id":14,"lat":22.3207,"lon":73.1862,"ward_id":14,"ntype":"ward"},{"id":15,"lat":22.3162,"lon":73.1662,"ward_id":15,"ntype":"ward"},{"id":16,"lat":22.3252,"lon":73.1562,"ward_id":16,"ntype":"ward"},{"id":17,"lat":22.3297,"lon":73.1912,"ward_id":17,"ntype":"ward"},{"id":18,"lat":22.3117,"lon":73.1862,"ward_id":18,"ntype":"ward"},{"id":19,"lat":22.2892,"lon":73.2112,"ward_id":19,"ntype":"ward"},{"id":20,"lat":22.2937,"lon":73.1862,"ward_id":20,"ntype":"ward"},{"id":21,"lat":22.2802,"lon":73.1662,"ward_id":21,"ntype":"ward"},{"id":22,"lat":22.2982,"lon":73.1512,"ward_id":22,"ntype":"ward"},{"id":23,"lat":22.3387,"lon":73.1662,"ward_id":23,"ntype":"ward"},{"id":24,"lat":22.3027,"lon":73.1912,"ward_id":24,"ntype":"ward"},{"id":25,"lat":22.3207,"lon":73.2062,"ward_id":25,"ntype":"ward"},{"id":26,"lat":22.2847,"lon":73.2012,"ward_id":26,"ntype":"ward"},{"id":27,"lat":22.2757,"lon":73.1612,"ward_id":27,"ntype":"ward"},{"id":28,"lat":22.3072,"lon":73.1562,"ward_id":28,"ntype":"ward"},{"id":29,"lat":22.3027,"lon":73.1662,"ward_id":29,"ntype":"ward"},{"id":30,"lat":22.3522,"lon":73.1912,"ward_id":30,"ntype":"ward"},{"id":31,"lat":22.2667,"lon":73.1762,"ward_id":31,"ntype":"ward"},{"id":32,"lat":22.2847,"lon":73.2245,"ward_id":-1,"ntype":"ring"},{"id":33,"lat":22.29784,"lon":73.23011,"ward_id":-1,"ntype":"ring"},{"id":34,"lat":22.3119,"lon":73.23093,"ward_id":-1,"ntype":"ring"},{"id":35,"lat":22.3255,"lon":73.22688,"ward_id":-1,"ntype":"ring"},{"id":36,"lat":22.33731,"lon":73.21836,"ward_id":-1,"ntype":"ring"},{"id":37,"lat":22.34617,"lon":73.2062,"ward_id":-1,"ntype":"ring"},{"id":38,"lat":22.35122,"lon":73.1916,"ward_id":-1,"ntype":"ring"},{"id":39,"lat":22.35195,"lon":73.17597,"ward_id":-1,"ntype":"ring"},{"id":40,"lat":22.34831,"lon":73.16086,"ward_id":-1,"ntype":"ring"},{"id":41,"lat":22.34064,"lon":73.14774,"ward_id":-1,"ntype":"ring"},{"id":42,"lat":22.3297,"lon":73.1379,"ward_id":-1,"ntype":"ring"},{"id":43,"lat":22.31656,"lon":73.13229,"ward_id":-1,"ntype":"ring"},{"id":44,"lat":22.3025,"lon":73.13147,"ward_id":-1,"ntype":"ring"},{"id":45,"lat":22.2889,"lon":73.13552,"ward_id":-1,"ntype":"ring"},{"id":46,"lat":22.27709,"lon":73.14404,"ward_id":-1,"ntype":"ring"},{"id":47,"lat":22.26823,"lon":73.1562,"ward_id":-1,"ntype":"ring"},{"id":48,"lat":22.26318,"lon":73.1708,"ward_id":-1,"ntype":"ring"},{"id":49,"lat":22.26245,"lon":73.18643,"ward_id":-1,"ntype":"ring"},{"id":50,"lat":22.26609,"lon":73.20154,"ward_id":-1,"ntype":"ring"},{"id":51,"lat":22.27376,"lon":73.21466,"ward_id":-1,"ntype":"ring"},{"id":52,"lat":22.3072,"lon":73.1812,"ward_id":-1,"ntype":"centre"},{"id":53,"lat":22.3072,"lon":73.2062,"ward_id":-1,"ntype":"inter"},{"id":54,"lat":22.32311,"lon":73.19888,"ward_id":-1,"ntype":"inter"},{"id":55,"lat":22.3297,"lon":73.1812,"ward_id":-1,"ntype":"inter"},{"id":56,"lat":22.32311,"lon":73.16352,"ward_id":-1,"ntype":"inter"},{"id":57,"lat":22.3072,"lon":73.1562,"ward_id":-1,"ntype":"inter"},{"id":58,"lat":22.29129,"lon":73.16352,"ward_id":-1,"ntype":"inter"},{"id":59,"lat":22.2847,"lon":73.1812,"ward_id":-1,"ntype":"inter"},{"id":60,"lat":22.29129,"lon":73.19888,"ward_id":-1,"ntype":"inter"}],"edges":[{"u":32,"v":33,"road_type":"arterial","length_m":1569.3,"pre_depth":0.022,"post_depth":0.029,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":33,"v":34,"road_type":"arterial","length_m":1563.0,"pre_depth":0.003,"post_depth":0.134,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":34,"v":35,"road_type":"arterial","length_m":1566.4,"pre_depth":0.033,"post_depth":0,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":35,"v":36,"road_type":"arterial","length_m":1578.6,"pre_depth":0.025,"post_depth":0.064,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":36,"v":37,"road_type":"arterial","length_m":1594.7,"pre_depth":0.03,"post_depth":0,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":37,"v":38,"road_type":"arterial","length_m":1608.0,"pre_depth":0.014,"post_depth":0.089,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":38,"v":39,"road_type":"arterial","length_m":1615.5,"pre_depth":0.039,"post_depth":0.127,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":39,"v":40,"road_type":"arterial","length_m":1611.3,"pre_depth":0.036,"post_depth":0.013,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":40,"v":41,"road_type":"arterial","length_m":1599.7,"pre_depth":0.031,"post_depth":0.016,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":41,"v":42,"road_type":"arterial","length_m":1583.2,"pre_depth":0.008,"post_depth":0.082,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":42,"v":43,"road_type":"arterial","length_m":1569.3,"pre_depth":0.019,"post_depth":0.045,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":43,"v":44,"road_type":"arterial","length_m":1563.0,"pre_depth":0.002,"post_depth":0.088,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":44,"v":45,"road_type":"arterial","length_m":1566.4,"pre_depth":0.006,"post_depth":0.063,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":45,"v":46,"road_type":"arterial","length_m":1578.6,"pre_depth":0.027,"post_depth":0.076,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":46,"v":47,"road_type":"arterial","length_m":1594.7,"pre_depth":0.03,"post_depth":0.056,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":47,"v":48,"road_type":"arterial","length_m":1608.0,"pre_depth":0.039,"post_depth":0.058,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":48,"v":49,"road_type":"arterial","length_m":1615.5,"pre_depth":0.013,"post_depth":0.006,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":49,"v":50,"road_type":"arterial","length_m":1611.3,"pre_depth":0.015,"post_depth":0.114,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":50,"v":51,"road_type":"arterial","length_m":1599.7,"pre_depth":0.019,"post_depth":0,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":51,"v":32,"road_type":"arterial","length_m":1583.2,"pre_depth":0.008,"post_depth":0.072,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":52,"v":53,"road_type":"arterial","length_m":2580.7,"pre_depth":0.005,"post_depth":0.082,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":53,"v":32,"road_type":"primary","length_m":3131.5,"pre_depth":0.019,"post_depth":0.147,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":52,"v":54,"road_type":"arterial","length_m":2539.6,"pre_depth":0.009,"post_depth":0.062,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":54,"v":34,"road_type":"primary","length_m":3534.8,"pre_depth":0.027,"post_depth":0.129,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":52,"v":55,"road_type":"arterial","length_m":2497.5,"pre_depth":0.017,"post_depth":0.041,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":55,"v":37,"road_type":"primary","length_m":3162.7,"pre_depth":0.033,"post_depth":0.162,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":52,"v":56,"road_type":"arterial","length_m":2539.6,"pre_depth":0.028,"post_depth":0.059,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":56,"v":39,"road_type":"primary","length_m":3449.6,"pre_depth":0.012,"post_depth":0.059,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":52,"v":57,"road_type":"arterial","length_m":2580.8,"pre_depth":0.033,"post_depth":0.108,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":57,"v":42,"road_type":"primary","length_m":3131.5,"pre_depth":0.032,"post_depth":0.165,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":52,"v":58,"road_type":"arterial","length_m":2539.6,"pre_depth":0.015,"post_depth":0.048,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":58,"v":44,"road_type":"primary","length_m":3534.8,"pre_depth":0.012,"post_depth":0.141,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":52,"v":59,"road_type":"arterial","length_m":2497.5,"pre_depth":0.027,"post_depth":0.104,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":59,"v":47,"road_type":"primary","length_m":3162.7,"pre_depth":0.006,"post_depth":0.017,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":52,"v":60,"road_type":"arterial","length_m":2539.6,"pre_depth":0.008,"post_depth":0.029,"flooded":0,"passable":1,"flood_threshold":0.5},{"u":60,"v":49,"road_type":"primary","length_m":3449.6,"pre_depth":0.0,"post_depth":0.082,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":0,"v":46,"road_type":"primary","length_m":1122.4,"pre_depth":0.031,"post_depth":0.128,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":0,"v":45,"road_type":"primary","length_m":1684.4,"pre_depth":0.027,"post_depth":0.205,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":0,"v":1,"road_type":"tertiary","length_m":1591.4,"pre_depth":0.028,"post_depth":0.409,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":0,"v":21,"road_type":"tertiary","length_m":1627.0,"pre_depth":0.023,"post_depth":0.436,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":0,"v":22,"road_type":"tertiary","length_m":1498.5,"pre_depth":0.006,"post_depth":0.51,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":0,"v":27,"road_type":"tertiary","length_m":1436.5,"pre_depth":0.005,"post_depth":0.132,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":46,"road_type":"secondary","length_m":2703.9,"pre_depth":0.023,"post_depth":0.277,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":1,"v":45,"road_type":"secondary","length_m":2906.7,"pre_depth":0.031,"post_depth":0.115,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":1,"v":2,"road_type":"tertiary","length_m":1431.9,"pre_depth":0.025,"post_depth":0.155,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":12,"road_type":"tertiary","length_m":2008.6,"pre_depth":0.022,"post_depth":0.238,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":13,"road_type":"tertiary","length_m":1673.0,"pre_depth":0.012,"post_depth":0.172,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":15,"road_type":"tertiary","length_m":2516.6,"pre_depth":0.017,"post_depth":0.121,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":21,"road_type":"tertiary","length_m":1530.2,"pre_depth":0.034,"post_depth":0.14,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":22,"road_type":"tertiary","length_m":1335.7,"pre_depth":0.009,"post_depth":0.544,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":1,"v":24,"road_type":"tertiary","length_m":3058.2,"pre_depth":0.011,"post_depth":0.23,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":27,"road_type":"tertiary","length_m":2008.6,"pre_depth":0.012,"post_depth":0.514,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":1,"v":28,"road_type":"tertiary","length_m":1663.6,"pre_depth":0.026,"post_depth":0.292,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":1,"v":29,"road_type":"secondary","length_m":1045.9,"pre_depth":0.022,"post_depth":0.092,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":2,"v":47,"road_type":"secondary","length_m":3915.3,"pre_depth":0.031,"post_depth":0.038,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":2,"v":48,"road_type":"secondary","length_m":3927.0,"pre_depth":0.027,"post_depth":0.112,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":2,"v":12,"road_type":"tertiary","length_m":2154.8,"pre_depth":0.001,"post_depth":0.083,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":2,"v":13,"road_type":"secondary","length_m":499.5,"pre_depth":0.004,"post_depth":0.148,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":2,"v":18,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.006,"post_depth":0.144,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":2,"v":20,"road_type":"secondary","length_m":1146.8,"pre_depth":0.02,"post_depth":0.255,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":2,"v":24,"road_type":"tertiary","length_m":1627.0,"pre_depth":0.018,"post_depth":0.084,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":2,"v":29,"road_type":"secondary","length_m":1146.8,"pre_depth":0.014,"post_depth":0.162,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":3,"v":34,"road_type":"secondary","length_m":3622.9,"pre_depth":0.004,"post_depth":0.122,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":3,"v":33,"road_type":"secondary","length_m":3651.5,"pre_depth":0.005,"post_depth":0.007,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":3,"v":11,"road_type":"secondary","length_m":1146.8,"pre_depth":0.028,"post_depth":0.036,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":3,"v":13,"road_type":"tertiary","length_m":2124.2,"pre_depth":0.011,"post_depth":0.057,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":3,"v":14,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.039,"post_depth":0.151,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":3,"v":18,"road_type":"secondary","length_m":1146.8,"pre_depth":0.029,"post_depth":0.122,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":3,"v":20,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.011,"post_depth":0.429,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":3,"v":24,"road_type":"secondary","length_m":718.3,"pre_depth":0.004,"post_depth":0.267,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":3,"v":25,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.036,"post_depth":0.208,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":4,"v":37,"road_type":"primary","length_m":1899.6,"pre_depth":0.012,"post_depth":0.106,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":4,"v":36,"road_type":"primary","length_m":1962.5,"pre_depth":0.023,"post_depth":0.055,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":4,"v":7,"road_type":"tertiary","length_m":2154.8,"pre_depth":0.034,"post_depth":0.185,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":4,"v":10,"road_type":"tertiary","length_m":1584.9,"pre_depth":0.029,"post_depth":0.359,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":4,"v":14,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.025,"post_depth":0.028,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":4,"v":17,"road_type":"secondary","length_m":1032.3,"pre_depth":0.023,"post_depth":0.054,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":4,"v":24,"road_type":"tertiary","length_m":3169.8,"pre_depth":0.017,"post_depth":0.12,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":4,"v":25,"road_type":"secondary","length_m":1124.5,"pre_depth":0.002,"post_depth":0.187,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":5,"v":40,"road_type":"primary","length_m":1895.4,"pre_depth":0.013,"post_depth":0.106,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":5,"v":39,"road_type":"primary","length_m":2030.8,"pre_depth":0.006,"post_depth":0.121,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":5,"v":9,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.004,"post_depth":0.551,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":5,"v":14,"road_type":"tertiary","length_m":2154.8,"pre_depth":0.007,"post_depth":0.629,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":5,"v":15,"road_type":"tertiary","length_m":2063.6,"pre_depth":0.037,"post_depth":0.367,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":5,"v":16,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.023,"post_depth":0.299,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":5,"v":17,"road_type":"tertiary","length_m":2124.2,"pre_depth":0.014,"post_depth":0.256,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":5,"v":23,"road_type":"secondary","length_m":718.3,"pre_depth":0.001,"post_depth":0.182,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":6,"v":49,"road_type":"primary","length_m":1470.9,"pre_depth":0.019,"post_depth":0.127,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":6,"v":50,"road_type":"primary","length_m":1909.3,"pre_depth":0.031,"post_depth":0.389,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":6,"v":8,"road_type":"secondary","length_m":1146.8,"pre_depth":0.003,"post_depth":0.42,"flooded":1,"passable":0,"flood_threshold":0.35},{"u":6,"v":20,"road_type":"tertiary","length_m":1998.0,"pre_depth":0.038,"post_depth":0.411,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":6,"v":21,"road_type":"tertiary","length_m":2124.2,"pre_depth":0.023,"post_depth":0.467,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":6,"v":26,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.011,"post_depth":0.306,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":6,"v":31,"road_type":"tertiary","length_m":1436.5,"pre_depth":0.021,"post_depth":0.499,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":7,"v":35,"road_type":"primary","length_m":1510.3,"pre_depth":0.018,"post_depth":0.129,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":7,"v":34,"road_type":"primary","length_m":1593.7,"pre_depth":0.001,"post_depth":0.154,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":7,"v":11,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.036,"post_depth":0.099,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":7,"v":14,"road_type":"tertiary","length_m":3136.9,"pre_depth":0.022,"post_depth":0.178,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":7,"v":17,"road_type":"tertiary","length_m":2984.3,"pre_depth":0.027,"post_depth":0.191,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":7,"v":25,"road_type":"secondary","length_m":1146.8,"pre_depth":0.031,"post_depth":0.28,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":8,"v":50,"road_type":"primary","length_m":790.9,"pre_depth":0.004,"post_depth":0.079,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":8,"v":49,"road_type":"primary","length_m":1400.2,"pre_depth":0.037,"post_depth":0.079,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":8,"v":20,"road_type":"tertiary","length_m":2702.4,"pre_depth":0.022,"post_depth":0.247,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":8,"v":26,"road_type":"tertiary","length_m":1584.9,"pre_depth":0.015,"post_depth":0.209,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":8,"v":31,"road_type":"tertiary","length_m":2124.2,"pre_depth":0.033,"post_depth":0.368,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":9,"v":39,"road_type":"primary","length_m":717.0,"pre_depth":0.032,"post_depth":0.289,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":9,"v":38,"road_type":"primary","length_m":1142.5,"pre_depth":0.013,"post_depth":0.23,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":9,"v":23,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.01,"post_depth":0.184,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":9,"v":30,"road_type":"secondary","length_m":1146.8,"pre_depth":0.037,"post_depth":0.195,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":10,"v":37,"road_type":"primary","length_m":329.7,"pre_depth":0.007,"post_depth":0.178,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":10,"v":36,"road_type":"primary","length_m":1415.3,"pre_depth":0.002,"post_depth":0.233,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":10,"v":17,"road_type":"tertiary","length_m":2154.8,"pre_depth":0.017,"post_depth":0.371,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":10,"v":30,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.036,"post_depth":0.276,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":11,"v":33,"road_type":"secondary","length_m":2526.5,"pre_depth":0.03,"post_depth":0.076,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":11,"v":34,"road_type":"secondary","length_m":2749.6,"pre_depth":0.036,"post_depth":0.252,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":11,"v":19,"road_type":"tertiary","length_m":1584.9,"pre_depth":0.031,"post_depth":0.19,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":11,"v":24,"road_type":"tertiary","length_m":1548.5,"pre_depth":0.015,"post_depth":0.157,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":11,"v":25,"road_type":"tertiary","length_m":1998.0,"pre_depth":0.004,"post_depth":0.241,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":11,"v":26,"road_type":"tertiary","length_m":2063.6,"pre_depth":0.03,"post_depth":0.091,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":12,"v":43,"road_type":"secondary","length_m":3032.7,"pre_depth":0.01,"post_depth":0.194,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":12,"v":42,"road_type":"secondary","length_m":3126.9,"pre_depth":0.037,"post_depth":0.175,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":12,"v":13,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.01,"post_depth":0.49,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":12,"v":14,"road_type":"tertiary","length_m":2767.4,"pre_depth":0.033,"post_depth":0.188,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":12,"v":15,"road_type":"secondary","length_m":718.3,"pre_depth":0.006,"post_depth":0.174,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":12,"v":16,"road_type":"tertiary","length_m":1584.9,"pre_depth":0.007,"post_depth":0.4,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":12,"v":22,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.035,"post_depth":0.207,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":12,"v":28,"road_type":"secondary","length_m":718.3,"pre_depth":0.012,"post_depth":0.526,"flooded":1,"passable":0,"flood_threshold":0.35},{"u":12,"v":29,"road_type":"secondary","length_m":1124.5,"pre_depth":0.031,"post_depth":0.082,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":13,"v":47,"road_type":"secondary","length_m":4347.7,"pre_depth":0.039,"post_depth":0.16,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":13,"v":46,"road_type":"secondary","length_m":4370.7,"pre_depth":0.02,"post_depth":0.088,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":13,"v":14,"road_type":"tertiary","length_m":2248.9,"pre_depth":0.001,"post_depth":0.244,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":13,"v":15,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.009,"post_depth":0.153,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":13,"v":18,"road_type":"tertiary","length_m":1436.5,"pre_depth":0.005,"post_depth":0.056,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":13,"v":20,"road_type":"tertiary","length_m":1436.5,"pre_depth":0.027,"post_depth":0.139,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":13,"v":21,"road_type":"tertiary","length_m":2702.4,"pre_depth":0.02,"post_depth":0.184,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":13,"v":24,"road_type":"tertiary","length_m":1548.5,"pre_depth":0.023,"post_depth":0.186,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":13,"v":28,"road_type":"tertiary","length_m":2124.2,"pre_depth":0.008,"post_depth":0.252,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":13,"v":29,"road_type":"secondary","length_m":1032.3,"pre_depth":0.032,"post_depth":0.287,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":14,"v":38,"road_type":"secondary","length_m":3433.3,"pre_depth":0.029,"post_depth":0.052,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":14,"v":37,"road_type":"secondary","length_m":3500.8,"pre_depth":0.03,"post_depth":0.169,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":14,"v":15,"road_type":"tertiary","length_m":2124.2,"pre_depth":0.005,"post_depth":0.157,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":14,"v":16,"road_type":"tertiary","length_m":3136.9,"pre_depth":0.037,"post_depth":0.276,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":14,"v":17,"road_type":"secondary","length_m":1124.5,"pre_depth":0.016,"post_depth":0.137,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":14,"v":18,"road_type":"secondary","length_m":999.0,"pre_depth":0.012,"post_depth":0.078,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":14,"v":24,"road_type":"tertiary","length_m":2063.6,"pre_depth":0.038,"post_depth":0.119,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":14,"v":25,"road_type":"tertiary","length_m":2064.6,"pre_depth":0.011,"post_depth":0.195,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":15,"v":42,"road_type":"secondary","length_m":3283.3,"pre_depth":0.001,"post_depth":0.268,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":15,"v":41,"road_type":"secondary","length_m":3315.3,"pre_depth":0.022,"post_depth":0.203,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":15,"v":16,"road_type":"tertiary","length_m":1436.5,"pre_depth":0.025,"post_depth":0.157,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":15,"v":17,"road_type":"tertiary","length_m":2984.3,"pre_depth":0.006,"post_depth":0.296,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":15,"v":18,"road_type":"tertiary","length_m":2124.2,"pre_depth":0.017,"post_depth":0.196,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":15,"v":28,"road_type":"tertiary","length_m":1436.5,"pre_depth":0.032,"post_depth":0.393,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":15,"v":29,"road_type":"tertiary","length_m":1498.5,"pre_depth":0.019,"post_depth":0.055,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":16,"v":41,"road_type":"primary","length_m":1923.5,"pre_depth":0.031,"post_depth":0.258,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":16,"v":42,"road_type":"primary","length_m":1954.0,"pre_depth":0.001,"post_depth":0.203,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":16,"v":22,"road_type":"tertiary","length_m":3041.1,"pre_depth":0.033,"post_depth":0.303,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":16,"v":23,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.032,"post_depth":0.368,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":16,"v":28,"road_type":"tertiary","length_m":1998.0,"pre_depth":0.009,"post_depth":0.532,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":17,"v":38,"road_type":"primary","length_m":2389.1,"pre_depth":0.024,"post_depth":0.168,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":17,"v":37,"road_type":"primary","length_m":2395.8,"pre_depth":0.035,"post_depth":0.204,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":17,"v":18,"road_type":"tertiary","length_m":2063.6,"pre_depth":0.024,"post_depth":0.258,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":17,"v":25,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.017,"post_depth":0.193,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":18,"v":37,"road_type":"secondary","length_m":4347.7,"pre_depth":0.035,"post_depth":0.147,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":18,"v":36,"road_type":"secondary","length_m":4370.7,"pre_depth":0.018,"post_depth":0.122,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":18,"v":20,"road_type":"tertiary","length_m":1998.0,"pre_depth":0.01,"post_depth":0.418,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":18,"v":24,"road_type":"secondary","length_m":1124.5,"pre_depth":0.009,"post_depth":0.178,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":18,"v":29,"road_type":"tertiary","length_m":2293.6,"pre_depth":0.003,"post_depth":0.37,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":19,"v":32,"road_type":"primary","length_m":1461.0,"pre_depth":0.024,"post_depth":0.194,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":19,"v":51,"road_type":"primary","length_m":1750.7,"pre_depth":0.006,"post_depth":0.176,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":19,"v":26,"road_type":"secondary","length_m":1146.8,"pre_depth":0.006,"post_depth":0.268,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":20,"v":50,"road_type":"secondary","length_m":3449.6,"pre_depth":0.037,"post_depth":0.281,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":20,"v":49,"road_type":"secondary","length_m":3468.8,"pre_depth":0.007,"post_depth":0.107,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":20,"v":24,"road_type":"secondary","length_m":1124.5,"pre_depth":0.006,"post_depth":0.135,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":20,"v":26,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.005,"post_depth":0.34,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":20,"v":29,"road_type":"tertiary","length_m":2293.6,"pre_depth":0.002,"post_depth":0.289,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":21,"v":47,"road_type":"primary","length_m":1682.6,"pre_depth":0.002,"post_depth":0.319,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":21,"v":48,"road_type":"primary","length_m":1948.0,"pre_depth":0.024,"post_depth":0.119,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":21,"v":27,"road_type":"secondary","length_m":718.3,"pre_depth":0.016,"post_depth":0.504,"flooded":1,"passable":0,"flood_threshold":0.35},{"u":21,"v":31,"road_type":"tertiary","length_m":1819.7,"pre_depth":0.035,"post_depth":0.269,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":22,"v":45,"road_type":"primary","length_m":1919.8,"pre_depth":0.034,"post_depth":0.33,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":22,"v":44,"road_type":"primary","length_m":2091.9,"pre_depth":0.002,"post_depth":0.363,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":22,"v":28,"road_type":"secondary","length_m":1124.5,"pre_depth":0.009,"post_depth":0.273,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":22,"v":29,"road_type":"tertiary","length_m":1627.0,"pre_depth":0.01,"post_depth":0.532,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":23,"v":40,"road_type":"primary","length_m":1200.7,"pre_depth":0.023,"post_depth":0.147,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":23,"v":39,"road_type":"primary","length_m":1783.3,"pre_depth":0.017,"post_depth":0.125,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":23,"v":30,"road_type":"tertiary","length_m":2984.3,"pre_depth":0.015,"post_depth":0.413,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":24,"v":32,"road_type":"secondary","length_m":3976.0,"pre_depth":0.021,"post_depth":0.187,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":24,"v":51,"road_type":"secondary","length_m":4022.9,"pre_depth":0.004,"post_depth":0.1,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":24,"v":26,"road_type":"tertiary","length_m":2248.9,"pre_depth":0.037,"post_depth":0.379,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":24,"v":29,"road_type":"tertiary","length_m":2580.7,"pre_depth":0.034,"post_depth":0.286,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":25,"v":35,"road_type":"primary","length_m":2200.3,"pre_depth":0.036,"post_depth":0.172,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":25,"v":36,"road_type":"primary","length_m":2230.5,"pre_depth":0.039,"post_depth":0.17,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":26,"v":51,"road_type":"primary","length_m":1845.3,"pre_depth":0.032,"post_depth":0.08,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":26,"v":50,"road_type":"primary","length_m":2066.0,"pre_depth":0.031,"post_depth":0.148,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":27,"v":47,"road_type":"primary","length_m":976.7,"pre_depth":0.026,"post_depth":0.15,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":27,"v":48,"road_type":"primary","length_m":1706.9,"pre_depth":0.031,"post_depth":0.244,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":27,"v":29,"road_type":"tertiary","length_m":3041.1,"pre_depth":0.021,"post_depth":0.296,"flooded":0,"passable":1,"flood_threshold":0.3},{"u":27,"v":31,"road_type":"tertiary","length_m":1842.7,"pre_depth":0.021,"post_depth":0.308,"flooded":1,"passable":0,"flood_threshold":0.3},{"u":28,"v":44,"road_type":"secondary","length_m":2605.6,"pre_depth":0.034,"post_depth":0.298,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":28,"v":43,"road_type":"secondary","length_m":2678.0,"pre_depth":0.019,"post_depth":0.445,"flooded":1,"passable":0,"flood_threshold":0.35},{"u":28,"v":29,"road_type":"secondary","length_m":1146.8,"pre_depth":0.015,"post_depth":0.222,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":29,"v":45,"road_type":"secondary","length_m":3518.1,"pre_depth":0.026,"post_depth":0.119,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":29,"v":44,"road_type":"secondary","length_m":3585.2,"pre_depth":0.011,"post_depth":0.119,"flooded":0,"passable":1,"flood_threshold":0.35},{"u":30,"v":38,"road_type":"primary","length_m":116.4,"pre_depth":0.006,"post_depth":0.024,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":30,"v":39,"road_type":"primary","length_m":1572.4,"pre_depth":0.019,"post_depth":0.09,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":31,"v":48,"road_type":"primary","length_m":680.7,"pre_depth":0.017,"post_depth":0.124,"flooded":0,"passable":1,"flood_threshold":0.45},{"u":31,"v":49,"road_type":"primary","length_m":1156.6,"pre_depth":0.009,"post_depth":0.262,"flooded":0,"passable":1,"flood_threshold":0.45}],"wards":[{"id":0,"name":"Wadi","lat":22.2847,"lon":73.1512,"density":0.85,"flood_risk":0.72,"uoi":54.4,"pop":32784,"flooded_pct":50.0,"mean_depth":0.303,"accessibility_loss":52.6,"nid":0},{"id":1,"name":"Fatehgunj","lat":22.2937,"lon":73.1632,"density":0.7,"flood_risk":0.45,"uoi":54.2,"pop":46170,"flooded_pct":23.1,"mean_depth":0.254,"accessibility_loss":19.4,"nid":1},{"id":2,"name":"Sayajigunj","lat":22.2982,"lon":73.1762,"density":0.9,"flood_risk":0.3,"uoi":76.5,"pop":55063,"flooded_pct":0.0,"mean_depth":0.131,"accessibility_loss":0.0,"nid":2},{"id":3,"name":"Alkapuri","lat":22.3072,"lon":73.1962,"density":0.95,"flood_risk":0.2,"uoi":85.5,"pop":49927,"flooded_pct":11.1,"mean_depth":0.155,"accessibility_loss":10.2,"nid":3},{"id":4,"name":"Gotri","lat":22.3297,"lon":73.2012,"density":0.75,"flood_risk":0.25,"uoi":65.6,"pop":39240,"flooded_pct":12.5,"mean_depth":0.137,"accessibility_loss":10.7,"nid":4},{"id":5,"name":"Harni","lat":22.3342,"lon":73.1712,"density":0.6,"flood_risk":0.8,"uoi":36.0,"pop":41605,"flooded_pct":37.5,"mean_depth":0.314,"accessibility_loss":41.2,"nid":5},{"id":6,"name":"Manjalpur","lat":22.2757,"lon":73.1862,"density":0.65,"flood_risk":0.65,"uoi":43.9,"pop":24984,"flooded_pct":71.4,"mean_depth":0.374,"accessibility_loss":71.7,"nid":6},{"id":7,"name":"Waghodia Rd","lat":22.3162,"lon":73.2162,"density":0.55,"flood_risk":0.4,"uoi":44.0,"pop":34591,"flooded_pct":0.0,"mean_depth":0.174,"accessibility_loss":0.0,"nid":7},{"id":8,"name":"Makarpura","lat":22.2712,"lon":73.1962,"density":0.5,"flood_risk":0.35,"uoi":41.2,"pop":21529,"flooded_pct":33.3,"mean_depth":0.234,"accessibility_loss":33.6,"nid":8},{"id":9,"name":"Chhani","lat":22.3477,"lon":73.1812,"density":0.6,"flood_risk":0.55,"uoi":43.5,"pop":23260,"flooded_pct":20.0,"mean_depth":0.29,"accessibility_loss":27.3,"nid":9},{"id":10,"name":"Kalali","lat":22.3432,"lon":73.2062,"density":0.55,"flood_risk":0.48,"uoi":41.8,"pop":30832,"flooded_pct":40.0,"mean_depth":0.283,"accessibility_loss":51.0,"nid":10},{"id":11,"name":"Old Padra Rd","lat":22.3027,"lon":73.2062,"density":0.7,"flood_risk":0.32,"uoi":58.8,"pop":51816,"flooded_pct":0.0,"mean_depth":0.143,"accessibility_loss":0.0,"nid":11},{"id":12,"name":"Ajwa Road","lat":22.3117,"lon":73.1612,"density":0.65,"flood_risk":0.5,"uoi":48.8,"pop":41879,"flooded_pct":27.3,"mean_depth":0.251,"accessibility_loss":19.8,"nid":12},{"id":13,"name":"Race Course","lat":22.3027,"lon":73.1762,"density":0.88,"flood_risk":0.22,"uoi":78.3,"pop":57591,"flooded_pct":7.1,"mean_depth":0.187,"accessibility_loss":6.3,"nid":13},{"id":14,"name":"Diwalipura","lat":22.3207,"lon":73.1862,"density":0.8,"flood_risk":0.28,"uoi":68.8,"pop":50959,"flooded_pct":7.1,"mean_depth":0.186,"accessibility_loss":6.6,"nid":14},{"id":15,"name":"Karelibaug","lat":22.3162,"lon":73.1662,"density":0.75,"flood_risk":0.42,"uoi":59.2,"pop":49831,"flooded_pct":16.7,"mean_depth":0.212,"accessibility_loss":13.8,"nid":15},{"id":16,"name":"Sama","lat":22.3252,"lon":73.1562,"density":0.65,"flood_risk":0.6,"uoi":45.5,"pop":36093,"flooded_pct":44.4,"mean_depth":0.311,"accessibility_loss":45.1,"nid":16},{"id":17,"name":"Jetalpur","lat":22.3297,"lon":73.1912,"density":0.68,"flood_risk":0.35,"uoi":56.1,"pop":27284,"flooded_pct":10.0,"mean_depth":0.213,"accessibility_loss":10.2,"nid":17},{"id":18,"name":"Baroda Society","lat":22.3117,"lon":73.1862,"density":0.85,"flood_risk":0.25,"uoi":74.4,"pop":58300,"flooded_pct":18.2,"mean_depth":0.19,"accessibility_loss":18.1,"nid":18},{"id":19,"name":"Tandalja","lat":22.2892,"lon":73.2112,"density":0.58,"flood_risk":0.4,"uoi":46.4,"pop":30748,"flooded_pct":0.0,"mean_depth":0.207,"accessibility_loss":0.0,"nid":19},{"id":20,"name":"Pratapnagar","lat":22.2937,"lon":73.1862,"density":0.72,"flood_risk":0.55,"uoi":52.2,"pop":39610,"flooded_pct":36.4,"mean_depth":0.277,"accessibility_loss":32.9,"nid":20},{"id":21,"name":"Babajipura","lat":22.2802,"lon":73.1662,"density":0.6,"flood_risk":0.7,"uoi":39.0,"pop":29898,"flooded_pct":37.5,"mean_depth":0.305,"accessibility_loss":31.6,"nid":21},{"id":22,"name":"Danteshwar","lat":22.2982,"lon":73.1512,"density":0.55,"flood_risk":0.75,"uoi":34.4,"pop":23265,"flooded_pct":50.0,"mean_depth":0.383,"accessibility_loss":51.9,"nid":22},{"id":23,"name":"Nizampura","lat":22.3387,"lon":73.1662,"density":0.7,"flood_risk":0.58,"uoi":49.7,"pop":50449,"flooded_pct":33.3,"mean_depth":0.237,"accessibility_loss":46.4,"nid":23},{"id":24,"name":"Akota","lat":22.3027,"lon":73.1912,"density":0.82,"flood_risk":0.28,"uoi":70.5,"pop":54334,"flooded_pct":7.7,"mean_depth":0.187,"accessibility_loss":7.8,"nid":24},{"id":25,"name":"Subhanpura","lat":22.3207,"lon":73.2062,"density":0.72,"flood_risk":0.32,"uoi":60.5,"pop":43742,"flooded_pct":0.0,"mean_depth":0.206,"accessibility_loss":0.0,"nid":25},{"id":26,"name":"Vasna","lat":22.2847,"lon":73.2012,"density":0.62,"flood_risk":0.48,"uoi":47.1,"pop":31679,"flooded_pct":37.5,"mean_depth":0.228,"accessibility_loss":40.5,"nid":26},{"id":27,"name":"Gorwa","lat":22.2757,"lon":73.1612,"density":0.55,"flood_risk":0.68,"uoi":36.3,"pop":37350,"flooded_pct":42.9,"mean_depth":0.307,"accessibility_loss":39.0,"nid":27},{"id":28,"name":"Panigate","lat":22.3072,"lon":73.1562,"density":0.65,"flood_risk":0.62,"uoi":44.8,"pop":36931,"flooded_pct":44.4,"mean_depth":0.359,"accessibility_loss":44.1,"nid":28},{"id":29,"name":"Raopura","lat":22.3027,"lon":73.1662,"density":0.78,"flood_risk":0.5,"uoi":58.5,"pop":41134,"flooded_pct":15.4,"mean_depth":0.224,"accessibility_loss":15.1,"nid":29},{"id":30,"name":"Vadsar","lat":22.3522,"lon":73.1912,"density":0.48,"flood_risk":0.45,"uoi":37.2,"pop":25448,"flooded_pct":20.0,"mean_depth":0.2,"accessibility_loss":38.9,"nid":30},{"id":31,"name":"Tarsali","lat":22.2667,"lon":73.1762,"density":0.52,"flood_risk":0.72,"uoi":33.3,"pop":22926,"flooded_pct":50.0,"mean_depth":0.305,"accessibility_loss":59.6,"nid":31}],"timeline":[{"step":0,"intensity":0.0,"label":"0h \u2014 Dry","edges":[{"u":32,"v":33,"depth":0.022,"flooded":0},{"u":33,"v":34,"depth":0.003,"flooded":0},{"u":34,"v":35,"depth":0.033,"flooded":0},{"u":35,"v":36,"depth":0.025,"flooded":0},{"u":36,"v":37,"depth":0.03,"flooded":0},{"u":37,"v":38,"depth":0.014,"flooded":0},{"u":38,"v":39,"depth":0.039,"flooded":0},{"u":39,"v":40,"depth":0.036,"flooded":0},{"u":40,"v":41,"depth":0.031,"flooded":0},{"u":41,"v":42,"depth":0.008,"flooded":0},{"u":42,"v":43,"depth":0.019,"flooded":0},{"u":43,"v":44,"depth":0.002,"flooded":0},{"u":44,"v":45,"depth":0.006,"flooded":0},{"u":45,"v":46,"depth":0.027,"flooded":0},{"u":46,"v":47,"depth":0.03,"flooded":0},{"u":47,"v":48,"depth":0.039,"flooded":0},{"u":48,"v":49,"depth":0.013,"flooded":0},{"u":49,"v":50,"depth":0.015,"flooded":0},{"u":50,"v":51,"depth":0.019,"flooded":0},{"u":51,"v":32,"depth":0.008,"flooded":0},{"u":52,"v":53,"depth":0.005,"flooded":0},{"u":53,"v":32,"depth":0.019,"flooded":0},{"u":52,"v":54,"depth":0.009,"flooded":0},{"u":54,"v":34,"depth":0.027,"flooded":0},{"u":52,"v":55,"depth":0.017,"flooded":0},{"u":55,"v":37,"depth":0.033,"flooded":0},{"u":52,"v":56,"depth":0.028,"flooded":0},{"u":56,"v":39,"depth":0.012,"flooded":0},{"u":52,"v":57,"depth":0.033,"flooded":0},{"u":57,"v":42,"depth":0.032,"flooded":0},{"u":52,"v":58,"depth":0.015,"flooded":0},{"u":58,"v":44,"depth":0.012,"flooded":0},{"u":52,"v":59,"depth":0.027,"flooded":0},{"u":59,"v":47,"depth":0.006,"flooded":0},{"u":52,"v":60,"depth":0.008,"flooded":0},{"u":60,"v":49,"depth":0.0,"flooded":0},{"u":0,"v":46,"depth":0.031,"flooded":0},{"u":0,"v":45,"depth":0.027,"flooded":0},{"u":0,"v":1,"depth":0.028,"flooded":0},{"u":0,"v":21,"depth":0.023,"flooded":0},{"u":0,"v":22,"depth":0.006,"flooded":0},{"u":0,"v":27,"depth":0.005,"flooded":0},{"u":1,"v":46,"depth":0.023,"flooded":0},{"u":1,"v":45,"depth":0.031,"flooded":0},{"u":1,"v":2,"depth":0.025,"flooded":0},{"u":1,"v":12,"depth":0.022,"flooded":0},{"u":1,"v":13,"depth":0.012,"flooded":0},{"u":1,"v":15,"depth":0.017,"flooded":0},{"u":1,"v":21,"depth":0.034,"flooded":0},{"u":1,"v":22,"depth":0.009,"flooded":0},{"u":1,"v":24,"depth":0.011,"flooded":0},{"u":1,"v":27,"depth":0.012,"flooded":0},{"u":1,"v":28,"depth":0.026,"flooded":0},{"u":1,"v":29,"depth":0.022,"flooded":0},{"u":2,"v":47,"depth":0.031,"flooded":0},{"u":2,"v":48,"depth":0.027,"flooded":0},{"u":2,"v":12,"depth":0.001,"flooded":0},{"u":2,"v":13,"depth":0.004,"flooded":0},{"u":2,"v":18,"depth":0.006,"flooded":0},{"u":2,"v":20,"depth":0.02,"flooded":0},{"u":2,"v":24,"depth":0.018,"flooded":0},{"u":2,"v":29,"depth":0.014,"flooded":0},{"u":3,"v":34,"depth":0.004,"flooded":0},{"u":3,"v":33,"depth":0.005,"flooded":0},{"u":3,"v":11,"depth":0.028,"flooded":0},{"u":3,"v":13,"depth":0.011,"flooded":0},{"u":3,"v":14,"depth":0.039,"flooded":0},{"u":3,"v":18,"depth":0.029,"flooded":0},{"u":3,"v":20,"depth":0.011,"flooded":0},{"u":3,"v":24,"depth":0.004,"flooded":0},{"u":3,"v":25,"depth":0.036,"flooded":0},{"u":4,"v":37,"depth":0.012,"flooded":0},{"u":4,"v":36,"depth":0.023,"flooded":0},{"u":4,"v":7,"depth":0.034,"flooded":0},{"u":4,"v":10,"depth":0.029,"flooded":0},{"u":4,"v":14,"depth":0.025,"flooded":0},{"u":4,"v":17,"depth":0.023,"flooded":0},{"u":4,"v":24,"depth":0.017,"flooded":0},{"u":4,"v":25,"depth":0.002,"flooded":0},{"u":5,"v":40,"depth":0.013,"flooded":0},{"u":5,"v":39,"depth":0.006,"flooded":0},{"u":5,"v":9,"depth":0.004,"flooded":0},{"u":5,"v":14,"depth":0.007,"flooded":0},{"u":5,"v":15,"depth":0.037,"flooded":0},{"u":5,"v":16,"depth":0.023,"flooded":0},{"u":5,"v":17,"depth":0.014,"flooded":0},{"u":5,"v":23,"depth":0.001,"flooded":0},{"u":6,"v":49,"depth":0.019,"flooded":0},{"u":6,"v":50,"depth":0.031,"flooded":0},{"u":6,"v":8,"depth":0.003,"flooded":0},{"u":6,"v":20,"depth":0.038,"flooded":0},{"u":6,"v":21,"depth":0.023,"flooded":0},{"u":6,"v":26,"depth":0.011,"flooded":0},{"u":6,"v":31,"depth":0.021,"flooded":0},{"u":7,"v":35,"depth":0.018,"flooded":0},{"u":7,"v":34,"depth":0.001,"flooded":0},{"u":7,"v":11,"depth":0.036,"flooded":0},{"u":7,"v":14,"depth":0.022,"flooded":0},{"u":7,"v":17,"depth":0.027,"flooded":0},{"u":7,"v":25,"depth":0.031,"flooded":0},{"u":8,"v":50,"depth":0.004,"flooded":0},{"u":8,"v":49,"depth":0.037,"flooded":0},{"u":8,"v":20,"depth":0.022,"flooded":0},{"u":8,"v":26,"depth":0.015,"flooded":0},{"u":8,"v":31,"depth":0.033,"flooded":0},{"u":9,"v":39,"depth":0.032,"flooded":0},{"u":9,"v":38,"depth":0.013,"flooded":0},{"u":9,"v":23,"depth":0.01,"flooded":0},{"u":9,"v":30,"depth":0.037,"flooded":0},{"u":10,"v":37,"depth":0.007,"flooded":0},{"u":10,"v":36,"depth":0.002,"flooded":0},{"u":10,"v":17,"depth":0.017,"flooded":0},{"u":10,"v":30,"depth":0.036,"flooded":0},{"u":11,"v":33,"depth":0.03,"flooded":0},{"u":11,"v":34,"depth":0.036,"flooded":0},{"u":11,"v":19,"depth":0.031,"flooded":0},{"u":11,"v":24,"depth":0.015,"flooded":0},{"u":11,"v":25,"depth":0.004,"flooded":0},{"u":11,"v":26,"depth":0.03,"flooded":0},{"u":12,"v":43,"depth":0.01,"flooded":0},{"u":12,"v":42,"depth":0.037,"flooded":0},{"u":12,"v":13,"depth":0.01,"flooded":0},{"u":12,"v":14,"depth":0.033,"flooded":0},{"u":12,"v":15,"depth":0.006,"flooded":0},{"u":12,"v":16,"depth":0.007,"flooded":0},{"u":12,"v":22,"depth":0.035,"flooded":0},{"u":12,"v":28,"depth":0.012,"flooded":0},{"u":12,"v":29,"depth":0.031,"flooded":0},{"u":13,"v":47,"depth":0.039,"flooded":0},{"u":13,"v":46,"depth":0.02,"flooded":0},{"u":13,"v":14,"depth":0.001,"flooded":0},{"u":13,"v":15,"depth":0.009,"flooded":0},{"u":13,"v":18,"depth":0.005,"flooded":0},{"u":13,"v":20,"depth":0.027,"flooded":0},{"u":13,"v":21,"depth":0.02,"flooded":0},{"u":13,"v":24,"depth":0.023,"flooded":0},{"u":13,"v":28,"depth":0.008,"flooded":0},{"u":13,"v":29,"depth":0.032,"flooded":0},{"u":14,"v":38,"depth":0.029,"flooded":0},{"u":14,"v":37,"depth":0.03,"flooded":0},{"u":14,"v":15,"depth":0.005,"flooded":0},{"u":14,"v":16,"depth":0.037,"flooded":0},{"u":14,"v":17,"depth":0.016,"flooded":0},{"u":14,"v":18,"depth":0.012,"flooded":0},{"u":14,"v":24,"depth":0.038,"flooded":0},{"u":14,"v":25,"depth":0.011,"flooded":0},{"u":15,"v":42,"depth":0.001,"flooded":0},{"u":15,"v":41,"depth":0.022,"flooded":0},{"u":15,"v":16,"depth":0.025,"flooded":0},{"u":15,"v":17,"depth":0.006,"flooded":0},{"u":15,"v":18,"depth":0.017,"flooded":0},{"u":15,"v":28,"depth":0.032,"flooded":0},{"u":15,"v":29,"depth":0.019,"flooded":0},{"u":16,"v":41,"depth":0.031,"flooded":0},{"u":16,"v":42,"depth":0.001,"flooded":0},{"u":16,"v":22,"depth":0.033,"flooded":0},{"u":16,"v":23,"depth":0.032,"flooded":0},{"u":16,"v":28,"depth":0.009,"flooded":0},{"u":17,"v":38,"depth":0.024,"flooded":0},{"u":17,"v":37,"depth":0.035,"flooded":0},{"u":17,"v":18,"depth":0.024,"flooded":0},{"u":17,"v":25,"depth":0.017,"flooded":0},{"u":18,"v":37,"depth":0.035,"flooded":0},{"u":18,"v":36,"depth":0.018,"flooded":0},{"u":18,"v":20,"depth":0.01,"flooded":0},{"u":18,"v":24,"depth":0.009,"flooded":0},{"u":18,"v":29,"depth":0.003,"flooded":0},{"u":19,"v":32,"depth":0.024,"flooded":0},{"u":19,"v":51,"depth":0.006,"flooded":0},{"u":19,"v":26,"depth":0.006,"flooded":0},{"u":20,"v":50,"depth":0.037,"flooded":0},{"u":20,"v":49,"depth":0.007,"flooded":0},{"u":20,"v":24,"depth":0.006,"flooded":0},{"u":20,"v":26,"depth":0.005,"flooded":0},{"u":20,"v":29,"depth":0.002,"flooded":0},{"u":21,"v":47,"depth":0.002,"flooded":0},{"u":21,"v":48,"depth":0.024,"flooded":0},{"u":21,"v":27,"depth":0.016,"flooded":0},{"u":21,"v":31,"depth":0.035,"flooded":0},{"u":22,"v":45,"depth":0.034,"flooded":0},{"u":22,"v":44,"depth":0.002,"flooded":0},{"u":22,"v":28,"depth":0.009,"flooded":0},{"u":22,"v":29,"depth":0.01,"flooded":0},{"u":23,"v":40,"depth":0.023,"flooded":0},{"u":23,"v":39,"depth":0.017,"flooded":0},{"u":23,"v":30,"depth":0.015,"flooded":0},{"u":24,"v":32,"depth":0.021,"flooded":0},{"u":24,"v":51,"depth":0.004,"flooded":0},{"u":24,"v":26,"depth":0.037,"flooded":0},{"u":24,"v":29,"depth":0.034,"flooded":0},{"u":25,"v":35,"depth":0.036,"flooded":0},{"u":25,"v":36,"depth":0.039,"flooded":0},{"u":26,"v":51,"depth":0.032,"flooded":0},{"u":26,"v":50,"depth":0.031,"flooded":0},{"u":27,"v":47,"depth":0.026,"flooded":0},{"u":27,"v":48,"depth":0.031,"flooded":0},{"u":27,"v":29,"depth":0.021,"flooded":0},{"u":27,"v":31,"depth":0.021,"flooded":0},{"u":28,"v":44,"depth":0.034,"flooded":0},{"u":28,"v":43,"depth":0.019,"flooded":0},{"u":28,"v":29,"depth":0.015,"flooded":0},{"u":29,"v":45,"depth":0.026,"flooded":0},{"u":29,"v":44,"depth":0.011,"flooded":0},{"u":30,"v":38,"depth":0.006,"flooded":0},{"u":30,"v":39,"depth":0.019,"flooded":0},{"u":31,"v":48,"depth":0.017,"flooded":0},{"u":31,"v":49,"depth":0.009,"flooded":0}]},{"step":1,"intensity":0.2,"label":"0h 30m","edges":[{"u":32,"v":33,"depth":0.023,"flooded":0},{"u":33,"v":34,"depth":0.029,"flooded":0},{"u":34,"v":35,"depth":0.026,"flooded":0},{"u":35,"v":36,"depth":0.033,"flooded":0},{"u":36,"v":37,"depth":0.024,"flooded":0},{"u":37,"v":38,"depth":0.029,"flooded":0},{"u":38,"v":39,"depth":0.057,"flooded":0},{"u":39,"v":40,"depth":0.031,"flooded":0},{"u":40,"v":41,"depth":0.028,"flooded":0},{"u":41,"v":42,"depth":0.023,"flooded":0},{"u":42,"v":43,"depth":0.024,"flooded":0},{"u":43,"v":44,"depth":0.019,"flooded":0},{"u":44,"v":45,"depth":0.017,"flooded":0},{"u":45,"v":46,"depth":0.037,"flooded":0},{"u":46,"v":47,"depth":0.035,"flooded":0},{"u":47,"v":48,"depth":0.043,"flooded":0},{"u":48,"v":49,"depth":0.012,"flooded":0},{"u":49,"v":50,"depth":0.035,"flooded":0},{"u":50,"v":51,"depth":0.015,"flooded":0},{"u":51,"v":32,"depth":0.021,"flooded":0},{"u":52,"v":53,"depth":0.02,"flooded":0},{"u":53,"v":32,"depth":0.045,"flooded":0},{"u":52,"v":54,"depth":0.02,"flooded":0},{"u":54,"v":34,"depth":0.047,"flooded":0},{"u":52,"v":55,"depth":0.022,"flooded":0},{"u":55,"v":37,"depth":0.059,"flooded":0},{"u":52,"v":56,"depth":0.034,"flooded":0},{"u":56,"v":39,"depth":0.021,"flooded":0},{"u":52,"v":57,"depth":0.048,"flooded":0},{"u":57,"v":42,"depth":0.059,"flooded":0},{"u":52,"v":58,"depth":0.022,"flooded":0},{"u":58,"v":44,"depth":0.038,"flooded":0},{"u":52,"v":59,"depth":0.042,"flooded":0},{"u":59,"v":47,"depth":0.008,"flooded":0},{"u":52,"v":60,"depth":0.012,"flooded":0},{"u":60,"v":49,"depth":0.016,"flooded":0},{"u":0,"v":46,"depth":0.05,"flooded":0},{"u":0,"v":45,"depth":0.063,"flooded":0},{"u":0,"v":1,"depth":0.104,"flooded":0},{"u":0,"v":21,"depth":0.106,"flooded":0},{"u":0,"v":22,"depth":0.107,"flooded":0},{"u":0,"v":27,"depth":0.03,"flooded":0},{"u":1,"v":46,"depth":0.074,"flooded":0},{"u":1,"v":45,"depth":0.048,"flooded":0},{"u":1,"v":2,"depth":0.051,"flooded":0},{"u":1,"v":12,"depth":0.065,"flooded":0},{"u":1,"v":13,"depth":0.044,"flooded":0},{"u":1,"v":15,"depth":0.038,"flooded":0},{"u":1,"v":21,"depth":0.055,"flooded":0},{"u":1,"v":22,"depth":0.116,"flooded":0},{"u":1,"v":24,"depth":0.055,"flooded":0},{"u":1,"v":27,"depth":0.112,"flooded":0},{"u":1,"v":28,"depth":0.079,"flooded":0},{"u":1,"v":29,"depth":0.036,"flooded":0},{"u":2,"v":47,"depth":0.032,"flooded":0},{"u":2,"v":48,"depth":0.044,"flooded":0},{"u":2,"v":12,"depth":0.017,"flooded":0},{"u":2,"v":13,"depth":0.033,"flooded":0},{"u":2,"v":18,"depth":0.034,"flooded":0},{"u":2,"v":20,"depth":0.067,"flooded":0},{"u":2,"v":24,"depth":0.031,"flooded":0},{"u":2,"v":29,"depth":0.044,"flooded":0},{"u":3,"v":34,"depth":0.028,"flooded":0},{"u":3,"v":33,"depth":0.005,"flooded":0},{"u":3,"v":11,"depth":0.03,"flooded":0},{"u":3,"v":13,"depth":0.02,"flooded":0},{"u":3,"v":14,"depth":0.061,"flooded":0},{"u":3,"v":18,"depth":0.048,"flooded":0},{"u":3,"v":20,"depth":0.095,"flooded":0},{"u":3,"v":24,"depth":0.057,"flooded":0},{"u":3,"v":25,"depth":0.07,"flooded":0},{"u":4,"v":37,"depth":0.031,"flooded":0},{"u":4,"v":36,"depth":0.029,"flooded":0},{"u":4,"v":7,"depth":0.064,"flooded":0},{"u":4,"v":10,"depth":0.095,"flooded":0},{"u":4,"v":14,"depth":0.026,"flooded":0},{"u":4,"v":17,"depth":0.029,"flooded":0},{"u":4,"v":24,"depth":0.038,"flooded":0},{"u":4,"v":25,"depth":0.039,"flooded":0},{"u":5,"v":40,"depth":0.032,"flooded":0},{"u":5,"v":39,"depth":0.029,"flooded":0},{"u":5,"v":9,"depth":0.113,"flooded":0},{"u":5,"v":14,"depth":0.131,"flooded":0},{"u":5,"v":15,"depth":0.103,"flooded":0},{"u":5,"v":16,"depth":0.078,"flooded":0},{"u":5,"v":17,"depth":0.062,"flooded":0},{"u":5,"v":23,"depth":0.037,"flooded":0},{"u":6,"v":49,"depth":0.041,"flooded":0},{"u":6,"v":50,"depth":0.103,"flooded":0},{"u":6,"v":8,"depth":0.086,"flooded":0},{"u":6,"v":20,"depth":0.113,"flooded":0},{"u":6,"v":21,"depth":0.112,"flooded":0},{"u":6,"v":26,"depth":0.07,"flooded":0},{"u":6,"v":31,"depth":0.117,"flooded":0},{"u":7,"v":35,"depth":0.04,"flooded":0},{"u":7,"v":34,"depth":0.032,"flooded":0},{"u":7,"v":11,"depth":0.049,"flooded":0},{"u":7,"v":14,"depth":0.053,"flooded":0},{"u":7,"v":17,"depth":0.06,"flooded":0},{"u":7,"v":25,"depth":0.081,"flooded":0},{"u":8,"v":50,"depth":0.019,"flooded":0},{"u":8,"v":49,"depth":0.045,"flooded":0},{"u":8,"v":20,"depth":0.067,"flooded":0},{"u":8,"v":26,"depth":0.054,"flooded":0},{"u":8,"v":31,"depth":0.1,"flooded":0},{"u":9,"v":39,"depth":0.083,"flooded":0},{"u":9,"v":38,"depth":0.056,"flooded":0},{"u":9,"v":23,"depth":0.045,"flooded":0},{"u":9,"v":30,"depth":0.069,"flooded":0},{"u":10,"v":37,"depth":0.041,"flooded":0},{"u":10,"v":36,"depth":0.048,"flooded":0},{"u":10,"v":17,"depth":0.088,"flooded":0},{"u":10,"v":30,"depth":0.084,"flooded":0},{"u":11,"v":33,"depth":0.039,"flooded":0},{"u":11,"v":34,"depth":0.079,"flooded":0},{"u":11,"v":19,"depth":0.063,"flooded":0},{"u":11,"v":24,"depth":0.043,"flooded":0},{"u":11,"v":25,"depth":0.051,"flooded":0},{"u":11,"v":26,"depth":0.042,"flooded":0},{"u":12,"v":43,"depth":0.047,"flooded":0},{"u":12,"v":42,"depth":0.065,"flooded":0},{"u":12,"v":13,"depth":0.106,"flooded":0},{"u":12,"v":14,"depth":0.064,"flooded":0},{"u":12,"v":15,"depth":0.04,"flooded":0},{"u":12,"v":16,"depth":0.086,"flooded":0},{"u":12,"v":22,"depth":0.069,"flooded":0},{"u":12,"v":28,"depth":0.115,"flooded":0},{"u":12,"v":29,"depth":0.041,"flooded":0},{"u":13,"v":47,"depth":0.063,"flooded":0},{"u":13,"v":46,"depth":0.034,"flooded":0},{"u":13,"v":14,"depth":0.05,"flooded":0},{"u":13,"v":15,"depth":0.038,"flooded":0},{"u":13,"v":18,"depth":0.015,"flooded":0},{"u":13,"v":20,"depth":0.049,"flooded":0},{"u":13,"v":21,"depth":0.053,"flooded":0},{"u":13,"v":24,"depth":0.056,"flooded":0},{"u":13,"v":28,"depth":0.057,"flooded":0},{"u":13,"v":29,"depth":0.083,"flooded":0},{"u":14,"v":38,"depth":0.034,"flooded":0},{"u":14,"v":37,"depth":0.058,"flooded":0},{"u":14,"v":15,"depth":0.035,"flooded":0},{"u":14,"v":16,"depth":0.085,"flooded":0},{"u":14,"v":17,"depth":0.04,"flooded":0},{"u":14,"v":18,"depth":0.025,"flooded":0},{"u":14,"v":24,"depth":0.054,"flooded":0},{"u":14,"v":25,"depth":0.048,"flooded":0},{"u":15,"v":42,"depth":0.054,"flooded":0},{"u":15,"v":41,"depth":0.058,"flooded":0},{"u":15,"v":16,"depth":0.051,"flooded":0},{"u":15,"v":17,"depth":0.064,"flooded":0},{"u":15,"v":18,"depth":0.053,"flooded":0},{"u":15,"v":28,"depth":0.104,"flooded":0},{"u":15,"v":29,"depth":0.026,"flooded":0},{"u":16,"v":41,"depth":0.076,"flooded":0},{"u":16,"v":42,"depth":0.041,"flooded":0},{"u":16,"v":22,"depth":0.087,"flooded":0},{"u":16,"v":23,"depth":0.099,"flooded":0},{"u":16,"v":28,"depth":0.114,"flooded":0},{"u":17,"v":38,"depth":0.053,"flooded":0},{"u":17,"v":37,"depth":0.069,"flooded":0},{"u":17,"v":18,"depth":0.071,"flooded":0},{"u":17,"v":25,"depth":0.052,"flooded":0},{"u":18,"v":37,"depth":0.057,"flooded":0},{"u":18,"v":36,"depth":0.039,"flooded":0},{"u":18,"v":20,"depth":0.092,"flooded":0},{"u":18,"v":24,"depth":0.043,"flooded":0},{"u":18,"v":29,"depth":0.076,"flooded":0},{"u":19,"v":32,"depth":0.058,"flooded":0},{"u":19,"v":51,"depth":0.04,"flooded":0},{"u":19,"v":26,"depth":0.058,"flooded":0},{"u":20,"v":50,"depth":0.086,"flooded":0},{"u":20,"v":49,"depth":0.027,"flooded":0},{"u":20,"v":24,"depth":0.032,"flooded":0},{"u":20,"v":26,"depth":0.072,"flooded":0},{"u":20,"v":29,"depth":0.059,"flooded":0},{"u":21,"v":47,"depth":0.065,"flooded":0},{"u":21,"v":48,"depth":0.043,"flooded":0},{"u":21,"v":27,"depth":0.114,"flooded":0},{"u":21,"v":31,"depth":0.082,"flooded":0},{"u":22,"v":45,"depth":0.093,"flooded":0},{"u":22,"v":44,"depth":0.074,"flooded":0},{"u":22,"v":28,"depth":0.062,"flooded":0},{"u":22,"v":29,"depth":0.114,"flooded":0},{"u":23,"v":40,"depth":0.048,"flooded":0},{"u":23,"v":39,"depth":0.039,"flooded":0},{"u":23,"v":30,"depth":0.095,"flooded":0},{"u":24,"v":32,"depth":0.054,"flooded":0},{"u":24,"v":51,"depth":0.023,"flooded":0},{"u":24,"v":26,"depth":0.105,"flooded":0},{"u":24,"v":29,"depth":0.084,"flooded":0},{"u":25,"v":35,"depth":0.063,"flooded":0},{"u":25,"v":36,"depth":0.065,"flooded":0},{"u":26,"v":51,"depth":0.042,"flooded":0},{"u":26,"v":50,"depth":0.054,"flooded":0},{"u":27,"v":47,"depth":0.051,"flooded":0},{"u":27,"v":48,"depth":0.074,"flooded":0},{"u":27,"v":29,"depth":0.076,"flooded":0},{"u":27,"v":31,"depth":0.078,"flooded":0},{"u":28,"v":44,"depth":0.087,"flooded":0},{"u":28,"v":43,"depth":0.104,"flooded":0},{"u":28,"v":29,"depth":0.056,"flooded":0},{"u":29,"v":45,"depth":0.045,"flooded":0},{"u":29,"v":44,"depth":0.033,"flooded":0},{"u":30,"v":38,"depth":0.01,"flooded":0},{"u":30,"v":39,"depth":0.033,"flooded":0},{"u":31,"v":48,"depth":0.038,"flooded":0},{"u":31,"v":49,"depth":0.06,"flooded":0}]},{"step":2,"intensity":0.6,"label":"1h 00m","edges":[{"u":32,"v":33,"depth":0.026,"flooded":0},{"u":33,"v":34,"depth":0.082,"flooded":0},{"u":34,"v":35,"depth":0.013,"flooded":0},{"u":35,"v":36,"depth":0.048,"flooded":0},{"u":36,"v":37,"depth":0.012,"flooded":0},{"u":37,"v":38,"depth":0.059,"flooded":0},{"u":38,"v":39,"depth":0.092,"flooded":0},{"u":39,"v":40,"depth":0.022,"flooded":0},{"u":40,"v":41,"depth":0.022,"flooded":0},{"u":41,"v":42,"depth":0.052,"flooded":0},{"u":42,"v":43,"depth":0.035,"flooded":0},{"u":43,"v":44,"depth":0.054,"flooded":0},{"u":44,"v":45,"depth":0.04,"flooded":0},{"u":45,"v":46,"depth":0.056,"flooded":0},{"u":46,"v":47,"depth":0.046,"flooded":0},{"u":47,"v":48,"depth":0.05,"flooded":0},{"u":48,"v":49,"depth":0.009,"flooded":0},{"u":49,"v":50,"depth":0.074,"flooded":0},{"u":50,"v":51,"depth":0.008,"flooded":0},{"u":51,"v":32,"depth":0.046,"flooded":0},{"u":52,"v":53,"depth":0.051,"flooded":0},{"u":53,"v":32,"depth":0.096,"flooded":0},{"u":52,"v":54,"depth":0.041,"flooded":0},{"u":54,"v":34,"depth":0.088,"flooded":0},{"u":52,"v":55,"depth":0.031,"flooded":0},{"u":55,"v":37,"depth":0.11,"flooded":0},{"u":52,"v":56,"depth":0.047,"flooded":0},{"u":56,"v":39,"depth":0.04,"flooded":0},{"u":52,"v":57,"depth":0.078,"flooded":0},{"u":57,"v":42,"depth":0.112,"flooded":0},{"u":52,"v":58,"depth":0.035,"flooded":0},{"u":58,"v":44,"depth":0.089,"flooded":0},{"u":52,"v":59,"depth":0.073,"flooded":0},{"u":59,"v":47,"depth":0.013,"flooded":0},{"u":52,"v":60,"depth":0.021,"flooded":0},{"u":60,"v":49,"depth":0.049,"flooded":0},{"u":0,"v":46,"depth":0.089,"flooded":0},{"u":0,"v":45,"depth":0.134,"flooded":0},{"u":0,"v":1,"depth":0.257,"flooded":0},{"u":0,"v":21,"depth":0.271,"flooded":0},{"u":0,"v":22,"depth":0.308,"flooded":1},{"u":0,"v":27,"depth":0.081,"flooded":0},{"u":1,"v":46,"depth":0.175,"flooded":0},{"u":1,"v":45,"depth":0.081,"flooded":0},{"u":1,"v":2,"depth":0.103,"flooded":0},{"u":1,"v":12,"depth":0.152,"flooded":0},{"u":1,"v":13,"depth":0.108,"flooded":0},{"u":1,"v":15,"depth":0.079,"flooded":0},{"u":1,"v":21,"depth":0.098,"flooded":0},{"u":1,"v":22,"depth":0.33,"flooded":1},{"u":1,"v":24,"depth":0.142,"flooded":0},{"u":1,"v":27,"depth":0.313,"flooded":1},{"u":1,"v":28,"depth":0.186,"flooded":0},{"u":1,"v":29,"depth":0.064,"flooded":0},{"u":2,"v":47,"depth":0.035,"flooded":0},{"u":2,"v":48,"depth":0.078,"flooded":0},{"u":2,"v":12,"depth":0.05,"flooded":0},{"u":2,"v":13,"depth":0.09,"flooded":0},{"u":2,"v":18,"depth":0.089,"flooded":0},{"u":2,"v":20,"depth":0.161,"flooded":0},{"u":2,"v":24,"depth":0.058,"flooded":0},{"u":2,"v":29,"depth":0.103,"flooded":0},{"u":3,"v":34,"depth":0.075,"flooded":0},{"u":3,"v":33,"depth":0.006,"flooded":0},{"u":3,"v":11,"depth":0.033,"flooded":0},{"u":3,"v":13,"depth":0.039,"flooded":0},{"u":3,"v":14,"depth":0.106,"flooded":0},{"u":3,"v":18,"depth":0.085,"flooded":0},{"u":3,"v":20,"depth":0.262,"flooded":0},{"u":3,"v":24,"depth":0.162,"flooded":0},{"u":3,"v":25,"depth":0.139,"flooded":0},{"u":4,"v":37,"depth":0.068,"flooded":0},{"u":4,"v":36,"depth":0.042,"flooded":0},{"u":4,"v":7,"depth":0.125,"flooded":0},{"u":4,"v":10,"depth":0.227,"flooded":0},{"u":4,"v":14,"depth":0.027,"flooded":0},{"u":4,"v":17,"depth":0.042,"flooded":0},{"u":4,"v":24,"depth":0.079,"flooded":0},{"u":4,"v":25,"depth":0.113,"flooded":0},{"u":5,"v":40,"depth":0.069,"flooded":0},{"u":5,"v":39,"depth":0.075,"flooded":0},{"u":5,"v":9,"depth":0.332,"flooded":1},{"u":5,"v":14,"depth":0.38,"flooded":1},{"u":5,"v":15,"depth":0.235,"flooded":0},{"u":5,"v":16,"depth":0.189,"flooded":0},{"u":5,"v":17,"depth":0.159,"flooded":0},{"u":5,"v":23,"depth":0.11,"flooded":0},{"u":6,"v":49,"depth":0.084,"flooded":0},{"u":6,"v":50,"depth":0.246,"flooded":0},{"u":6,"v":8,"depth":0.253,"flooded":0},{"u":6,"v":20,"depth":0.262,"flooded":0},{"u":6,"v":21,"depth":0.289,"flooded":0},{"u":6,"v":26,"depth":0.188,"flooded":0},{"u":6,"v":31,"depth":0.308,"flooded":1},{"u":7,"v":35,"depth":0.085,"flooded":0},{"u":7,"v":34,"depth":0.093,"flooded":0},{"u":7,"v":11,"depth":0.074,"flooded":0},{"u":7,"v":14,"depth":0.116,"flooded":0},{"u":7,"v":17,"depth":0.125,"flooded":0},{"u":7,"v":25,"depth":0.18,"flooded":0},{"u":8,"v":50,"depth":0.049,"flooded":0},{"u":8,"v":49,"depth":0.062,"flooded":0},{"u":8,"v":20,"depth":0.157,"flooded":0},{"u":8,"v":26,"depth":0.131,"flooded":0},{"u":8,"v":31,"depth":0.234,"flooded":0},{"u":9,"v":39,"depth":0.186,"flooded":0},{"u":9,"v":38,"depth":0.143,"flooded":0},{"u":9,"v":23,"depth":0.114,"flooded":0},{"u":9,"v":30,"depth":0.132,"flooded":0},{"u":10,"v":37,"depth":0.11,"flooded":0},{"u":10,"v":36,"depth":0.141,"flooded":0},{"u":10,"v":17,"depth":0.229,"flooded":0},{"u":10,"v":30,"depth":0.18,"flooded":0},{"u":11,"v":33,"depth":0.058,"flooded":0},{"u":11,"v":34,"depth":0.166,"flooded":0},{"u":11,"v":19,"depth":0.126,"flooded":0},{"u":11,"v":24,"depth":0.1,"flooded":0},{"u":11,"v":25,"depth":0.146,"flooded":0},{"u":11,"v":26,"depth":0.067,"flooded":0},{"u":12,"v":43,"depth":0.12,"flooded":0},{"u":12,"v":42,"depth":0.12,"flooded":0},{"u":12,"v":13,"depth":0.298,"flooded":0},{"u":12,"v":14,"depth":0.126,"flooded":0},{"u":12,"v":15,"depth":0.107,"flooded":0},{"u":12,"v":16,"depth":0.243,"flooded":0},{"u":12,"v":22,"depth":0.138,"flooded":0},{"u":12,"v":28,"depth":0.32,"flooded":0},{"u":12,"v":29,"depth":0.062,"flooded":0},{"u":13,"v":47,"depth":0.112,"flooded":0},{"u":13,"v":46,"depth":0.061,"flooded":0},{"u":13,"v":14,"depth":0.147,"flooded":0},{"u":13,"v":15,"depth":0.095,"flooded":0},{"u":13,"v":18,"depth":0.036,"flooded":0},{"u":13,"v":20,"depth":0.094,"flooded":0},{"u":13,"v":21,"depth":0.118,"flooded":0},{"u":13,"v":24,"depth":0.121,"flooded":0},{"u":13,"v":28,"depth":0.154,"flooded":0},{"u":13,"v":29,"depth":0.185,"flooded":0},{"u":14,"v":38,"depth":0.043,"flooded":0},{"u":14,"v":37,"depth":0.113,"flooded":0},{"u":14,"v":15,"depth":0.096,"flooded":0},{"u":14,"v":16,"depth":0.18,"flooded":0},{"u":14,"v":17,"depth":0.089,"flooded":0},{"u":14,"v":18,"depth":0.052,"flooded":0},{"u":14,"v":24,"depth":0.087,"flooded":0},{"u":14,"v":25,"depth":0.121,"flooded":0},{"u":15,"v":42,"depth":0.161,"flooded":0},{"u":15,"v":41,"depth":0.131,"flooded":0},{"u":15,"v":16,"depth":0.104,"flooded":0},{"u":15,"v":17,"depth":0.18,"flooded":0},{"u":15,"v":18,"depth":0.124,"flooded":0},{"u":15,"v":28,"depth":0.249,"flooded":0},{"u":15,"v":29,"depth":0.041,"flooded":0},{"u":16,"v":41,"depth":0.167,"flooded":0},{"u":16,"v":42,"depth":0.122,"flooded":0},{"u":16,"v":22,"depth":0.195,"flooded":0},{"u":16,"v":23,"depth":0.234,"flooded":0},{"u":16,"v":28,"depth":0.323,"flooded":1},{"u":17,"v":38,"depth":0.11,"flooded":0},{"u":17,"v":37,"depth":0.136,"flooded":0},{"u":17,"v":18,"depth":0.164,"flooded":0},{"u":17,"v":25,"depth":0.123,"flooded":0},{"u":18,"v":37,"depth":0.102,"flooded":0},{"u":18,"v":36,"depth":0.08,"flooded":0},{"u":18,"v":20,"depth":0.255,"flooded":0},{"u":18,"v":24,"depth":0.11,"flooded":0},{"u":18,"v":29,"depth":0.223,"flooded":0},{"u":19,"v":32,"depth":0.126,"flooded":0},{"u":19,"v":51,"depth":0.108,"flooded":0},{"u":19,"v":26,"depth":0.163,"flooded":0},{"u":20,"v":50,"depth":0.183,"flooded":0},{"u":20,"v":49,"depth":0.067,"flooded":0},{"u":20,"v":24,"depth":0.083,"flooded":0},{"u":20,"v":26,"depth":0.206,"flooded":0},{"u":20,"v":29,"depth":0.174,"flooded":0},{"u":21,"v":47,"depth":0.192,"flooded":0},{"u":21,"v":48,"depth":0.081,"flooded":0},{"u":21,"v":27,"depth":0.309,"flooded":0},{"u":21,"v":31,"depth":0.175,"flooded":0},{"u":22,"v":45,"depth":0.212,"flooded":0},{"u":22,"v":44,"depth":0.219,"flooded":0},{"u":22,"v":28,"depth":0.167,"flooded":0},{"u":22,"v":29,"depth":0.323,"flooded":1},{"u":23,"v":40,"depth":0.097,"flooded":0},{"u":23,"v":39,"depth":0.082,"flooded":0},{"u":23,"v":30,"depth":0.254,"flooded":0},{"u":24,"v":32,"depth":0.121,"flooded":0},{"u":24,"v":51,"depth":0.062,"flooded":0},{"u":24,"v":26,"depth":0.242,"flooded":0},{"u":24,"v":29,"depth":0.185,"flooded":0},{"u":25,"v":35,"depth":0.118,"flooded":0},{"u":25,"v":36,"depth":0.118,"flooded":0},{"u":26,"v":51,"depth":0.061,"flooded":0},{"u":26,"v":50,"depth":0.101,"flooded":0},{"u":27,"v":47,"depth":0.1,"flooded":0},{"u":27,"v":48,"depth":0.159,"flooded":0},{"u":27,"v":29,"depth":0.186,"flooded":0},{"u":27,"v":31,"depth":0.193,"flooded":0},{"u":28,"v":44,"depth":0.192,"flooded":0},{"u":28,"v":43,"depth":0.275,"flooded":0},{"u":28,"v":29,"depth":0.139,"flooded":0},{"u":29,"v":45,"depth":0.082,"flooded":0},{"u":29,"v":44,"depth":0.076,"flooded":0},{"u":30,"v":38,"depth":0.017,"flooded":0},{"u":30,"v":39,"depth":0.062,"flooded":0},{"u":31,"v":48,"depth":0.081,"flooded":0},{"u":31,"v":49,"depth":0.161,"flooded":0}]},{"step":3,"intensity":1.0,"label":"1h 30m \u26a1 Peak","edges":[{"u":32,"v":33,"depth":0.029,"flooded":0},{"u":33,"v":34,"depth":0.134,"flooded":0},{"u":34,"v":35,"depth":0.0,"flooded":0},{"u":35,"v":36,"depth":0.064,"flooded":0},{"u":36,"v":37,"depth":0.0,"flooded":0},{"u":37,"v":38,"depth":0.089,"flooded":0},{"u":38,"v":39,"depth":0.127,"flooded":0},{"u":39,"v":40,"depth":0.013,"flooded":0},{"u":40,"v":41,"depth":0.016,"flooded":0},{"u":41,"v":42,"depth":0.082,"flooded":0},{"u":42,"v":43,"depth":0.045,"flooded":0},{"u":43,"v":44,"depth":0.088,"flooded":0},{"u":44,"v":45,"depth":0.063,"flooded":0},{"u":45,"v":46,"depth":0.076,"flooded":0},{"u":46,"v":47,"depth":0.056,"flooded":0},{"u":47,"v":48,"depth":0.058,"flooded":0},{"u":48,"v":49,"depth":0.006,"flooded":0},{"u":49,"v":50,"depth":0.114,"flooded":0},{"u":50,"v":51,"depth":0.0,"flooded":0},{"u":51,"v":32,"depth":0.072,"flooded":0},{"u":52,"v":53,"depth":0.082,"flooded":0},{"u":53,"v":32,"depth":0.147,"flooded":0},{"u":52,"v":54,"depth":0.062,"flooded":0},{"u":54,"v":34,"depth":0.129,"flooded":0},{"u":52,"v":55,"depth":0.041,"flooded":0},{"u":55,"v":37,"depth":0.162,"flooded":0},{"u":52,"v":56,"depth":0.059,"flooded":0},{"u":56,"v":39,"depth":0.059,"flooded":0},{"u":52,"v":57,"depth":0.108,"flooded":0},{"u":57,"v":42,"depth":0.165,"flooded":0},{"u":52,"v":58,"depth":0.048,"flooded":0},{"u":58,"v":44,"depth":0.141,"flooded":0},{"u":52,"v":59,"depth":0.104,"flooded":0},{"u":59,"v":47,"depth":0.017,"flooded":0},{"u":52,"v":60,"depth":0.029,"flooded":0},{"u":60,"v":49,"depth":0.082,"flooded":0},{"u":0,"v":46,"depth":0.128,"flooded":0},{"u":0,"v":45,"depth":0.205,"flooded":0},{"u":0,"v":1,"depth":0.409,"flooded":1},{"u":0,"v":21,"depth":0.436,"flooded":1},{"u":0,"v":22,"depth":0.51,"flooded":1},{"u":0,"v":27,"depth":0.132,"flooded":0},{"u":1,"v":46,"depth":0.277,"flooded":0},{"u":1,"v":45,"depth":0.115,"flooded":0},{"u":1,"v":2,"depth":0.155,"flooded":0},{"u":1,"v":12,"depth":0.238,"flooded":0},{"u":1,"v":13,"depth":0.172,"flooded":0},{"u":1,"v":15,"depth":0.121,"flooded":0},{"u":1,"v":21,"depth":0.14,"flooded":0},{"u":1,"v":22,"depth":0.544,"flooded":1},{"u":1,"v":24,"depth":0.23,"flooded":0},{"u":1,"v":27,"depth":0.514,"flooded":1},{"u":1,"v":28,"depth":0.292,"flooded":0},{"u":1,"v":29,"depth":0.092,"flooded":0},{"u":2,"v":47,"depth":0.038,"flooded":0},{"u":2,"v":48,"depth":0.112,"flooded":0},{"u":2,"v":12,"depth":0.083,"flooded":0},{"u":2,"v":13,"depth":0.148,"flooded":0},{"u":2,"v":18,"depth":0.144,"flooded":0},{"u":2,"v":20,"depth":0.255,"flooded":0},{"u":2,"v":24,"depth":0.084,"flooded":0},{"u":2,"v":29,"depth":0.162,"flooded":0},{"u":3,"v":34,"depth":0.122,"flooded":0},{"u":3,"v":33,"depth":0.007,"flooded":0},{"u":3,"v":11,"depth":0.036,"flooded":0},{"u":3,"v":13,"depth":0.057,"flooded":0},{"u":3,"v":14,"depth":0.151,"flooded":0},{"u":3,"v":18,"depth":0.122,"flooded":0},{"u":3,"v":20,"depth":0.429,"flooded":1},{"u":3,"v":24,"depth":0.267,"flooded":0},{"u":3,"v":25,"depth":0.208,"flooded":0},{"u":4,"v":37,"depth":0.106,"flooded":0},{"u":4,"v":36,"depth":0.055,"flooded":0},{"u":4,"v":7,"depth":0.185,"flooded":0},{"u":4,"v":10,"depth":0.359,"flooded":1},{"u":4,"v":14,"depth":0.028,"flooded":0},{"u":4,"v":17,"depth":0.054,"flooded":0},{"u":4,"v":24,"depth":0.12,"flooded":0},{"u":4,"v":25,"depth":0.187,"flooded":0},{"u":5,"v":40,"depth":0.106,"flooded":0},{"u":5,"v":39,"depth":0.121,"flooded":0},{"u":5,"v":9,"depth":0.551,"flooded":1},{"u":5,"v":14,"depth":0.629,"flooded":1},{"u":5,"v":15,"depth":0.367,"flooded":1},{"u":5,"v":16,"depth":0.299,"flooded":0},{"u":5,"v":17,"depth":0.256,"flooded":0},{"u":5,"v":23,"depth":0.182,"flooded":0},{"u":6,"v":49,"depth":0.127,"flooded":0},{"u":6,"v":50,"depth":0.389,"flooded":0},{"u":6,"v":8,"depth":0.42,"flooded":1},{"u":6,"v":20,"depth":0.411,"flooded":1},{"u":6,"v":21,"depth":0.467,"flooded":1},{"u":6,"v":26,"depth":0.306,"flooded":1},{"u":6,"v":31,"depth":0.499,"flooded":1},{"u":7,"v":35,"depth":0.129,"flooded":0},{"u":7,"v":34,"depth":0.154,"flooded":0},{"u":7,"v":11,"depth":0.099,"flooded":0},{"u":7,"v":14,"depth":0.178,"flooded":0},{"u":7,"v":17,"depth":0.191,"flooded":0},{"u":7,"v":25,"depth":0.28,"flooded":0},{"u":8,"v":50,"depth":0.079,"flooded":0},{"u":8,"v":49,"depth":0.079,"flooded":0},{"u":8,"v":20,"depth":0.247,"flooded":0},{"u":8,"v":26,"depth":0.209,"flooded":0},{"u":8,"v":31,"depth":0.368,"flooded":1},{"u":9,"v":39,"depth":0.289,"flooded":0},{"u":9,"v":38,"depth":0.23,"flooded":0},{"u":9,"v":23,"depth":0.184,"flooded":0},{"u":9,"v":30,"depth":0.195,"flooded":0},{"u":10,"v":37,"depth":0.178,"flooded":0},{"u":10,"v":36,"depth":0.233,"flooded":0},{"u":10,"v":17,"depth":0.371,"flooded":1},{"u":10,"v":30,"depth":0.276,"flooded":0},{"u":11,"v":33,"depth":0.076,"flooded":0},{"u":11,"v":34,"depth":0.252,"flooded":0},{"u":11,"v":19,"depth":0.19,"flooded":0},{"u":11,"v":24,"depth":0.157,"flooded":0},{"u":11,"v":25,"depth":0.241,"flooded":0},{"u":11,"v":26,"depth":0.091,"flooded":0},{"u":12,"v":43,"depth":0.194,"flooded":0},{"u":12,"v":42,"depth":0.175,"flooded":0},{"u":12,"v":13,"depth":0.49,"flooded":1},{"u":12,"v":14,"depth":0.188,"flooded":0},{"u":12,"v":15,"depth":0.174,"flooded":0},{"u":12,"v":16,"depth":0.4,"flooded":1},{"u":12,"v":22,"depth":0.207,"flooded":0},{"u":12,"v":28,"depth":0.526,"flooded":1},{"u":12,"v":29,"depth":0.082,"flooded":0},{"u":13,"v":47,"depth":0.16,"flooded":0},{"u":13,"v":46,"depth":0.088,"flooded":0},{"u":13,"v":14,"depth":0.244,"flooded":0},{"u":13,"v":15,"depth":0.153,"flooded":0},{"u":13,"v":18,"depth":0.056,"flooded":0},{"u":13,"v":20,"depth":0.139,"flooded":0},{"u":13,"v":21,"depth":0.184,"flooded":0},{"u":13,"v":24,"depth":0.186,"flooded":0},{"u":13,"v":28,"depth":0.252,"flooded":0},{"u":13,"v":29,"depth":0.287,"flooded":0},{"u":14,"v":38,"depth":0.052,"flooded":0},{"u":14,"v":37,"depth":0.169,"flooded":0},{"u":14,"v":15,"depth":0.157,"flooded":0},{"u":14,"v":16,"depth":0.276,"flooded":0},{"u":14,"v":17,"depth":0.137,"flooded":0},{"u":14,"v":18,"depth":0.078,"flooded":0},{"u":14,"v":24,"depth":0.119,"flooded":0},{"u":14,"v":25,"depth":0.195,"flooded":0},{"u":15,"v":42,"depth":0.268,"flooded":0},{"u":15,"v":41,"depth":0.203,"flooded":0},{"u":15,"v":16,"depth":0.157,"flooded":0},{"u":15,"v":17,"depth":0.296,"flooded":0},{"u":15,"v":18,"depth":0.196,"flooded":0},{"u":15,"v":28,"depth":0.393,"flooded":1},{"u":15,"v":29,"depth":0.055,"flooded":0},{"u":16,"v":41,"depth":0.258,"flooded":0},{"u":16,"v":42,"depth":0.203,"flooded":0},{"u":16,"v":22,"depth":0.303,"flooded":1},{"u":16,"v":23,"depth":0.368,"flooded":1},{"u":16,"v":28,"depth":0.532,"flooded":1},{"u":17,"v":38,"depth":0.168,"flooded":0},{"u":17,"v":37,"depth":0.204,"flooded":0},{"u":17,"v":18,"depth":0.258,"flooded":0},{"u":17,"v":25,"depth":0.193,"flooded":0},{"u":18,"v":37,"depth":0.147,"flooded":0},{"u":18,"v":36,"depth":0.122,"flooded":0},{"u":18,"v":20,"depth":0.418,"flooded":1},{"u":18,"v":24,"depth":0.178,"flooded":0},{"u":18,"v":29,"depth":0.37,"flooded":1},{"u":19,"v":32,"depth":0.194,"flooded":0},{"u":19,"v":51,"depth":0.176,"flooded":0},{"u":19,"v":26,"depth":0.268,"flooded":0},{"u":20,"v":50,"depth":0.281,"flooded":0},{"u":20,"v":49,"depth":0.107,"flooded":0},{"u":20,"v":24,"depth":0.135,"flooded":0},{"u":20,"v":26,"depth":0.34,"flooded":1},{"u":20,"v":29,"depth":0.289,"flooded":0},{"u":21,"v":47,"depth":0.319,"flooded":0},{"u":21,"v":48,"depth":0.119,"flooded":0},{"u":21,"v":27,"depth":0.504,"flooded":1},{"u":21,"v":31,"depth":0.269,"flooded":0},{"u":22,"v":45,"depth":0.33,"flooded":0},{"u":22,"v":44,"depth":0.363,"flooded":0},{"u":22,"v":28,"depth":0.273,"flooded":0},{"u":22,"v":29,"depth":0.532,"flooded":1},{"u":23,"v":40,"depth":0.147,"flooded":0},{"u":23,"v":39,"depth":0.125,"flooded":0},{"u":23,"v":30,"depth":0.413,"flooded":1},{"u":24,"v":32,"depth":0.187,"flooded":0},{"u":24,"v":51,"depth":0.1,"flooded":0},{"u":24,"v":26,"depth":0.379,"flooded":1},{"u":24,"v":29,"depth":0.286,"flooded":0},{"u":25,"v":35,"depth":0.172,"flooded":0},{"u":25,"v":36,"depth":0.17,"flooded":0},{"u":26,"v":51,"depth":0.08,"flooded":0},{"u":26,"v":50,"depth":0.148,"flooded":0},{"u":27,"v":47,"depth":0.15,"flooded":0},{"u":27,"v":48,"depth":0.244,"flooded":0},{"u":27,"v":29,"depth":0.296,"flooded":0},{"u":27,"v":31,"depth":0.308,"flooded":1},{"u":28,"v":44,"depth":0.298,"flooded":0},{"u":28,"v":43,"depth":0.445,"flooded":1},{"u":28,"v":29,"depth":0.222,"flooded":0},{"u":29,"v":45,"depth":0.119,"flooded":0},{"u":29,"v":44,"depth":0.119,"flooded":0},{"u":30,"v":38,"depth":0.024,"flooded":0},{"u":30,"v":39,"depth":0.09,"flooded":0},{"u":31,"v":48,"depth":0.124,"flooded":0},{"u":31,"v":49,"depth":0.262,"flooded":0}]},{"step":4,"intensity":0.9,"label":"2h 00m","edges":[{"u":32,"v":33,"depth":0.028,"flooded":0},{"u":33,"v":34,"depth":0.121,"flooded":0},{"u":34,"v":35,"depth":0.003,"flooded":0},{"u":35,"v":36,"depth":0.06,"flooded":0},{"u":36,"v":37,"depth":0.003,"flooded":0},{"u":37,"v":38,"depth":0.082,"flooded":0},{"u":38,"v":39,"depth":0.118,"flooded":0},{"u":39,"v":40,"depth":0.015,"flooded":0},{"u":40,"v":41,"depth":0.018,"flooded":0},{"u":41,"v":42,"depth":0.075,"flooded":0},{"u":42,"v":43,"depth":0.042,"flooded":0},{"u":43,"v":44,"depth":0.079,"flooded":0},{"u":44,"v":45,"depth":0.057,"flooded":0},{"u":45,"v":46,"depth":0.071,"flooded":0},{"u":46,"v":47,"depth":0.053,"flooded":0},{"u":47,"v":48,"depth":0.056,"flooded":0},{"u":48,"v":49,"depth":0.007,"flooded":0},{"u":49,"v":50,"depth":0.104,"flooded":0},{"u":50,"v":51,"depth":0.002,"flooded":0},{"u":51,"v":32,"depth":0.066,"flooded":0},{"u":52,"v":53,"depth":0.074,"flooded":0},{"u":53,"v":32,"depth":0.134,"flooded":0},{"u":52,"v":54,"depth":0.057,"flooded":0},{"u":54,"v":34,"depth":0.119,"flooded":0},{"u":52,"v":55,"depth":0.039,"flooded":0},{"u":55,"v":37,"depth":0.149,"flooded":0},{"u":52,"v":56,"depth":0.056,"flooded":0},{"u":56,"v":39,"depth":0.054,"flooded":0},{"u":52,"v":57,"depth":0.1,"flooded":0},{"u":57,"v":42,"depth":0.152,"flooded":0},{"u":52,"v":58,"depth":0.045,"flooded":0},{"u":58,"v":44,"depth":0.128,"flooded":0},{"u":52,"v":59,"depth":0.096,"flooded":0},{"u":59,"v":47,"depth":0.016,"flooded":0},{"u":52,"v":60,"depth":0.027,"flooded":0},{"u":60,"v":49,"depth":0.074,"flooded":0},{"u":0,"v":46,"depth":0.118,"flooded":0},{"u":0,"v":45,"depth":0.187,"flooded":0},{"u":0,"v":1,"depth":0.371,"flooded":1},{"u":0,"v":21,"depth":0.395,"flooded":1},{"u":0,"v":22,"depth":0.46,"flooded":1},{"u":0,"v":27,"depth":0.119,"flooded":0},{"u":1,"v":46,"depth":0.252,"flooded":0},{"u":1,"v":45,"depth":0.107,"flooded":0},{"u":1,"v":2,"depth":0.142,"flooded":0},{"u":1,"v":12,"depth":0.216,"flooded":0},{"u":1,"v":13,"depth":0.156,"flooded":0},{"u":1,"v":15,"depth":0.111,"flooded":0},{"u":1,"v":21,"depth":0.129,"flooded":0},{"u":1,"v":22,"depth":0.491,"flooded":1},{"u":1,"v":24,"depth":0.208,"flooded":0},{"u":1,"v":27,"depth":0.464,"flooded":1},{"u":1,"v":28,"depth":0.265,"flooded":0},{"u":1,"v":29,"depth":0.085,"flooded":0},{"u":2,"v":47,"depth":0.037,"flooded":0},{"u":2,"v":48,"depth":0.103,"flooded":0},{"u":2,"v":12,"depth":0.075,"flooded":0},{"u":2,"v":13,"depth":0.134,"flooded":0},{"u":2,"v":18,"depth":0.13,"flooded":0},{"u":2,"v":20,"depth":0.232,"flooded":0},{"u":2,"v":24,"depth":0.077,"flooded":0},{"u":2,"v":29,"depth":0.147,"flooded":0},{"u":3,"v":34,"depth":0.11,"flooded":0},{"u":3,"v":33,"depth":0.007,"flooded":0},{"u":3,"v":11,"depth":0.035,"flooded":0},{"u":3,"v":13,"depth":0.052,"flooded":0},{"u":3,"v":14,"depth":0.14,"flooded":0},{"u":3,"v":18,"depth":0.113,"flooded":0},{"u":3,"v":20,"depth":0.387,"flooded":1},{"u":3,"v":24,"depth":0.241,"flooded":0},{"u":3,"v":25,"depth":0.191,"flooded":0},{"u":4,"v":37,"depth":0.097,"flooded":0},{"u":4,"v":36,"depth":0.052,"flooded":0},{"u":4,"v":7,"depth":0.17,"flooded":0},{"u":4,"v":10,"depth":0.326,"flooded":1},{"u":4,"v":14,"depth":0.028,"flooded":0},{"u":4,"v":17,"depth":0.051,"flooded":0},{"u":4,"v":24,"depth":0.11,"flooded":0},{"u":4,"v":25,"depth":0.169,"flooded":0},{"u":5,"v":40,"depth":0.097,"flooded":0},{"u":5,"v":39,"depth":0.11,"flooded":0},{"u":5,"v":9,"depth":0.496,"flooded":1},{"u":5,"v":14,"depth":0.567,"flooded":1},{"u":5,"v":15,"depth":0.334,"flooded":1},{"u":5,"v":16,"depth":0.271,"flooded":0},{"u":5,"v":17,"depth":0.232,"flooded":0},{"u":5,"v":23,"depth":0.164,"flooded":0},{"u":6,"v":49,"depth":0.116,"flooded":0},{"u":6,"v":50,"depth":0.353,"flooded":0},{"u":6,"v":8,"depth":0.378,"flooded":1},{"u":6,"v":20,"depth":0.374,"flooded":1},{"u":6,"v":21,"depth":0.423,"flooded":1},{"u":6,"v":26,"depth":0.276,"flooded":0},{"u":6,"v":31,"depth":0.451,"flooded":1},{"u":7,"v":35,"depth":0.118,"flooded":0},{"u":7,"v":34,"depth":0.139,"flooded":0},{"u":7,"v":11,"depth":0.093,"flooded":0},{"u":7,"v":14,"depth":0.162,"flooded":0},{"u":7,"v":17,"depth":0.175,"flooded":0},{"u":7,"v":25,"depth":0.255,"flooded":0},{"u":8,"v":50,"depth":0.071,"flooded":0},{"u":8,"v":49,"depth":0.075,"flooded":0},{"u":8,"v":20,"depth":0.225,"flooded":0},{"u":8,"v":26,"depth":0.19,"flooded":0},{"u":8,"v":31,"depth":0.335,"flooded":1},{"u":9,"v":39,"depth":0.263,"flooded":0},{"u":9,"v":38,"depth":0.208,"flooded":0},{"u":9,"v":23,"depth":0.167,"flooded":0},{"u":9,"v":30,"depth":0.179,"flooded":0},{"u":10,"v":37,"depth":0.161,"flooded":0},{"u":10,"v":36,"depth":0.21,"flooded":0},{"u":10,"v":17,"depth":0.336,"flooded":1},{"u":10,"v":30,"depth":0.252,"flooded":0},{"u":11,"v":33,"depth":0.071,"flooded":0},{"u":11,"v":34,"depth":0.23,"flooded":0},{"u":11,"v":19,"depth":0.174,"flooded":0},{"u":11,"v":24,"depth":0.143,"flooded":0},{"u":11,"v":25,"depth":0.217,"flooded":0},{"u":11,"v":26,"depth":0.085,"flooded":0},{"u":12,"v":43,"depth":0.176,"flooded":0},{"u":12,"v":42,"depth":0.161,"flooded":0},{"u":12,"v":13,"depth":0.442,"flooded":1},{"u":12,"v":14,"depth":0.173,"flooded":0},{"u":12,"v":15,"depth":0.157,"flooded":0},{"u":12,"v":16,"depth":0.361,"flooded":1},{"u":12,"v":22,"depth":0.19,"flooded":0},{"u":12,"v":28,"depth":0.475,"flooded":1},{"u":12,"v":29,"depth":0.077,"flooded":0},{"u":13,"v":47,"depth":0.148,"flooded":0},{"u":13,"v":46,"depth":0.081,"flooded":0},{"u":13,"v":14,"depth":0.22,"flooded":0},{"u":13,"v":15,"depth":0.139,"flooded":0},{"u":13,"v":18,"depth":0.051,"flooded":0},{"u":13,"v":20,"depth":0.128,"flooded":0},{"u":13,"v":21,"depth":0.168,"flooded":0},{"u":13,"v":24,"depth":0.17,"flooded":0},{"u":13,"v":28,"depth":0.228,"flooded":0},{"u":13,"v":29,"depth":0.261,"flooded":0},{"u":14,"v":38,"depth":0.05,"flooded":0},{"u":14,"v":37,"depth":0.155,"flooded":0},{"u":14,"v":15,"depth":0.142,"flooded":0},{"u":14,"v":16,"depth":0.252,"flooded":0},{"u":14,"v":17,"depth":0.125,"flooded":0},{"u":14,"v":18,"depth":0.071,"flooded":0},{"u":14,"v":24,"depth":0.111,"flooded":0},{"u":14,"v":25,"depth":0.177,"flooded":0},{"u":15,"v":42,"depth":0.241,"flooded":0},{"u":15,"v":41,"depth":0.185,"flooded":0},{"u":15,"v":16,"depth":0.144,"flooded":0},{"u":15,"v":17,"depth":0.267,"flooded":0},{"u":15,"v":18,"depth":0.178,"flooded":0},{"u":15,"v":28,"depth":0.357,"flooded":1},{"u":15,"v":29,"depth":0.051,"flooded":0},{"u":16,"v":41,"depth":0.235,"flooded":0},{"u":16,"v":42,"depth":0.183,"flooded":0},{"u":16,"v":22,"depth":0.276,"flooded":0},{"u":16,"v":23,"depth":0.334,"flooded":1},{"u":16,"v":28,"depth":0.48,"flooded":1},{"u":17,"v":38,"depth":0.154,"flooded":0},{"u":17,"v":37,"depth":0.187,"flooded":0},{"u":17,"v":18,"depth":0.235,"flooded":0},{"u":17,"v":25,"depth":0.175,"flooded":0},{"u":18,"v":37,"depth":0.136,"flooded":0},{"u":18,"v":36,"depth":0.112,"flooded":0},{"u":18,"v":20,"depth":0.377,"flooded":1},{"u":18,"v":24,"depth":0.161,"flooded":0},{"u":18,"v":29,"depth":0.333,"flooded":1},{"u":19,"v":32,"depth":0.177,"flooded":0},{"u":19,"v":51,"depth":0.159,"flooded":0},{"u":19,"v":26,"depth":0.242,"flooded":0},{"u":20,"v":50,"depth":0.257,"flooded":0},{"u":20,"v":49,"depth":0.097,"flooded":0},{"u":20,"v":24,"depth":0.122,"flooded":0},{"u":20,"v":26,"depth":0.307,"flooded":1},{"u":20,"v":29,"depth":0.26,"flooded":0},{"u":21,"v":47,"depth":0.287,"flooded":0},{"u":21,"v":48,"depth":0.11,"flooded":0},{"u":21,"v":27,"depth":0.455,"flooded":1},{"u":21,"v":31,"depth":0.246,"flooded":0},{"u":22,"v":45,"depth":0.3,"flooded":0},{"u":22,"v":44,"depth":0.327,"flooded":0},{"u":22,"v":28,"depth":0.247,"flooded":0},{"u":22,"v":29,"depth":0.48,"flooded":1},{"u":23,"v":40,"depth":0.135,"flooded":0},{"u":23,"v":39,"depth":0.114,"flooded":0},{"u":23,"v":30,"depth":0.373,"flooded":1},{"u":24,"v":32,"depth":0.17,"flooded":0},{"u":24,"v":51,"depth":0.09,"flooded":0},{"u":24,"v":26,"depth":0.345,"flooded":1},{"u":24,"v":29,"depth":0.261,"flooded":0},{"u":25,"v":35,"depth":0.158,"flooded":0},{"u":25,"v":36,"depth":0.157,"flooded":0},{"u":26,"v":51,"depth":0.075,"flooded":0},{"u":26,"v":50,"depth":0.136,"flooded":0},{"u":27,"v":47,"depth":0.138,"flooded":0},{"u":27,"v":48,"depth":0.223,"flooded":0},{"u":27,"v":29,"depth":0.268,"flooded":0},{"u":27,"v":31,"depth":0.279,"flooded":0},{"u":28,"v":44,"depth":0.272,"flooded":0},{"u":28,"v":43,"depth":0.402,"flooded":1},{"u":28,"v":29,"depth":0.201,"flooded":0},{"u":29,"v":45,"depth":0.11,"flooded":0},{"u":29,"v":44,"depth":0.108,"flooded":0},{"u":30,"v":38,"depth":0.022,"flooded":0},{"u":30,"v":39,"depth":0.083,"flooded":0},{"u":31,"v":48,"depth":0.113,"flooded":0},{"u":31,"v":49,"depth":0.237,"flooded":0}]},{"step":5,"intensity":0.6,"label":"2h 30m","edges":[{"u":32,"v":33,"depth":0.026,"flooded":0},{"u":33,"v":34,"depth":0.082,"flooded":0},{"u":34,"v":35,"depth":0.013,"flooded":0},{"u":35,"v":36,"depth":0.048,"flooded":0},{"u":36,"v":37,"depth":0.012,"flooded":0},{"u":37,"v":38,"depth":0.059,"flooded":0},{"u":38,"v":39,"depth":0.092,"flooded":0},{"u":39,"v":40,"depth":0.022,"flooded":0},{"u":40,"v":41,"depth":0.022,"flooded":0},{"u":41,"v":42,"depth":0.052,"flooded":0},{"u":42,"v":43,"depth":0.035,"flooded":0},{"u":43,"v":44,"depth":0.054,"flooded":0},{"u":44,"v":45,"depth":0.04,"flooded":0},{"u":45,"v":46,"depth":0.056,"flooded":0},{"u":46,"v":47,"depth":0.046,"flooded":0},{"u":47,"v":48,"depth":0.05,"flooded":0},{"u":48,"v":49,"depth":0.009,"flooded":0},{"u":49,"v":50,"depth":0.074,"flooded":0},{"u":50,"v":51,"depth":0.008,"flooded":0},{"u":51,"v":32,"depth":0.046,"flooded":0},{"u":52,"v":53,"depth":0.051,"flooded":0},{"u":53,"v":32,"depth":0.096,"flooded":0},{"u":52,"v":54,"depth":0.041,"flooded":0},{"u":54,"v":34,"depth":0.088,"flooded":0},{"u":52,"v":55,"depth":0.031,"flooded":0},{"u":55,"v":37,"depth":0.11,"flooded":0},{"u":52,"v":56,"depth":0.047,"flooded":0},{"u":56,"v":39,"depth":0.04,"flooded":0},{"u":52,"v":57,"depth":0.078,"flooded":0},{"u":57,"v":42,"depth":0.112,"flooded":0},{"u":52,"v":58,"depth":0.035,"flooded":0},{"u":58,"v":44,"depth":0.089,"flooded":0},{"u":52,"v":59,"depth":0.073,"flooded":0},{"u":59,"v":47,"depth":0.013,"flooded":0},{"u":52,"v":60,"depth":0.021,"flooded":0},{"u":60,"v":49,"depth":0.049,"flooded":0},{"u":0,"v":46,"depth":0.089,"flooded":0},{"u":0,"v":45,"depth":0.134,"flooded":0},{"u":0,"v":1,"depth":0.257,"flooded":0},{"u":0,"v":21,"depth":0.271,"flooded":0},{"u":0,"v":22,"depth":0.308,"flooded":1},{"u":0,"v":27,"depth":0.081,"flooded":0},{"u":1,"v":46,"depth":0.175,"flooded":0},{"u":1,"v":45,"depth":0.081,"flooded":0},{"u":1,"v":2,"depth":0.103,"flooded":0},{"u":1,"v":12,"depth":0.152,"flooded":0},{"u":1,"v":13,"depth":0.108,"flooded":0},{"u":1,"v":15,"depth":0.079,"flooded":0},{"u":1,"v":21,"depth":0.098,"flooded":0},{"u":1,"v":22,"depth":0.33,"flooded":1},{"u":1,"v":24,"depth":0.142,"flooded":0},{"u":1,"v":27,"depth":0.313,"flooded":1},{"u":1,"v":28,"depth":0.186,"flooded":0},{"u":1,"v":29,"depth":0.064,"flooded":0},{"u":2,"v":47,"depth":0.035,"flooded":0},{"u":2,"v":48,"depth":0.078,"flooded":0},{"u":2,"v":12,"depth":0.05,"flooded":0},{"u":2,"v":13,"depth":0.09,"flooded":0},{"u":2,"v":18,"depth":0.089,"flooded":0},{"u":2,"v":20,"depth":0.161,"flooded":0},{"u":2,"v":24,"depth":0.058,"flooded":0},{"u":2,"v":29,"depth":0.103,"flooded":0},{"u":3,"v":34,"depth":0.075,"flooded":0},{"u":3,"v":33,"depth":0.006,"flooded":0},{"u":3,"v":11,"depth":0.033,"flooded":0},{"u":3,"v":13,"depth":0.039,"flooded":0},{"u":3,"v":14,"depth":0.106,"flooded":0},{"u":3,"v":18,"depth":0.085,"flooded":0},{"u":3,"v":20,"depth":0.262,"flooded":0},{"u":3,"v":24,"depth":0.162,"flooded":0},{"u":3,"v":25,"depth":0.139,"flooded":0},{"u":4,"v":37,"depth":0.068,"flooded":0},{"u":4,"v":36,"depth":0.042,"flooded":0},{"u":4,"v":7,"depth":0.125,"flooded":0},{"u":4,"v":10,"depth":0.227,"flooded":0},{"u":4,"v":14,"depth":0.027,"flooded":0},{"u":4,"v":17,"depth":0.042,"flooded":0},{"u":4,"v":24,"depth":0.079,"flooded":0},{"u":4,"v":25,"depth":0.113,"flooded":0},{"u":5,"v":40,"depth":0.069,"flooded":0},{"u":5,"v":39,"depth":0.075,"flooded":0},{"u":5,"v":9,"depth":0.332,"flooded":1},{"u":5,"v":14,"depth":0.38,"flooded":1},{"u":5,"v":15,"depth":0.235,"flooded":0},{"u":5,"v":16,"depth":0.189,"flooded":0},{"u":5,"v":17,"depth":0.159,"flooded":0},{"u":5,"v":23,"depth":0.11,"flooded":0},{"u":6,"v":49,"depth":0.084,"flooded":0},{"u":6,"v":50,"depth":0.246,"flooded":0},{"u":6,"v":8,"depth":0.253,"flooded":0},{"u":6,"v":20,"depth":0.262,"flooded":0},{"u":6,"v":21,"depth":0.289,"flooded":0},{"u":6,"v":26,"depth":0.188,"flooded":0},{"u":6,"v":31,"depth":0.308,"flooded":1},{"u":7,"v":35,"depth":0.085,"flooded":0},{"u":7,"v":34,"depth":0.093,"flooded":0},{"u":7,"v":11,"depth":0.074,"flooded":0},{"u":7,"v":14,"depth":0.116,"flooded":0},{"u":7,"v":17,"depth":0.125,"flooded":0},{"u":7,"v":25,"depth":0.18,"flooded":0},{"u":8,"v":50,"depth":0.049,"flooded":0},{"u":8,"v":49,"depth":0.062,"flooded":0},{"u":8,"v":20,"depth":0.157,"flooded":0},{"u":8,"v":26,"depth":0.131,"flooded":0},{"u":8,"v":31,"depth":0.234,"flooded":0},{"u":9,"v":39,"depth":0.186,"flooded":0},{"u":9,"v":38,"depth":0.143,"flooded":0},{"u":9,"v":23,"depth":0.114,"flooded":0},{"u":9,"v":30,"depth":0.132,"flooded":0},{"u":10,"v":37,"depth":0.11,"flooded":0},{"u":10,"v":36,"depth":0.141,"flooded":0},{"u":10,"v":17,"depth":0.229,"flooded":0},{"u":10,"v":30,"depth":0.18,"flooded":0},{"u":11,"v":33,"depth":0.058,"flooded":0},{"u":11,"v":34,"depth":0.166,"flooded":0},{"u":11,"v":19,"depth":0.126,"flooded":0},{"u":11,"v":24,"depth":0.1,"flooded":0},{"u":11,"v":25,"depth":0.146,"flooded":0},{"u":11,"v":26,"depth":0.067,"flooded":0},{"u":12,"v":43,"depth":0.12,"flooded":0},{"u":12,"v":42,"depth":0.12,"flooded":0},{"u":12,"v":13,"depth":0.298,"flooded":0},{"u":12,"v":14,"depth":0.126,"flooded":0},{"u":12,"v":15,"depth":0.107,"flooded":0},{"u":12,"v":16,"depth":0.243,"flooded":0},{"u":12,"v":22,"depth":0.138,"flooded":0},{"u":12,"v":28,"depth":0.32,"flooded":0},{"u":12,"v":29,"depth":0.062,"flooded":0},{"u":13,"v":47,"depth":0.112,"flooded":0},{"u":13,"v":46,"depth":0.061,"flooded":0},{"u":13,"v":14,"depth":0.147,"flooded":0},{"u":13,"v":15,"depth":0.095,"flooded":0},{"u":13,"v":18,"depth":0.036,"flooded":0},{"u":13,"v":20,"depth":0.094,"flooded":0},{"u":13,"v":21,"depth":0.118,"flooded":0},{"u":13,"v":24,"depth":0.121,"flooded":0},{"u":13,"v":28,"depth":0.154,"flooded":0},{"u":13,"v":29,"depth":0.185,"flooded":0},{"u":14,"v":38,"depth":0.043,"flooded":0},{"u":14,"v":37,"depth":0.113,"flooded":0},{"u":14,"v":15,"depth":0.096,"flooded":0},{"u":14,"v":16,"depth":0.18,"flooded":0},{"u":14,"v":17,"depth":0.089,"flooded":0},{"u":14,"v":18,"depth":0.052,"flooded":0},{"u":14,"v":24,"depth":0.087,"flooded":0},{"u":14,"v":25,"depth":0.121,"flooded":0},{"u":15,"v":42,"depth":0.161,"flooded":0},{"u":15,"v":41,"depth":0.131,"flooded":0},{"u":15,"v":16,"depth":0.104,"flooded":0},{"u":15,"v":17,"depth":0.18,"flooded":0},{"u":15,"v":18,"depth":0.124,"flooded":0},{"u":15,"v":28,"depth":0.249,"flooded":0},{"u":15,"v":29,"depth":0.041,"flooded":0},{"u":16,"v":41,"depth":0.167,"flooded":0},{"u":16,"v":42,"depth":0.122,"flooded":0},{"u":16,"v":22,"depth":0.195,"flooded":0},{"u":16,"v":23,"depth":0.234,"flooded":0},{"u":16,"v":28,"depth":0.323,"flooded":1},{"u":17,"v":38,"depth":0.11,"flooded":0},{"u":17,"v":37,"depth":0.136,"flooded":0},{"u":17,"v":18,"depth":0.164,"flooded":0},{"u":17,"v":25,"depth":0.123,"flooded":0},{"u":18,"v":37,"depth":0.102,"flooded":0},{"u":18,"v":36,"depth":0.08,"flooded":0},{"u":18,"v":20,"depth":0.255,"flooded":0},{"u":18,"v":24,"depth":0.11,"flooded":0},{"u":18,"v":29,"depth":0.223,"flooded":0},{"u":19,"v":32,"depth":0.126,"flooded":0},{"u":19,"v":51,"depth":0.108,"flooded":0},{"u":19,"v":26,"depth":0.163,"flooded":0},{"u":20,"v":50,"depth":0.183,"flooded":0},{"u":20,"v":49,"depth":0.067,"flooded":0},{"u":20,"v":24,"depth":0.083,"flooded":0},{"u":20,"v":26,"depth":0.206,"flooded":0},{"u":20,"v":29,"depth":0.174,"flooded":0},{"u":21,"v":47,"depth":0.192,"flooded":0},{"u":21,"v":48,"depth":0.081,"flooded":0},{"u":21,"v":27,"depth":0.309,"flooded":0},{"u":21,"v":31,"depth":0.175,"flooded":0},{"u":22,"v":45,"depth":0.212,"flooded":0},{"u":22,"v":44,"depth":0.219,"flooded":0},{"u":22,"v":28,"depth":0.167,"flooded":0},{"u":22,"v":29,"depth":0.323,"flooded":1},{"u":23,"v":40,"depth":0.097,"flooded":0},{"u":23,"v":39,"depth":0.082,"flooded":0},{"u":23,"v":30,"depth":0.254,"flooded":0},{"u":24,"v":32,"depth":0.121,"flooded":0},{"u":24,"v":51,"depth":0.062,"flooded":0},{"u":24,"v":26,"depth":0.242,"flooded":0},{"u":24,"v":29,"depth":0.185,"flooded":0},{"u":25,"v":35,"depth":0.118,"flooded":0},{"u":25,"v":36,"depth":0.118,"flooded":0},{"u":26,"v":51,"depth":0.061,"flooded":0},{"u":26,"v":50,"depth":0.101,"flooded":0},{"u":27,"v":47,"depth":0.1,"flooded":0},{"u":27,"v":48,"depth":0.159,"flooded":0},{"u":27,"v":29,"depth":0.186,"flooded":0},{"u":27,"v":31,"depth":0.193,"flooded":0},{"u":28,"v":44,"depth":0.192,"flooded":0},{"u":28,"v":43,"depth":0.275,"flooded":0},{"u":28,"v":29,"depth":0.139,"flooded":0},{"u":29,"v":45,"depth":0.082,"flooded":0},{"u":29,"v":44,"depth":0.076,"flooded":0},{"u":30,"v":38,"depth":0.017,"flooded":0},{"u":30,"v":39,"depth":0.062,"flooded":0},{"u":31,"v":48,"depth":0.081,"flooded":0},{"u":31,"v":49,"depth":0.161,"flooded":0}]},{"step":6,"intensity":0.3,"label":"3h 00m","edges":[{"u":32,"v":33,"depth":0.024,"flooded":0},{"u":33,"v":34,"depth":0.042,"flooded":0},{"u":34,"v":35,"depth":0.023,"flooded":0},{"u":35,"v":36,"depth":0.037,"flooded":0},{"u":36,"v":37,"depth":0.021,"flooded":0},{"u":37,"v":38,"depth":0.036,"flooded":0},{"u":38,"v":39,"depth":0.065,"flooded":0},{"u":39,"v":40,"depth":0.029,"flooded":0},{"u":40,"v":41,"depth":0.026,"flooded":0},{"u":41,"v":42,"depth":0.03,"flooded":0},{"u":42,"v":43,"depth":0.027,"flooded":0},{"u":43,"v":44,"depth":0.028,"flooded":0},{"u":44,"v":45,"depth":0.023,"flooded":0},{"u":45,"v":46,"depth":0.042,"flooded":0},{"u":46,"v":47,"depth":0.038,"flooded":0},{"u":47,"v":48,"depth":0.045,"flooded":0},{"u":48,"v":49,"depth":0.011,"flooded":0},{"u":49,"v":50,"depth":0.045,"flooded":0},{"u":50,"v":51,"depth":0.013,"flooded":0},{"u":51,"v":32,"depth":0.027,"flooded":0},{"u":52,"v":53,"depth":0.028,"flooded":0},{"u":53,"v":32,"depth":0.057,"flooded":0},{"u":52,"v":54,"depth":0.025,"flooded":0},{"u":54,"v":34,"depth":0.058,"flooded":0},{"u":52,"v":55,"depth":0.024,"flooded":0},{"u":55,"v":37,"depth":0.072,"flooded":0},{"u":52,"v":56,"depth":0.037,"flooded":0},{"u":56,"v":39,"depth":0.026,"flooded":0},{"u":52,"v":57,"depth":0.055,"flooded":0},{"u":57,"v":42,"depth":0.072,"flooded":0},{"u":52,"v":58,"depth":0.025,"flooded":0},{"u":58,"v":44,"depth":0.051,"flooded":0},{"u":52,"v":59,"depth":0.05,"flooded":0},{"u":59,"v":47,"depth":0.009,"flooded":0},{"u":52,"v":60,"depth":0.014,"flooded":0},{"u":60,"v":49,"depth":0.025,"flooded":0},{"u":0,"v":46,"depth":0.06,"flooded":0},{"u":0,"v":45,"depth":0.08,"flooded":0},{"u":0,"v":1,"depth":0.142,"flooded":0},{"u":0,"v":21,"depth":0.147,"flooded":0},{"u":0,"v":22,"depth":0.157,"flooded":0},{"u":0,"v":27,"depth":0.043,"flooded":0},{"u":1,"v":46,"depth":0.099,"flooded":0},{"u":1,"v":45,"depth":0.056,"flooded":0},{"u":1,"v":2,"depth":0.064,"flooded":0},{"u":1,"v":12,"depth":0.087,"flooded":0},{"u":1,"v":13,"depth":0.06,"flooded":0},{"u":1,"v":15,"depth":0.048,"flooded":0},{"u":1,"v":21,"depth":0.066,"flooded":0},{"u":1,"v":22,"depth":0.17,"flooded":0},{"u":1,"v":24,"depth":0.077,"flooded":0},{"u":1,"v":27,"depth":0.163,"flooded":0},{"u":1,"v":28,"depth":0.106,"flooded":0},{"u":1,"v":29,"depth":0.043,"flooded":0},{"u":2,"v":47,"depth":0.033,"flooded":0},{"u":2,"v":48,"depth":0.052,"flooded":0},{"u":2,"v":12,"depth":0.026,"flooded":0},{"u":2,"v":13,"depth":0.047,"flooded":0},{"u":2,"v":18,"depth":0.047,"flooded":0},{"u":2,"v":20,"depth":0.09,"flooded":0},{"u":2,"v":24,"depth":0.038,"flooded":0},{"u":2,"v":29,"depth":0.058,"flooded":0},{"u":3,"v":34,"depth":0.039,"flooded":0},{"u":3,"v":33,"depth":0.006,"flooded":0},{"u":3,"v":11,"depth":0.03,"flooded":0},{"u":3,"v":13,"depth":0.025,"flooded":0},{"u":3,"v":14,"depth":0.073,"flooded":0},{"u":3,"v":18,"depth":0.057,"flooded":0},{"u":3,"v":20,"depth":0.136,"flooded":0},{"u":3,"v":24,"depth":0.083,"flooded":0},{"u":3,"v":25,"depth":0.088,"flooded":0},{"u":4,"v":37,"depth":0.04,"flooded":0},{"u":4,"v":36,"depth":0.033,"flooded":0},{"u":4,"v":7,"depth":0.079,"flooded":0},{"u":4,"v":10,"depth":0.128,"flooded":0},{"u":4,"v":14,"depth":0.026,"flooded":0},{"u":4,"v":17,"depth":0.032,"flooded":0},{"u":4,"v":24,"depth":0.048,"flooded":0},{"u":4,"v":25,"depth":0.057,"flooded":0},{"u":5,"v":40,"depth":0.041,"flooded":0},{"u":5,"v":39,"depth":0.041,"flooded":0},{"u":5,"v":9,"depth":0.168,"flooded":0},{"u":5,"v":14,"depth":0.194,"flooded":0},{"u":5,"v":15,"depth":0.136,"flooded":0},{"u":5,"v":16,"depth":0.106,"flooded":0},{"u":5,"v":17,"depth":0.087,"flooded":0},{"u":5,"v":23,"depth":0.055,"flooded":0},{"u":6,"v":49,"depth":0.051,"flooded":0},{"u":6,"v":50,"depth":0.138,"flooded":0},{"u":6,"v":8,"depth":0.128,"flooded":0},{"u":6,"v":20,"depth":0.15,"flooded":0},{"u":6,"v":21,"depth":0.156,"flooded":0},{"u":6,"v":26,"depth":0.099,"flooded":0},{"u":6,"v":31,"depth":0.164,"flooded":0},{"u":7,"v":35,"depth":0.051,"flooded":0},{"u":7,"v":34,"depth":0.047,"flooded":0},{"u":7,"v":11,"depth":0.055,"flooded":0},{"u":7,"v":14,"depth":0.069,"flooded":0},{"u":7,"v":17,"depth":0.076,"flooded":0},{"u":7,"v":25,"depth":0.106,"flooded":0},{"u":8,"v":50,"depth":0.026,"flooded":0},{"u":8,"v":49,"depth":0.05,"flooded":0},{"u":8,"v":20,"depth":0.089,"flooded":0},{"u":8,"v":26,"depth":0.073,"flooded":0},{"u":8,"v":31,"depth":0.134,"flooded":0},{"u":9,"v":39,"depth":0.109,"flooded":0},{"u":9,"v":38,"depth":0.078,"flooded":0},{"u":9,"v":23,"depth":0.062,"flooded":0},{"u":9,"v":30,"depth":0.084,"flooded":0},{"u":10,"v":37,"depth":0.058,"flooded":0},{"u":10,"v":36,"depth":0.071,"flooded":0},{"u":10,"v":17,"depth":0.123,"flooded":0},{"u":10,"v":30,"depth":0.108,"flooded":0},{"u":11,"v":33,"depth":0.044,"flooded":0},{"u":11,"v":34,"depth":0.101,"flooded":0},{"u":11,"v":19,"depth":0.079,"flooded":0},{"u":11,"v":24,"depth":0.058,"flooded":0},{"u":11,"v":25,"depth":0.075,"flooded":0},{"u":11,"v":26,"depth":0.048,"flooded":0},{"u":12,"v":43,"depth":0.065,"flooded":0},{"u":12,"v":42,"depth":0.078,"flooded":0},{"u":12,"v":13,"depth":0.154,"flooded":0},{"u":12,"v":14,"depth":0.08,"flooded":0},{"u":12,"v":15,"depth":0.056,"flooded":0},{"u":12,"v":16,"depth":0.125,"flooded":0},{"u":12,"v":22,"depth":0.087,"flooded":0},{"u":12,"v":28,"depth":0.166,"flooded":0},{"u":12,"v":29,"depth":0.046,"flooded":0},{"u":13,"v":47,"depth":0.075,"flooded":0},{"u":13,"v":46,"depth":0.04,"flooded":0},{"u":13,"v":14,"depth":0.074,"flooded":0},{"u":13,"v":15,"depth":0.052,"flooded":0},{"u":13,"v":18,"depth":0.02,"flooded":0},{"u":13,"v":20,"depth":0.061,"flooded":0},{"u":13,"v":21,"depth":0.069,"flooded":0},{"u":13,"v":24,"depth":0.072,"flooded":0},{"u":13,"v":28,"depth":0.081,"flooded":0},{"u":13,"v":29,"depth":0.108,"flooded":0},{"u":14,"v":38,"depth":0.036,"flooded":0},{"u":14,"v":37,"depth":0.072,"flooded":0},{"u":14,"v":15,"depth":0.051,"flooded":0},{"u":14,"v":16,"depth":0.109,"flooded":0},{"u":14,"v":17,"depth":0.052,"flooded":0},{"u":14,"v":18,"depth":0.032,"flooded":0},{"u":14,"v":24,"depth":0.062,"flooded":0},{"u":14,"v":25,"depth":0.066,"flooded":0},{"u":15,"v":42,"depth":0.081,"flooded":0},{"u":15,"v":41,"depth":0.076,"flooded":0},{"u":15,"v":16,"depth":0.065,"flooded":0},{"u":15,"v":17,"depth":0.093,"flooded":0},{"u":15,"v":18,"depth":0.071,"flooded":0},{"u":15,"v":28,"depth":0.14,"flooded":0},{"u":15,"v":29,"depth":0.03,"flooded":0},{"u":16,"v":41,"depth":0.099,"flooded":0},{"u":16,"v":42,"depth":0.062,"flooded":0},{"u":16,"v":22,"depth":0.114,"flooded":0},{"u":16,"v":23,"depth":0.133,"flooded":0},{"u":16,"v":28,"depth":0.166,"flooded":0},{"u":17,"v":38,"depth":0.067,"flooded":0},{"u":17,"v":37,"depth":0.086,"flooded":0},{"u":17,"v":18,"depth":0.094,"flooded":0},{"u":17,"v":25,"depth":0.07,"flooded":0},{"u":18,"v":37,"depth":0.069,"flooded":0},{"u":18,"v":36,"depth":0.049,"flooded":0},{"u":18,"v":20,"depth":0.132,"flooded":0},{"u":18,"v":24,"depth":0.06,"flooded":0},{"u":18,"v":29,"depth":0.113,"flooded":0},{"u":19,"v":32,"depth":0.075,"flooded":0},{"u":19,"v":51,"depth":0.057,"flooded":0},{"u":19,"v":26,"depth":0.085,"flooded":0},{"u":20,"v":50,"depth":0.11,"flooded":0},{"u":20,"v":49,"depth":0.037,"flooded":0},{"u":20,"v":24,"depth":0.045,"flooded":0},{"u":20,"v":26,"depth":0.106,"flooded":0},{"u":20,"v":29,"depth":0.088,"flooded":0},{"u":21,"v":47,"depth":0.097,"flooded":0},{"u":21,"v":48,"depth":0.052,"flooded":0},{"u":21,"v":27,"depth":0.162,"flooded":0},{"u":21,"v":31,"depth":0.105,"flooded":0},{"u":22,"v":45,"depth":0.123,"flooded":0},{"u":22,"v":44,"depth":0.11,"flooded":0},{"u":22,"v":28,"depth":0.088,"flooded":0},{"u":22,"v":29,"depth":0.167,"flooded":0},{"u":23,"v":40,"depth":0.06,"flooded":0},{"u":23,"v":39,"depth":0.049,"flooded":0},{"u":23,"v":30,"depth":0.134,"flooded":0},{"u":24,"v":32,"depth":0.071,"flooded":0},{"u":24,"v":51,"depth":0.033,"flooded":0},{"u":24,"v":26,"depth":0.14,"flooded":0},{"u":24,"v":29,"depth":0.11,"flooded":0},{"u":25,"v":35,"depth":0.077,"flooded":0},{"u":25,"v":36,"depth":0.078,"flooded":0},{"u":26,"v":51,"depth":0.046,"flooded":0},{"u":26,"v":50,"depth":0.066,"flooded":0},{"u":27,"v":47,"depth":0.063,"flooded":0},{"u":27,"v":48,"depth":0.095,"flooded":0},{"u":27,"v":29,"depth":0.103,"flooded":0},{"u":27,"v":31,"depth":0.107,"flooded":0},{"u":28,"v":44,"depth":0.113,"flooded":0},{"u":28,"v":43,"depth":0.147,"flooded":0},{"u":28,"v":29,"depth":0.077,"flooded":0},{"u":29,"v":45,"depth":0.054,"flooded":0},{"u":29,"v":44,"depth":0.043,"flooded":0},{"u":30,"v":38,"depth":0.011,"flooded":0},{"u":30,"v":39,"depth":0.04,"flooded":0},{"u":31,"v":48,"depth":0.049,"flooded":0},{"u":31,"v":49,"depth":0.085,"flooded":0}]},{"step":7,"intensity":0.05,"label":"4h 00m","edges":[{"u":32,"v":33,"depth":0.022,"flooded":0},{"u":33,"v":34,"depth":0.01,"flooded":0},{"u":34,"v":35,"depth":0.031,"flooded":0},{"u":35,"v":36,"depth":0.027,"flooded":0},{"u":36,"v":37,"depth":0.028,"flooded":0},{"u":37,"v":38,"depth":0.018,"flooded":0},{"u":38,"v":39,"depth":0.043,"flooded":0},{"u":39,"v":40,"depth":0.035,"flooded":0},{"u":40,"v":41,"depth":0.03,"flooded":0},{"u":41,"v":42,"depth":0.012,"flooded":0},{"u":42,"v":43,"depth":0.02,"flooded":0},{"u":43,"v":44,"depth":0.006,"flooded":0},{"u":44,"v":45,"depth":0.009,"flooded":0},{"u":45,"v":46,"depth":0.029,"flooded":0},{"u":46,"v":47,"depth":0.031,"flooded":0},{"u":47,"v":48,"depth":0.04,"flooded":0},{"u":48,"v":49,"depth":0.013,"flooded":0},{"u":49,"v":50,"depth":0.02,"flooded":0},{"u":50,"v":51,"depth":0.018,"flooded":0},{"u":51,"v":32,"depth":0.011,"flooded":0},{"u":52,"v":53,"depth":0.009,"flooded":0},{"u":53,"v":32,"depth":0.025,"flooded":0},{"u":52,"v":54,"depth":0.012,"flooded":0},{"u":54,"v":34,"depth":0.032,"flooded":0},{"u":52,"v":55,"depth":0.018,"flooded":0},{"u":55,"v":37,"depth":0.039,"flooded":0},{"u":52,"v":56,"depth":0.03,"flooded":0},{"u":56,"v":39,"depth":0.014,"flooded":0},{"u":52,"v":57,"depth":0.037,"flooded":0},{"u":57,"v":42,"depth":0.039,"flooded":0},{"u":52,"v":58,"depth":0.017,"flooded":0},{"u":58,"v":44,"depth":0.018,"flooded":0},{"u":52,"v":59,"depth":0.031,"flooded":0},{"u":59,"v":47,"depth":0.007,"flooded":0},{"u":52,"v":60,"depth":0.009,"flooded":0},{"u":60,"v":49,"depth":0.004,"flooded":0},{"u":0,"v":46,"depth":0.036,"flooded":0},{"u":0,"v":45,"depth":0.036,"flooded":0},{"u":0,"v":1,"depth":0.047,"flooded":0},{"u":0,"v":21,"depth":0.044,"flooded":0},{"u":0,"v":22,"depth":0.031,"flooded":0},{"u":0,"v":27,"depth":0.011,"flooded":0},{"u":1,"v":46,"depth":0.036,"flooded":0},{"u":1,"v":45,"depth":0.035,"flooded":0},{"u":1,"v":2,"depth":0.032,"flooded":0},{"u":1,"v":12,"depth":0.033,"flooded":0},{"u":1,"v":13,"depth":0.02,"flooded":0},{"u":1,"v":15,"depth":0.022,"flooded":0},{"u":1,"v":21,"depth":0.039,"flooded":0},{"u":1,"v":22,"depth":0.036,"flooded":0},{"u":1,"v":24,"depth":0.022,"flooded":0},{"u":1,"v":27,"depth":0.037,"flooded":0},{"u":1,"v":28,"depth":0.039,"flooded":0},{"u":1,"v":29,"depth":0.025,"flooded":0},{"u":2,"v":47,"depth":0.031,"flooded":0},{"u":2,"v":48,"depth":0.031,"flooded":0},{"u":2,"v":12,"depth":0.005,"flooded":0},{"u":2,"v":13,"depth":0.011,"flooded":0},{"u":2,"v":18,"depth":0.013,"flooded":0},{"u":2,"v":20,"depth":0.032,"flooded":0},{"u":2,"v":24,"depth":0.021,"flooded":0},{"u":2,"v":29,"depth":0.021,"flooded":0},{"u":3,"v":34,"depth":0.01,"flooded":0},{"u":3,"v":33,"depth":0.005,"flooded":0},{"u":3,"v":11,"depth":0.028,"flooded":0},{"u":3,"v":13,"depth":0.013,"flooded":0},{"u":3,"v":14,"depth":0.045,"flooded":0},{"u":3,"v":18,"depth":0.034,"flooded":0},{"u":3,"v":20,"depth":0.032,"flooded":0},{"u":3,"v":24,"depth":0.017,"flooded":0},{"u":3,"v":25,"depth":0.045,"flooded":0},{"u":4,"v":37,"depth":0.017,"flooded":0},{"u":4,"v":36,"depth":0.025,"flooded":0},{"u":4,"v":7,"depth":0.042,"flooded":0},{"u":4,"v":10,"depth":0.045,"flooded":0},{"u":4,"v":14,"depth":0.025,"flooded":0},{"u":4,"v":17,"depth":0.025,"flooded":0},{"u":4,"v":24,"depth":0.022,"flooded":0},{"u":4,"v":25,"depth":0.011,"flooded":0},{"u":5,"v":40,"depth":0.018,"flooded":0},{"u":5,"v":39,"depth":0.012,"flooded":0},{"u":5,"v":9,"depth":0.031,"flooded":0},{"u":5,"v":14,"depth":0.038,"flooded":0},{"u":5,"v":15,"depth":0.053,"flooded":0},{"u":5,"v":16,"depth":0.037,"flooded":0},{"u":5,"v":17,"depth":0.026,"flooded":0},{"u":5,"v":23,"depth":0.01,"flooded":0},{"u":6,"v":49,"depth":0.024,"flooded":0},{"u":6,"v":50,"depth":0.049,"flooded":0},{"u":6,"v":8,"depth":0.024,"flooded":0},{"u":6,"v":20,"depth":0.057,"flooded":0},{"u":6,"v":21,"depth":0.045,"flooded":0},{"u":6,"v":26,"depth":0.026,"flooded":0},{"u":6,"v":31,"depth":0.045,"flooded":0},{"u":7,"v":35,"depth":0.024,"flooded":0},{"u":7,"v":34,"depth":0.009,"flooded":0},{"u":7,"v":11,"depth":0.039,"flooded":0},{"u":7,"v":14,"depth":0.03,"flooded":0},{"u":7,"v":17,"depth":0.035,"flooded":0},{"u":7,"v":25,"depth":0.043,"flooded":0},{"u":8,"v":50,"depth":0.008,"flooded":0},{"u":8,"v":49,"depth":0.039,"flooded":0},{"u":8,"v":20,"depth":0.033,"flooded":0},{"u":8,"v":26,"depth":0.025,"flooded":0},{"u":8,"v":31,"depth":0.05,"flooded":0},{"u":9,"v":39,"depth":0.045,"flooded":0},{"u":9,"v":38,"depth":0.024,"flooded":0},{"u":9,"v":23,"depth":0.019,"flooded":0},{"u":9,"v":30,"depth":0.045,"flooded":0},{"u":10,"v":37,"depth":0.016,"flooded":0},{"u":10,"v":36,"depth":0.014,"flooded":0},{"u":10,"v":17,"depth":0.035,"flooded":0},{"u":10,"v":30,"depth":0.048,"flooded":0},{"u":11,"v":33,"depth":0.032,"flooded":0},{"u":11,"v":34,"depth":0.047,"flooded":0},{"u":11,"v":19,"depth":0.039,"flooded":0},{"u":11,"v":24,"depth":0.022,"flooded":0},{"u":11,"v":25,"depth":0.016,"flooded":0},{"u":11,"v":26,"depth":0.033,"flooded":0},{"u":12,"v":43,"depth":0.019,"flooded":0},{"u":12,"v":42,"depth":0.044,"flooded":0},{"u":12,"v":13,"depth":0.034,"flooded":0},{"u":12,"v":14,"depth":0.041,"flooded":0},{"u":12,"v":15,"depth":0.014,"flooded":0},{"u":12,"v":16,"depth":0.027,"flooded":0},{"u":12,"v":22,"depth":0.044,"flooded":0},{"u":12,"v":28,"depth":0.038,"flooded":0},{"u":12,"v":29,"depth":0.034,"flooded":0},{"u":13,"v":47,"depth":0.045,"flooded":0},{"u":13,"v":46,"depth":0.023,"flooded":0},{"u":13,"v":14,"depth":0.013,"flooded":0},{"u":13,"v":15,"depth":0.016,"flooded":0},{"u":13,"v":18,"depth":0.008,"flooded":0},{"u":13,"v":20,"depth":0.033,"flooded":0},{"u":13,"v":21,"depth":0.028,"flooded":0},{"u":13,"v":24,"depth":0.031,"flooded":0},{"u":13,"v":28,"depth":0.02,"flooded":0},{"u":13,"v":29,"depth":0.045,"flooded":0},{"u":14,"v":38,"depth":0.03,"flooded":0},{"u":14,"v":37,"depth":0.037,"flooded":0},{"u":14,"v":15,"depth":0.013,"flooded":0},{"u":14,"v":16,"depth":0.049,"flooded":0},{"u":14,"v":17,"depth":0.022,"flooded":0},{"u":14,"v":18,"depth":0.015,"flooded":0},{"u":14,"v":24,"depth":0.042,"flooded":0},{"u":14,"v":25,"depth":0.02,"flooded":0},{"u":15,"v":42,"depth":0.014,"flooded":0},{"u":15,"v":41,"depth":0.031,"flooded":0},{"u":15,"v":16,"depth":0.032,"flooded":0},{"u":15,"v":17,"depth":0.021,"flooded":0},{"u":15,"v":18,"depth":0.026,"flooded":0},{"u":15,"v":28,"depth":0.05,"flooded":0},{"u":15,"v":29,"depth":0.021,"flooded":0},{"u":16,"v":41,"depth":0.042,"flooded":0},{"u":16,"v":42,"depth":0.011,"flooded":0},{"u":16,"v":22,"depth":0.046,"flooded":0},{"u":16,"v":23,"depth":0.049,"flooded":0},{"u":16,"v":28,"depth":0.035,"flooded":0},{"u":17,"v":38,"depth":0.031,"flooded":0},{"u":17,"v":37,"depth":0.043,"flooded":0},{"u":17,"v":18,"depth":0.036,"flooded":0},{"u":17,"v":25,"depth":0.026,"flooded":0},{"u":18,"v":37,"depth":0.041,"flooded":0},{"u":18,"v":36,"depth":0.023,"flooded":0},{"u":18,"v":20,"depth":0.03,"flooded":0},{"u":18,"v":24,"depth":0.017,"flooded":0},{"u":18,"v":29,"depth":0.021,"flooded":0},{"u":19,"v":32,"depth":0.033,"flooded":0},{"u":19,"v":51,"depth":0.015,"flooded":0},{"u":19,"v":26,"depth":0.019,"flooded":0},{"u":20,"v":50,"depth":0.049,"flooded":0},{"u":20,"v":49,"depth":0.012,"flooded":0},{"u":20,"v":24,"depth":0.012,"flooded":0},{"u":20,"v":26,"depth":0.022,"flooded":0},{"u":20,"v":29,"depth":0.016,"flooded":0},{"u":21,"v":47,"depth":0.018,"flooded":0},{"u":21,"v":48,"depth":0.029,"flooded":0},{"u":21,"v":27,"depth":0.04,"flooded":0},{"u":21,"v":31,"depth":0.047,"flooded":0},{"u":22,"v":45,"depth":0.049,"flooded":0},{"u":22,"v":44,"depth":0.02,"flooded":0},{"u":22,"v":28,"depth":0.022,"flooded":0},{"u":22,"v":29,"depth":0.036,"flooded":0},{"u":23,"v":40,"depth":0.029,"flooded":0},{"u":23,"v":39,"depth":0.022,"flooded":0},{"u":23,"v":30,"depth":0.035,"flooded":0},{"u":24,"v":32,"depth":0.029,"flooded":0},{"u":24,"v":51,"depth":0.009,"flooded":0},{"u":24,"v":26,"depth":0.054,"flooded":0},{"u":24,"v":29,"depth":0.047,"flooded":0},{"u":25,"v":35,"depth":0.043,"flooded":0},{"u":25,"v":36,"depth":0.046,"flooded":0},{"u":26,"v":51,"depth":0.034,"flooded":0},{"u":26,"v":50,"depth":0.037,"flooded":0},{"u":27,"v":47,"depth":0.032,"flooded":0},{"u":27,"v":48,"depth":0.042,"flooded":0},{"u":27,"v":29,"depth":0.035,"flooded":0},{"u":27,"v":31,"depth":0.035,"flooded":0},{"u":28,"v":44,"depth":0.047,"flooded":0},{"u":28,"v":43,"depth":0.04,"flooded":0},{"u":28,"v":29,"depth":0.025,"flooded":0},{"u":29,"v":45,"depth":0.031,"flooded":0},{"u":29,"v":44,"depth":0.016,"flooded":0},{"u":30,"v":38,"depth":0.007,"flooded":0},{"u":30,"v":39,"depth":0.023,"flooded":0},{"u":31,"v":48,"depth":0.022,"flooded":0},{"u":31,"v":49,"depth":0.022,"flooded":0}]}],"centre":{"lat":22.3072,"lon":73.1812}};
+const nodeMap={};NET.nodes.forEach(n=>nodeMap[n.id]=n);
+const wardMap={};NET.wards.forEach(w=>wardMap[w.id]=w);
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let mode='pre', step=0, selWard=null, playing=false, playTimer=null;
+let camX=0,camY=0,camZ=1,dragging=false,lastMX=0,lastMY=0;
+let flowTick=0, rafId=null;
+const layers={wards:true,nodes:true,labels:true,floodOnly:false,flow:false};
+
+// ── Canvas setup ──────────────────────────────────────────────────────────────
+const area=document.getElementById('canvas-area');
+const bgC=document.getElementById('bg-canvas');
+const mc =document.getElementById('main-canvas');
+const bgX=bgC.getContext('2d'), ctx=mc.getContext('2d');
+
+function resize(){
+  const W=area.clientWidth,H=area.clientHeight;
+  bgC.width=mc.width=W; bgC.height=mc.height=H;
+  drawBg(); draw();
+}
+new ResizeObserver(resize).observe(area);
+
+// ── Geo projection ────────────────────────────────────────────────────────────
+const LAT0=22.22,LAT1=22.40,LON0=73.10,LON1=73.27;
+const PAD=52;
+function toXY(lat,lon){
+  const W=mc.width,H=mc.height;
+  const bw=W-2*PAD, bh=H-2*PAD;
+  const rx=(lon-LON0)/(LON1-LON0);
+  const ry=1-(lat-LAT0)/(LAT1-LAT0);
+  return [PAD+rx*bw, PAD+ry*bh];
+}
+function cam(x,y){return [x*camZ+camX, y*camZ+camY];}
+function proj(lat,lon){const[x,y]=toXY(lat,lon);return cam(x,y);}
+
+// ── Road style ────────────────────────────────────────────────────────────────
+const ROAD_W={arterial:3.5,primary:2.5,secondary:1.8,tertiary:1.2,residential:.8};
+const ROAD_C={
+  arterial:'rgba(90,172,255,0.85)',
+  primary:'rgba(42,112,192,0.8)',
+  secondary:'rgba(26,74,144,0.75)',
+  tertiary:'rgba(16,46,96,0.7)',
+  residential:'rgba(10,28,64,0.65)'
+};
+const FLOOD_C='rgba(248,113,113,0.95)';
+const FLOOD_GLOW='rgba(248,80,80,0.3)';
+
+// ── Get current edge state ────────────────────────────────────────────────────
+function edgeState(e){
+  if(mode==='pre') return {depth:e.pre_depth,flooded:0};
+  if(mode==='post'||mode==='diff') return {depth:e.post_depth,flooded:e.flooded};
+  const tl=NET.timeline[step];
+  const te=tl.edges.find(x=>x.u===e.u&&x.v===e.v)||{depth:e.pre_depth,flooded:0};
+  return te;
+}
+
+// ── Background ────────────────────────────────────────────────────────────────
+function drawBg(){
+  const W=bgC.width,H=bgC.height;
+  bgX.clearRect(0,0,W,H);
+  const g=bgX.createRadialGradient(W*.5,H*.45,0,W*.5,H*.5,Math.max(W,H)*.7);
+  g.addColorStop(0,'#07101E'); g.addColorStop(1,'#04070E');
+  bgX.fillStyle=g; bgX.fillRect(0,0,W,H);
+  // subtle grid
+  bgX.strokeStyle='rgba(12,30,60,0.5)'; bgX.lineWidth=.5;
+  for(let i=0;i<=12;i++){
+    const x=i*(W/12),y=i*(H/12);
+    bgX.beginPath();bgX.moveTo(x,0);bgX.lineTo(x,H);bgX.stroke();
+    bgX.beginPath();bgX.moveTo(0,y);bgX.lineTo(W,y);bgX.stroke();
+  }
+}
+
+// ── Draw ward zones ───────────────────────────────────────────────────────────
+function drawWards(){
+  if(!layers.wards) return;
+  NET.wards.forEach(w=>{
+    const[cx,cy]=proj(w.lat,w.lon);
+    const fr=w.flood_risk;
+    const sel=(selWard===w.id);
+    const isFlooded=mode!=='pre'&&w.flooded_pct>20;
+    const R=(38+fr*20)*camZ;
+
+    if(isFlooded){
+      const g=ctx.createRadialGradient(cx,cy,R*.1,cx,cy,R*1.6);
+      g.addColorStop(0,`rgba(248,80,60,${fr*.2})`);
+      g.addColorStop(1,'rgba(248,60,40,0)');
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.arc(cx,cy,R*1.6,0,Math.PI*2);ctx.fill();
+    }
+
+    ctx.save();
+    ctx.strokeStyle=sel?'rgba(90,180,255,.95)':isFlooded?`rgba(248,100,100,${.3+fr*.4})`:'rgba(20,60,130,.4)';
+    ctx.lineWidth=sel?1.5:.7;
+    ctx.setLineDash(sel?[]:[5,5]);
+    ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  });
+}
+
+// ── Draw edges ────────────────────────────────────────────────────────────────
+function drawEdges(){
+  const tl=NET.timeline[step];
+  const tlMap={};
+  if(tl) tl.edges.forEach(te=>tlMap[`${te.u}_${te.v}`]=te);
+
+  NET.edges.forEach(e=>{
+    const un=nodeMap[e.u],vn=nodeMap[e.v];
+    if(!un||!vn) return;
+    const[x1,y1]=proj(un.lat,un.lon);
+    const[x2,y2]=proj(vn.lat,vn.lon);
+
+    let flooded,depth;
+    if(mode==='pre'){flooded=0;depth=e.pre_depth;}
+    else if(mode==='post'||mode==='diff'){flooded=e.flooded;depth=e.post_depth;}
+    else{const te=tlMap[`${e.u}_${e.v}`]||{depth:e.pre_depth,flooded:0};flooded=te.flooded;depth=te.depth;}
+
+    if(layers.floodOnly&&!flooded) return;
+
+    const w=(ROAD_W[e.road_type]||1)*camZ;
+    ctx.lineCap='round';
+
+    if(flooded){
+      ctx.shadowColor=FLOOD_GLOW; ctx.shadowBlur=8*camZ;
+      ctx.strokeStyle=FLOOD_C; ctx.lineWidth=w+1*camZ;
+    } else {
+      ctx.shadowBlur=0;
+      const alpha=layers.floodOnly?.25:1;
+      ctx.strokeStyle=mode==='diff'?'rgba(52,211,153,.7)':(ROAD_C[e.road_type]||'rgba(20,60,130,.7)');
+      ctx.lineWidth=w;
+      if(layers.floodOnly) ctx.globalAlpha=.25;
+    }
+
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+
+    // flow particles on flooded roads
+    if(layers.flow&&flooded&&mode!=='pre'){
+      const L=Math.sqrt((x2-x1)**2+(y2-y1)**2);
+      if(L>4){
+        const dx=(x2-x1)/L,dy=(y2-y1)/L;
+        const t=((flowTick%40)/40);
+        const px=x1+dx*L*t,py=y1+dy*L*t;
+        ctx.fillStyle='rgba(255,210,80,.9)';
+        ctx.shadowColor='rgba(255,200,50,.6)'; ctx.shadowBlur=4;
+        ctx.beginPath();ctx.arc(px,py,2*camZ,0,Math.PI*2);ctx.fill();
+        ctx.shadowBlur=0;
+      }
+    }
+  });
+}
+
+// ── Draw nodes ────────────────────────────────────────────────────────────────
+function drawNodes(){
+  if(!layers.nodes) return;
+  NET.nodes.forEach(n=>{
+    const[x,y]=proj(n.lat,n.lon);
+    const isWard=n.ward_id>=0&&n.ward_id<32;
+    const sel=isWard&&selWard===n.ward_id;
+    const w=isWard?wardMap[n.ward_id]:null;
+    const fr=w?w.flood_risk:0;
+    const flooded=mode!=='pre'&&w&&w.flooded_pct>30;
+
+    if(isWard){
+      const r=(sel?8:5)*camZ;
+      if(sel){ctx.shadowColor='rgba(90,180,255,.8)';ctx.shadowBlur=14;}
+      else if(flooded){ctx.shadowColor='rgba(248,80,60,.6)';ctx.shadowBlur=8;}
+      ctx.fillStyle=flooded?'rgba(248,100,100,.9)':'rgba(74,154,255,.9)';
+      ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=sel?'#fff':'rgba(190,220,255,.85)';
+      ctx.beginPath();ctx.arc(x,y,r*.38,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
+    } else {
+      ctx.fillStyle='rgba(20,50,110,.65)';
+      ctx.beginPath();ctx.arc(x,y,2*camZ,0,Math.PI*2);ctx.fill();
+    }
+  });
+}
+
+// ── Draw labels ───────────────────────────────────────────────────────────────
+function drawLabels(){
+  if(!layers.labels) return;
+  NET.wards.forEach(w=>{
+    const[cx,cy]=proj(w.lat,w.lon);
+    const sel=selWard===w.id;
+    const flooded=mode!=='pre'&&w.flooded_pct>20;
+    const sz=Math.max(8,Math.min(12,(sel?11:9)*camZ));
+    ctx.font=`${sel?600:400} ${sz}px system-ui,sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillStyle=sel?'rgba(140,220,255,1)':flooded?'rgba(248,140,130,.9)':'rgba(80,130,180,.75)';
+    ctx.fillText(w.name,cx,cy-9*camZ);
+  });
+}
+
+// ── Diff mode labels ──────────────────────────────────────────────────────────
+function drawDiffHints(){
+  if(mode!=='diff') return;
+  ctx.font='600 10px system-ui,sans-serif';
+  ctx.textAlign='left';ctx.textBaseline='top';
+  ctx.fillStyle='rgba(52,211,153,.6)';ctx.fillText('Passable roads',14,12);
+  ctx.fillStyle='rgba(248,113,113,.7)';ctx.fillText('Flooded / impassable',14,26);
+}
+
+// ── Main draw ─────────────────────────────────────────────────────────────────
+function draw(){
+  ctx.clearRect(0,0,mc.width,mc.height);
+  drawWards();drawEdges();drawNodes();drawLabels();drawDiffHints();
+  updateKPIs();
+}
+
+// ── Animation loop ────────────────────────────────────────────────────────────
+let lastT=0;
+function loop(t){
+  if(layers.flow&&mode!=='pre'){
+    if(t-lastT>30){flowTick++;lastT=t;draw();}
+  }
+  rafId=requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ── KPIs ──────────────────────────────────────────────────────────────────────
+function updateKPIs(){
+  let flooded=0,sumD=0,wardsHit=0;
+  if(mode==='pre'){
+    document.getElementById('kv-f').textContent='0%';
+    document.getElementById('kv-d').textContent='0.0m';
+    document.getElementById('kv-a').textContent='100%';
+    document.getElementById('kv-w').textContent='0';
+    document.getElementById('sb-mode').textContent='PRE-STORM';
+    document.getElementById('sb-mode').style.color='#4A9EFF';
+    return;
+  }
+  const tl=NET.timeline[step];
+  const tlMap={};
+  if(tl&&mode!=='post'&&mode!=='diff') tl.edges.forEach(te=>tlMap[`${te.u}_${te.v}`]=te);
+
+  NET.edges.forEach(e=>{
+    let d,f;
+    if(mode==='post'||mode==='diff'){d=e.post_depth;f=e.flooded;}
+    else{const te=tlMap[`${e.u}_${e.v}`]||{depth:e.pre_depth,flooded:0};d=te.depth;f=te.flooded;}
+    if(f) flooded++;
+    sumD+=d;
+  });
+  const total=NET.edges.length;
+  NET.wards.forEach(w=>{if(w.flooded_pct>15) wardsHit++;});
+  document.getElementById('kv-f').textContent=(flooded/total*100).toFixed(0)+'%';
+  document.getElementById('kv-d').textContent=(sumD/total).toFixed(2)+'m';
+  document.getElementById('kv-a').textContent=((total-flooded)/total*100).toFixed(0)+'%';
+  document.getElementById('kv-w').textContent=wardsHit;
+  const modeLabel=mode==='diff'?'DIFFERENCE':mode==='post'?'POST-STORM':'SIMULATING';
+  document.getElementById('sb-mode').textContent=modeLabel;
+  document.getElementById('sb-mode').style.color=mode==='diff'?'#A78BFA':'#F87171';
+}
+
+// ── Mode switch ───────────────────────────────────────────────────────────────
+function setMode(m){
+  mode=m;
+  ['pre','post','diff'].forEach(id=>document.getElementById('btn-'+id).classList.toggle('active',id===m));
+  document.getElementById('diff-badge').style.display=m==='diff'?'block':'none';
+  if(m==='diff') updateDiffBadge();
+  draw();
+}
+
+function updateDiffBadge(){
+  const fl=NET.edges.filter(e=>e.flooded).length;
+  const total=NET.edges.length;
+  const iso=NET.wards.filter(w=>w.accessibility_loss>50).length;
+  document.getElementById('diff-badge').innerHTML=`
+    <div class="db-title">Before → After</div>
+    <div class="db-row"><span class="db-k">Pre-storm flooded</span><span class="db-good">0</span></div>
+    <div class="db-row"><span class="db-k">Post-storm flooded</span><span class="db-bad">${fl} roads</span></div>
+    <div class="db-row"><span class="db-k">Network change</span><span class="db-bad">+${(fl/total*100).toFixed(1)}%</span></div>
+    <div class="db-row"><span class="db-k">Wards isolated</span><span class="db-bad">${iso}</span></div>
+  `;
+}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+function buildTlSteps(){
+  const el=document.getElementById('tl-steps');
+  el.innerHTML=NET.timeline.map((t,i)=>`<div class="tl-step" id="tls-${i}" onclick="setStep(${i})"></div>`).join('');
+}
+
+function setStep(s){
+  step=s;
+  const tl=NET.timeline[s];
+  const pct=(s/(NET.timeline.length-1)*100).toFixed(0);
+  document.getElementById('tl-fill').style.width=pct+'%';
+  document.getElementById('tl-thumb').style.left=pct+'%';
+  document.getElementById('tl-label').textContent=tl.label;
+  const intPct=(tl.intensity*100).toFixed(0);
+  document.getElementById('intens-val').textContent=intPct+'%';
+  const col=tl.intensity>0.8?'#F87171':tl.intensity>0.4?'#F59E0B':'#1A4A90';
+  document.getElementById('intens-fill').style.width=intPct+'%';
+  document.getElementById('intens-fill').style.background=col;
+  NET.timeline.forEach((_,i)=>{
+    const el=document.getElementById('tls-'+i);
+    if(!el) return;
+    el.className='tl-step '+(i<s?'done':i===s?'active':'');
+  });
+  if(mode==='pre'&&s>0) setMode('post');
+  draw();
+}
+
+// ── Play/pause ────────────────────────────────────────────────────────────────
+function togglePlay(){
+  playing=!playing;
+  const btn=document.getElementById('btn-play');
+  const icon=document.getElementById('play-icon');
+  const lbl=document.getElementById('play-label');
+  if(playing){
+    btn.classList.add('playing');
+    icon.className='stop-icon';
+    lbl.textContent='PAUSE';
+    if(step===NET.timeline.length-1) setStep(0);
+    playTimer=setInterval(()=>{
+      const ns=(step+1)%NET.timeline.length;
+      setStep(ns);
+      if(ns===0){clearInterval(playTimer);playing=false;btn.classList.remove('playing');icon.className='play-icon';lbl.textContent='ANIMATE STORM';}
+    },700);
+  } else {
+    clearInterval(playTimer);
+    btn.classList.remove('playing');
+    icon.className='play-icon';
+    lbl.textContent='ANIMATE STORM';
+  }
+}
+
+// ── Layers ────────────────────────────────────────────────────────────────────
+function toggleLayer(name){
+  layers[name]=!layers[name];
+  document.getElementById('lt-'+name).classList.toggle('on',layers[name]);
+  draw();
+}
+
+// ── Ward list ─────────────────────────────────────────────────────────────────
+function buildWardList(){
+  const el=document.getElementById('ward-list');
+  const sorted=[...NET.wards].sort((a,b)=>b.flood_risk-a.flood_risk).slice(0,10);
+  el.innerHTML=sorted.map(w=>{
+    const riskCol=w.flood_risk>0.65?'#F87171':w.flood_risk>0.45?'#F59E0B':'#34D399';
+    const sel=selWard===w.id;
+    return `<div class="ward-item ${sel?'sel':''}" onclick="clickWard(${w.id})">
+      <div class="ward-risk" style="background:${riskCol}"></div>
+      <div class="ward-info">
+        <div class="ward-name">${w.name}</div>
+        <div class="ward-stat">UOI ${w.uoi.toFixed(0)} · pop ${(w.pop/1000).toFixed(0)}k</div>
+      </div>
+      <div class="ward-flood" style="color:${riskCol}">${w.flooded_pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Ward detail ───────────────────────────────────────────────────────────────
+function showWardDetail(w){
+  if(!w){document.getElementById('wd-panel').style.display='none';return;}
+  const col=w.flood_risk>0.65?'#F87171':w.flood_risk>0.45?'#F59E0B':'#34D399';
+  document.getElementById('wd-panel').style.display='block';
+  document.getElementById('wd-panel').innerHTML=`
+    <span class="wd-close" onclick="clearSel()">✕</span>
+    <div class="wd-name">${w.name}</div>
+    ${metric('UOI Score',w.uoi.toFixed(1),w.uoi,'#4A9EFF')}
+    ${metric('Flood Risk',(w.flood_risk*100).toFixed(0)+'%',w.flood_risk*100,col)}
+    ${metric('Roads Flooded',w.flooded_pct+'%',w.flooded_pct,'#F87171')}
+    ${metric('Access Lost',w.accessibility_loss+'%',w.accessibility_loss,'#F59E0B')}
+    ${metric('Population',(w.pop/1000).toFixed(1)+'k',Math.min(100,w.pop/700),'#A78BFA')}
+    <div style="font-size:8px;color:#1A3050;margin-top:8px;">Click map to deselect</div>
+  `;
+}
+
+function metric(label,val,pct,col){
+  return `<div class="wd-row">
+    <div class="wd-label">${label}</div>
+    <div class="wd-val">${val}</div>
+    <div class="wd-bar-bg"><div class="wd-bar" style="width:${Math.min(100,pct)}%;background:${col}"></div></div>
+  </div>`;
+}
+
+function clickWard(id){
+  selWard=selWard===id?null:id;
+  showWardDetail(selWard!==null?wardMap[selWard]:null);
+  buildWardList();draw();
+}
+function clearSel(){selWard=null;showWardDetail(null);buildWardList();draw();}
+
+// ── Tooltip ───────────────────────────────────────────────────────────────────
+mc.addEventListener('mousemove',e=>{
+  const R=mc.getBoundingClientRect();
+  const mx=e.clientX-R.left, my=e.clientY-R.top;
+  const tip=document.getElementById('tip');
+
+  // Check ward nodes first
+  let closest=null,minD=30;
+  NET.nodes.forEach(n=>{
+    if(n.ward_id<0||n.ward_id>=32) return;
+    const[nx,ny]=proj(n.lat,n.lon);
+    const d=Math.hypot(nx-mx,ny-my);
+    if(d<minD){minD=d;closest=n;}
+  });
+  if(closest){
+    const w=wardMap[closest.ward_id];
+    const riskCol=w.flood_risk>0.65?'#F87171':w.flood_risk>0.45?'#F59E0B':'#34D399';
+    tip.style.display='block';
+    tip.style.left=(mx+14)+'px'; tip.style.top=(my-8)+'px';
+    tip.innerHTML=`<div class="tip-title">${w.name}</div>
+      <div class="tip-row"><span class="tip-k">UOI Score</span><span class="tip-v">${w.uoi.toFixed(1)}</span></div>
+      <div class="tip-row"><span class="tip-k">Flood Risk</span><span class="tip-v" style="color:${riskCol}">${(w.flood_risk*100).toFixed(0)}%</span></div>
+      <div class="tip-row"><span class="tip-k">Population</span><span class="tip-v">${w.pop.toLocaleString()}</span></div>
+      ${mode!=='pre'?`<div class="tip-row"><span class="tip-k">Roads Flooded</span><span class="tip-v">${w.flooded_pct}%</span></div>`:''}
+      ${w.flood_risk>0.6&&mode!=='pre'?'<div class="tip-warn">⚠ HIGH FLOOD RISK</div>':''}`;
+    return;
+  }
+
+  // Check edge proximity
+  let cEdge=null; let minED=9;
+  NET.edges.forEach(eg=>{
+    const un=nodeMap[eg.u],vn=nodeMap[eg.v];
+    if(!un||!vn) return;
+    const[x1,y1]=proj(un.lat,un.lon),[x2,y2]=proj(vn.lat,vn.lon);
+    const dx=x2-x1,dy=y2-y1,len2=dx*dx+dy*dy;
+    if(len2===0) return;
+    const t2=Math.max(0,Math.min(1,((mx-x1)*dx+(my-y1)*dy)/len2));
+    const px=x1+t2*dx,py=y1+t2*dy;
+    const d=Math.hypot(mx-px,my-py);
+    if(d<minED){minED=d;cEdge=eg;}
+  });
+  if(cEdge){
+    const flooded=mode!=='pre'&&cEdge.flooded;
+    const depth=(mode==='pre'?cEdge.pre_depth:cEdge.post_depth).toFixed(3);
+    tip.style.display='block';
+    tip.style.left=(mx+14)+'px'; tip.style.top=(my-8)+'px';
+    tip.innerHTML=`<div class="tip-title">${cEdge.road_type.charAt(0).toUpperCase()+cEdge.road_type.slice(1)} Road</div>
+      <div class="tip-row"><span class="tip-k">Length</span><span class="tip-v">${cEdge.length_m.toFixed(0)} m</span></div>
+      <div class="tip-row"><span class="tip-k">Lanes</span><span class="tip-v">${cEdge.lanes||'—'}</span></div>
+      <div class="tip-row"><span class="tip-k">Flood depth</span><span class="tip-v" style="color:${flooded?'#F87171':'#8AB4D8'}">${depth} m</span></div>
+      <div class="tip-row"><span class="tip-k">Threshold</span><span class="tip-v">${cEdge.flood_threshold} m</span></div>
+      ${flooded?'<div class="tip-warn">⚠ ROAD IMPASSABLE</div>':''}`;
+  } else {
+    tip.style.display='none';
+  }
+});
+mc.addEventListener('mouseleave',()=>document.getElementById('tip').style.display='none');
+
+mc.addEventListener('click',e=>{
+  const R=mc.getBoundingClientRect();
+  const mx=e.clientX-R.left,my=e.clientY-R.top;
+  let closest=null,minD=35;
+  NET.nodes.forEach(n=>{
+    if(n.ward_id<0||n.ward_id>=32) return;
+    const[nx,ny]=proj(n.lat,n.lon);
+    const d=Math.hypot(nx-mx,ny-my);
+    if(d<minD){minD=d;closest=n;}
+  });
+  if(closest) clickWard(closest.ward_id);
+  else clearSel();
+});
+
+// ── Pan & zoom ────────────────────────────────────────────────────────────────
+mc.addEventListener('mousedown',e=>{dragging=true;lastMX=e.clientX;lastMY=e.clientY;mc.style.cursor='grabbing';});
+mc.addEventListener('mousemove',e=>{
+  if(!dragging) return;
+  camX+=e.clientX-lastMX; camY+=e.clientY-lastMY;
+  lastMX=e.clientX; lastMY=e.clientY;
+  draw();
+});
+window.addEventListener('mouseup',()=>{dragging=false;mc.style.cursor='crosshair';});
+mc.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const factor=e.deltaY>0?.88:1.14;
+  const R=mc.getBoundingClientRect();
+  const mx=e.clientX-R.left,my=e.clientY-R.top;
+  camX=(camX-mx)*factor+mx;
+  camY=(camY-my)*factor+my;
+  camZ*=factor;
+  draw();
+},{passive:false});
+
+function zoom(f){
+  const cx=mc.width/2,cy=mc.height/2;
+  camX=(camX-cx)*f+cx; camY=(camY-cy)*f+cy; camZ*=f;
+  draw();
+}
+function resetView(){camX=0;camY=0;camZ=1;draw();}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+buildTlSteps();
+buildWardList();
+resize();
+</script>
+</body>
+</html>
