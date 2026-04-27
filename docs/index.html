@@ -1,74 +1,1891 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <!-- CUSTOM CSS  -->
-  <link rel="stylesheet" href="custom.css">
-  <title>Urban URBAN-INEQUALITY-IN-BARODA</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Urban Inequality in Vadodara</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN SYSTEM
+   Direction: Dark cartographic / GIS terminal
+   Palette: Ink-black + electric teal + amber alert
+═══════════════════════════════════════════════ */
+:root {
+  --ink:     #05080F;
+  --surface: #080E1C;
+  --raised:  #0D1528;
+  --border:  #152040;
+  --muted:   #1E3058;
+  --teal:    #00C9A7;
+  --teal2:   #0ADFBD;
+  --amber:   #FFB347;
+  --red:     #FF6B6B;
+  --blue:    #4A9EFF;
+  --purple:  #A78BFA;
+  --white:   #E8EDF5;
+  --grey:    #4A6080;
+  --font-display: 'Syne', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+  --font-serif:   'Crimson Pro', serif;
+  --easing: cubic-bezier(0.16,1,0.3,1);
+}
 
-  <!-- DARK MODE TOGGLE-->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/dark.css" title="dark">
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+html { scroll-behavior: smooth; }
 
-  <!-- Docsify Theme -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+body {
+  background: var(--ink);
+  color: var(--white);
+  font-family: var(--font-display);
+  overflow-x: hidden;
+  cursor: none;
+}
 
-  <!-- Code Highlighting -->
-  <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/prismjs@1/themes/prism-tomorrow.css">
+/* ── Custom cursor ───────────────────────────── */
+.cursor {
+  width: 8px; height: 8px;
+  background: var(--teal);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0; z-index: 9999;
+  pointer-events: none;
+  transition: transform .15s var(--easing), opacity .15s;
+  mix-blend-mode: exclusion;
+}
+.cursor-ring {
+  width: 32px; height: 32px;
+  border: 1px solid rgba(0,201,167,.4);
+  border-radius: 50%;
+  position: fixed; top: 0; left: 0; z-index: 9998;
+  pointer-events: none;
+  transition: transform .4s var(--easing);
+}
 
+/* ── Scrollbar ───────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+/* ── NAV ─────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 2.5rem;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(5,8,15,.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  transition: background .3s;
+}
+.nav-brand {
+  font-size: 12px; font-weight: 700; letter-spacing: .14em;
+  color: var(--teal); text-decoration: none; text-transform: uppercase;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-brand::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal); display: block;
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.nav-links {
+  display: flex; gap: 2rem; list-style: none;
+}
+.nav-links a {
+  font-size: 11px; font-weight: 600; letter-spacing: .1em;
+  color: var(--grey); text-decoration: none; text-transform: uppercase;
+  transition: color .2s;
+  position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+  height: 1px; background: var(--teal);
+  transform: scaleX(0); transition: transform .2s var(--easing);
+}
+.nav-links a:hover { color: var(--teal); }
+.nav-links a:hover::after { transform: scaleX(1); }
+.nav-gh {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em;
+  color: var(--ink); background: var(--teal);
+  border: none; padding: 7px 16px; border-radius: 4px;
+  text-decoration: none; text-transform: uppercase;
+  transition: background .2s, transform .2s;
+}
+.nav-gh:hover { background: var(--teal2); transform: translateY(-1px); }
+
+/* ── HERO ────────────────────────────────────── */
+#hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 7rem 2.5rem 4rem;
+  position: relative; overflow: hidden;
+}
+.hero-grid-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(21,32,64,.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21,32,64,.5) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black, transparent);
+}
+.hero-glow {
+  position: absolute; top: 20%; left: 15%;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,201,167,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-glow2 {
+  position: absolute; bottom: 10%; right: 10%;
+  width: 400px; height: 400px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,179,71,.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; max-width: 900px; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--teal);
+  letter-spacing: .14em; margin-bottom: 2rem;
+}
+.hero-tag::before {
+  content: ''; width: 24px; height: 1px; background: var(--teal);
+}
+.hero-h1 {
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 800; line-height: .95;
+  letter-spacing: -.03em;
+  margin-bottom: 1rem;
+}
+.hero-h1 span { color: var(--teal); }
+.hero-h1 em {
+  font-style: normal; color: var(--amber);
+  display: block;
+}
+.hero-sub {
+  font-family: var(--font-serif); font-size: 1.25rem;
+  font-weight: 300; color: rgba(232,237,245,.65);
+  max-width: 560px; line-height: 1.65;
+  margin-bottom: 2.5rem;
+}
+.hero-stats {
+  display: flex; gap: 2rem; flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+.hero-stat {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.hero-stat .n {
+  font-family: var(--font-mono); font-size: 1.8rem;
+  font-weight: 500; color: var(--teal); letter-spacing: -.02em;
+}
+.hero-stat .l {
+  font-size: 10px; font-weight: 700; letter-spacing: .12em;
+  color: var(--grey); text-transform: uppercase;
+}
+.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn-primary {
+  font-size: 12px; font-weight: 700; letter-spacing: .1em;
+  color: var(--ink); background: var(--teal);
+  border: none; padding: 12px 28px; border-radius: 4px;
+  cursor: none; text-decoration: none; text-transform: uppercase;
+  transition: background .2s, transform .2s var(--easing), box-shadow .2s;
+}
+.btn-primary:hover {
+  background: var(--teal2);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,201,167,.25);
+}
+.btn-outline {
+  font-size: 12px; font-weight: 700; letter-spacing: .1em;
+  color: var(--white); background: transparent;
+  border: 1px solid var(--border); padding: 11px 28px; border-radius: 4px;
+  cursor: none; text-decoration: none; text-transform: uppercase;
+  transition: border-color .2s, color .2s, transform .2s var(--easing);
+}
+.btn-outline:hover {
+  border-color: var(--teal); color: var(--teal);
+  transform: translateY(-2px);
+}
+.hero-scroll {
+  position: absolute; bottom: 3rem; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 9px; color: var(--grey);
+  letter-spacing: .14em; text-transform: uppercase;
+  animation: float 3s ease-in-out infinite;
+}
+.hero-scroll::after {
+  content: ''; width: 1px; height: 40px;
+  background: linear-gradient(var(--teal), transparent);
+}
+@keyframes float { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+/* ── SECTION BASE ────────────────────────────── */
+section { padding: 6rem 2.5rem; }
+.section-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 500;
+  color: var(--teal); letter-spacing: .16em; text-transform: uppercase;
+  margin-bottom: .75rem; display: flex; align-items: center; gap: 10px;
+}
+.section-label::before {
+  content: ''; width: 20px; height: 1px; background: var(--teal);
+}
+.section-h2 {
+  font-size: clamp(2rem, 4vw, 3rem); font-weight: 800;
+  letter-spacing: -.02em; line-height: 1.1; margin-bottom: 1rem;
+}
+.section-lead {
+  font-family: var(--font-serif); font-size: 1.1rem;
+  font-weight: 300; color: rgba(232,237,245,.7);
+  max-width: 640px; line-height: 1.7; margin-bottom: 3rem;
+}
+
+/* ── ABOUT / CONTEXT ─────────────────────────── */
+#about { background: var(--surface); }
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3rem; align-items: start; max-width: 1100px; margin: 0 auto;
+}
+.about-text p {
+  font-family: var(--font-serif); font-size: 1.05rem;
+  font-weight: 300; color: rgba(232,237,245,.75);
+  line-height: 1.75; margin-bottom: 1.2rem;
+}
+.about-text strong { color: var(--teal); font-weight: 600; }
+.about-cards { display: flex; flex-direction: column; gap: 1rem; }
+.about-card {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1.2rem 1.4rem;
+  display: flex; gap: 1rem; align-items: flex-start;
+  transition: border-color .2s, transform .2s var(--easing);
+}
+.about-card:hover { border-color: var(--teal); transform: translateX(4px); }
+.about-card-icon {
+  width: 36px; height: 36px; border-radius: 6px;
+  background: rgba(0,201,167,.1); border: 1px solid rgba(0,201,167,.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.about-card-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.about-card-desc {
+  font-size: 12px; color: var(--grey); line-height: 1.5;
+}
+
+/* ── UOI SECTION ─────────────────────────────── */
+#uoi { position: relative; overflow: hidden; }
+.uoi-formula-wrap {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2rem;
+  margin-bottom: 3rem; max-width: 900px; margin-left: auto; margin-right: auto;
+  position: relative; overflow: hidden;
+}
+.uoi-formula-wrap::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: linear-gradient(90deg, var(--teal), var(--amber), var(--purple));
+}
+.formula-label {
+  font-family: var(--font-mono); font-size: 10px; color: var(--grey);
+  letter-spacing: .14em; text-transform: uppercase; margin-bottom: .75rem;
+}
+.formula-text {
+  font-family: var(--font-mono); font-size: clamp(.85rem,2vw,1.2rem);
+  color: var(--white); letter-spacing: .02em; line-height: 1.6;
+}
+.formula-text .coeff { color: var(--teal); font-weight: 500; }
+.formula-text .component { color: var(--amber); }
+.formula-text .inv { color: var(--red); }
+.formula-note {
+  font-size: 11px; color: var(--grey); margin-top: .75rem; line-height: 1.5;
+}
+.uoi-components {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem; margin-bottom: 3rem; max-width: 1100px; margin-left: auto; margin-right: auto;
+}
+.uoi-comp {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.5rem;
+  position: relative; overflow: hidden;
+  transition: transform .25s var(--easing), border-color .2s;
+}
+.uoi-comp:hover { transform: translateY(-4px); }
+.uoi-comp::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px; background: var(--comp-color, var(--teal));
+  opacity: .7;
+}
+.uoi-comp-pct {
+  font-family: var(--font-mono); font-size: 2rem; font-weight: 500;
+  color: var(--comp-color, var(--teal)); margin-bottom: .4rem;
+}
+.uoi-comp-name { font-size: 14px; font-weight: 700; margin-bottom: .5rem; }
+.uoi-comp-desc { font-size: 11px; color: var(--grey); line-height: 1.55; }
+.uoi-comp-metric {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--comp-color, var(--teal)); margin-top: .75rem;
+  padding: 4px 8px; background: rgba(0,0,0,.2);
+  border-radius: 3px; display: inline-block;
+}
+
+/* UOI Interactive Chart */
+.uoi-chart-wrap {
+  max-width: 1100px; margin: 0 auto;
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.5rem; overflow: hidden;
+}
+.chart-title {
+  font-size: 12px; font-weight: 700; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--grey); margin-bottom: 1.2rem;
+  display: flex; align-items: center; gap: 8px;
+}
+.chart-title::before { content:''; width:8px; height:8px; border-radius:50%; background:var(--teal); }
+#uoi-bars { display: flex; flex-direction: column; gap: 8px; }
+.uoi-bar-row {
+  display: grid; grid-template-columns: 120px 1fr 50px;
+  align-items: center; gap: 10px;
+}
+.uoi-bar-name { font-size: 11px; color: var(--grey); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uoi-bar-track { height: 10px; background: var(--muted); border-radius: 99px; overflow: hidden; }
+.uoi-bar-fill { height: 100%; border-radius: 99px; transition: width 1s var(--easing); }
+.uoi-bar-val { font-family: var(--font-mono); font-size: 11px; color: var(--teal); }
+
+/* ── METHODOLOGY ─────────────────────────────── */
+#methodology { background: var(--surface); }
+.method-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem; max-width: 1100px; margin: 0 auto;
+}
+.method-step {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.8rem;
+  position: relative;
+  transition: transform .25s var(--easing), border-color .2s;
+}
+.method-step:hover { transform: translateY(-4px); border-color: var(--step-c, var(--teal)); }
+.step-num {
+  font-family: var(--font-mono); font-size: .7rem; color: var(--step-c, var(--teal));
+  letter-spacing: .14em; margin-bottom: 1rem;
+}
+.step-title { font-size: 16px; font-weight: 700; margin-bottom: .6rem; }
+.step-desc { font-size: 13px; color: var(--grey); line-height: 1.6; }
+.step-tags { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 6px; }
+.step-tag {
+  font-family: var(--font-mono); font-size: 10px;
+  background: rgba(0,0,0,.3); border: 1px solid var(--border);
+  color: var(--step-c, var(--grey)); padding: 3px 8px; border-radius: 3px;
+}
+
+/* ── NETWORK MAP ─────────────────────────────── */
+#network {
+  background: var(--ink);
+  padding: 6rem 0 0;
+}
+.network-header {
+  padding: 0 2.5rem 2rem;
+}
+#network-canvas-wrap {
+  position: relative;
+  height: 600px;
+  background: var(--ink);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+canvas { position: absolute; top: 0; left: 0; }
+#map-canvas { cursor: crosshair; }
+
+/* Network controls */
+.net-controls {
+  position: absolute; top: 16px; left: 16px; z-index: 10;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.net-mode-group {
+  display: flex; gap: 2px;
+  background: rgba(5,8,15,.9); border: 1px solid var(--border);
+  border-radius: 6px; padding: 3px;
+  backdrop-filter: blur(8px);
+}
+.net-mode-btn {
+  padding: 6px 14px; border-radius: 4px; font-family: var(--font-mono);
+  font-size: 10px; font-weight: 500; letter-spacing: .08em;
+  cursor: none; border: none; background: transparent; color: var(--grey);
+  transition: all .15s; text-transform: uppercase;
+}
+.net-mode-btn.active { background: rgba(0,201,167,.15); color: var(--teal); }
+.net-mode-btn:hover:not(.active) { color: var(--white); }
+
+.net-timeline-wrap {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(5,8,15,.92); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 16px;
+}
+.tl-label { font-family: var(--font-mono); font-size: 10px; color: var(--grey); white-space: nowrap; }
+.tl-steps { display: flex; gap: 6px; flex: 1; align-items: center; }
+.tl-step-btn {
+  height: 28px; flex: 1;
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 4px; cursor: none;
+  font-family: var(--font-mono); font-size: 9px; color: var(--grey);
+  transition: all .15s;
+}
+.tl-step-btn.active { background: rgba(0,201,167,.15); border-color: var(--teal); color: var(--teal); }
+.tl-step-btn.past { background: rgba(0,201,167,.05); border-color: rgba(0,201,167,.2); }
+.tl-play-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--teal); border: none; cursor: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex-shrink: 0; color: var(--ink);
+  transition: background .15s, transform .15s;
+}
+.tl-play-btn:hover { background: var(--teal2); transform: scale(1.08); }
+
+.net-tooltip {
+  position: absolute; background: rgba(5,8,15,.95);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; font-size: 11px; pointer-events: none;
+  display: none; z-index: 20; backdrop-filter: blur(8px);
+  min-width: 160px;
+}
+.net-tt-title { font-weight: 700; color: var(--teal); margin-bottom: 6px; font-size: 12px; }
+.net-tt-row { display: flex; justify-content: space-between; gap: 12px; line-height: 1.8; }
+.net-tt-k { color: var(--grey); }
+.net-tt-v { color: var(--white); font-weight: 600; font-family: var(--font-mono); font-size: 11px; }
+.net-tt-warn { color: var(--red); font-size: 9px; font-weight: 700; margin-top: 4px; letter-spacing: .08em; }
+
+.net-ward-panel {
+  position: absolute; top: 16px; right: 16px;
+  width: 200px; background: rgba(5,8,15,.95); backdrop-filter: blur(8px);
+  border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+  display: none; z-index: 15;
+}
+.wp-name { font-size: 13px; font-weight: 700; color: var(--teal); margin-bottom: 10px; }
+.wp-metric { margin-bottom: 8px; }
+.wp-metric-label { font-size: 9px; color: var(--grey); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 2px; }
+.wp-metric-val { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+.wp-metric-bar { height: 3px; background: var(--muted); border-radius: 99px; }
+.wp-metric-fill { height: 100%; border-radius: 99px; transition: width .4s var(--easing); }
+.wp-close { position: absolute; top: 10px; right: 12px; color: var(--grey); cursor: none; font-size: 14px; line-height: 1; background:none;border:none; }
+
+.net-legend {
+  position: absolute; bottom: 60px; right: 16px;
+  background: rgba(5,8,15,.9); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px;
+  font-size: 10px;
+}
+.leg-item { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; color: var(--grey); }
+.leg-line { border-radius: 99px; }
+
+.net-stats-row {
+  padding: 1.5rem 2.5rem 3rem;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem;
+  max-width: 1100px; margin: 0 auto;
+}
+.net-stat {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem 1.2rem;
+  transition: border-color .2s;
+}
+.net-stat:hover { border-color: var(--teal); }
+.net-stat-v {
+  font-family: var(--font-mono); font-size: 1.6rem; font-weight: 500;
+  color: var(--stat-c, var(--teal)); margin-bottom: 2px;
+}
+.net-stat-l { font-size: 10px; color: var(--grey); text-transform: uppercase; letter-spacing: .1em; }
+
+/* ── SPATIAL STATS ───────────────────────────── */
+#spatial { background: var(--surface); }
+.spatial-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3rem; max-width: 1100px; margin: 0 auto;
+}
+.spatial-card {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2rem; overflow: hidden; position: relative;
+}
+.spatial-card-title { font-size: 16px; font-weight: 700; margin-bottom: .5rem; }
+.spatial-card-sub { font-size: 12px; color: var(--grey); margin-bottom: 1.5rem; line-height: 1.5; }
+.moran-display {
+  background: var(--ink); border-radius: 8px; padding: 1.2rem;
+  font-family: var(--font-mono); margin-bottom: 1rem;
+}
+.moran-val { font-size: 2.4rem; font-weight: 500; color: var(--teal); }
+.moran-label { font-size: 10px; color: var(--grey); margin-top: 4px; letter-spacing: .1em; text-transform: uppercase; }
+.moran-interp { font-size: 12px; color: rgba(232,237,245,.7); margin-top: .5rem; line-height: 1.5; }
+.lisa-legend { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+.lisa-badge {
+  font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 3px;
+  letter-spacing: .06em;
+}
+/* Gini viz */
+.gini-bar-wrap { margin: 1rem 0; }
+.gini-track { height: 8px; background: var(--muted); border-radius: 99px; overflow: hidden; }
+.gini-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--amber)); border-radius: 99px; }
+.gini-labels { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--grey); margin-top: 6px; }
+.ede-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.ede-k { font-family: var(--font-mono); font-size: 11px; color: var(--grey); }
+.ede-v { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--teal); }
+
+/* ── BYM2 ────────────────────────────────────── */
+#bym2 { position: relative; overflow: hidden; }
+.bym2-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3rem; max-width: 1100px; margin: 0 auto; align-items: start;
+}
+.eq-block {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.4rem; margin-bottom: 1rem;
+  border-left: 3px solid var(--teal);
+}
+.eq-label { font-size: 10px; color: var(--grey); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .6rem; }
+.eq-text {
+  font-family: var(--font-mono); font-size: .9rem;
+  color: var(--white); line-height: 1.7;
+}
+.eq-text .sym { color: var(--amber); }
+.eq-text .op  { color: var(--teal); }
+.eq-text .prior { color: var(--purple); }
+.param-table { width: 100%; border-collapse: collapse; }
+.param-table th {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--grey); text-align: left; padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.param-table td { font-size: 12px; padding: 8px 10px; border-bottom: 1px solid rgba(21,32,64,.5); }
+.param-table tr:hover td { background: rgba(0,201,167,.04); }
+.param-table .mono { font-family: var(--font-mono); font-size: 11px; }
+.critical-note {
+  background: rgba(255,107,107,.08); border: 1px solid rgba(255,107,107,.3);
+  border-radius: 8px; padding: 1rem 1.2rem; margin-top: 1.5rem;
+}
+.cn-title { font-size: 12px; font-weight: 700; color: var(--red); margin-bottom: .4rem; }
+.cn-text { font-size: 11px; color: rgba(232,237,245,.7); line-height: 1.55; }
+.cn-code { font-family: var(--font-mono); font-size: 10px; color: var(--red); }
+
+/* ── SWMM ────────────────────────────────────── */
+#swmm { background: var(--surface); }
+.swmm-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3rem; max-width: 1100px; margin: 0 auto;
+}
+.diagnosis-row {
+  display: flex; gap: 1rem; align-items: stretch;
+  margin-bottom: .75rem;
+}
+.diag-num {
+  width: 36px; min-height: 36px; border-radius: 6px;
+  background: rgba(255,107,107,.15); border: 1px solid rgba(255,107,107,.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--red); flex-shrink: 0; align-self: flex-start; margin-top: 2px;
+}
+.diag-body { flex: 1; }
+.diag-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.diag-broken { font-size: 11px; color: var(--red); font-family: var(--font-mono); margin-bottom: 2px; }
+.diag-fixed  { font-size: 11px; color: var(--teal); font-family: var(--font-mono); }
+.timeline-viz { margin-top: 2rem; }
+.tl-chart { position: relative; height: 120px; margin-bottom: 1.5rem; }
+.tl-axis { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; color: var(--grey); }
+canvas#swmm-timeline { width: 100%; height: 120px; }
+
+/* ── PIPELINE ────────────────────────────────── */
+#pipeline { background: var(--ink); }
+.pipeline-steps {
+  max-width: 800px; margin: 0 auto;
+  position: relative;
+}
+.pipeline-steps::before {
+  content: ''; position: absolute; left: 22px; top: 0; bottom: 0;
+  width: 1px; background: linear-gradient(var(--teal), var(--purple), var(--amber));
+  opacity: .3;
+}
+.pipeline-step {
+  display: flex; gap: 1.5rem; margin-bottom: 1.5rem; position: relative;
+}
+.ps-dot {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  background: var(--raised); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  color: var(--ps-c, var(--teal)); position: relative; z-index: 1;
+  transition: background .2s, border-color .2s;
+}
+.pipeline-step:hover .ps-dot { background: rgba(0,201,167,.1); border-color: var(--teal); }
+.ps-content {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem 1.2rem; flex: 1;
+  transition: border-color .2s, transform .2s var(--easing);
+}
+.pipeline-step:hover .ps-content { border-color: var(--ps-c, var(--teal)); transform: translateX(4px); }
+.ps-script { font-family: var(--font-mono); font-size: 11px; color: var(--ps-c, var(--teal)); margin-bottom: 4px; }
+.ps-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.ps-desc { font-size: 12px; color: var(--grey); line-height: 1.5; }
+
+/* ── THEORY ──────────────────────────────────── */
+#theory { background: var(--surface); }
+.theory-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem; max-width: 1100px; margin: 0 auto;
+}
+.theory-card {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 10px; padding: 1.6rem;
+  transition: transform .25s var(--easing), border-color .2s;
+}
+.theory-card:hover { transform: translateY(-4px); border-color: var(--tc-color, var(--teal)); }
+.tc-source { font-family: var(--font-mono); font-size: 9px; color: var(--grey); letter-spacing: .1em; margin-bottom: .75rem; }
+.tc-title { font-size: 14px; font-weight: 700; margin-bottom: .6rem; color: var(--tc-color, var(--teal)); }
+.tc-body { font-family: var(--font-serif); font-size: .95rem; font-weight: 300; color: rgba(232,237,245,.75); line-height: 1.7; }
+.tc-formula {
+  font-family: var(--font-mono); font-size: 11px; color: var(--amber);
+  background: var(--ink); border-radius: 4px; padding: 6px 10px;
+  margin-top: .75rem; display: inline-block;
+}
+
+/* ── FILES / REPO ────────────────────────────── */
+#files { background: var(--ink); }
+.files-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1rem; max-width: 1100px; margin: 0 auto;
+}
+.file-card {
+  background: var(--raised); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1.2rem;
+  transition: border-color .2s, transform .2s var(--easing);
+}
+.file-card:hover { border-color: var(--fc-c, var(--teal)); transform: translateY(-2px); }
+.fc-type {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--fc-c, var(--grey)); letter-spacing: .12em;
+  text-transform: uppercase; margin-bottom: .5rem;
+}
+.fc-name { font-family: var(--font-mono); font-size: 12px; color: var(--white); margin-bottom: .4rem; font-weight: 500; }
+.fc-desc { font-size: 11px; color: var(--grey); line-height: 1.5; }
+.fc-status {
+  display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .08em;
+  padding: 2px 8px; border-radius: 3px; margin-top: .6rem;
+}
+.fc-status.done { background: rgba(0,201,167,.1); color: var(--teal); }
+.fc-status.fix  { background: rgba(255,179,71,.1); color: var(--amber); }
+
+/* ── FOOTER ──────────────────────────────────── */
+footer {
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 3rem 2.5rem;
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem; max-width: 1400px; margin: 0 auto;
+}
+.footer-brand { font-size: 14px; font-weight: 800; letter-spacing: -.01em; color: var(--teal); margin-bottom: .5rem; }
+.footer-sub { font-size: 12px; color: var(--grey); line-height: 1.6; max-width: 240px; }
+.footer-col-title { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--grey); margin-bottom: 1rem; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+.footer-links a { font-size: 12px; color: rgba(232,237,245,.5); text-decoration: none; transition: color .15s; }
+.footer-links a:hover { color: var(--teal); }
+.footer-bottom {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--border); padding-top: 1.5rem;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; color: var(--grey);
+}
+
+/* ── ANIMATIONS ──────────────────────────────── */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity .7s var(--easing), transform .7s var(--easing);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+.reveal-delay-1 { transition-delay: .1s; }
+.reveal-delay-2 { transition-delay: .2s; }
+.reveal-delay-3 { transition-delay: .3s; }
+.reveal-delay-4 { transition-delay: .4s; }
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 900px) {
+  .about-grid, .bym2-layout, .swmm-layout, .spatial-grid { grid-template-columns: 1fr; }
+  .uoi-components { grid-template-columns: 1fr 1fr; }
+  .method-steps { grid-template-columns: 1fr 1fr; }
+  .theory-grid { grid-template-columns: 1fr 1fr; }
+  .files-grid { grid-template-columns: 1fr 1fr; }
+  .net-stats-row { grid-template-columns: repeat(3, 1fr); }
+  footer { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .uoi-components { grid-template-columns: 1fr; }
+  .method-steps { grid-template-columns: 1fr; }
+  .theory-grid { grid-template-columns: 1fr; }
+  .files-grid { grid-template-columns: 1fr; }
+  .net-stats-row { grid-template-columns: 1fr 1fr; }
+  footer { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
-  <div id="app">Loading documentation…</div>
 
-  <script>
-    window.$docsify = {
-      name: 'URBAN INEQUALITY IN BARODA',
-      repo: 'https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA',
-      loadSidebar: true,
-      subMaxLevel: 3,
-      auto2top: true,
-      homepage: 'README.md',
-      search: 'auto'
-    }
-  </script>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
 
-  <!-- Docsify -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4"></script>
+<!-- ═══ NAV ═════════════════════════════════════ -->
+<nav>
+  <a href="#hero" class="nav-brand">Urban Inequality · Vadodara</a>
+  <ul class="nav-links">
+    <li><a href="#about">Context</a></li>
+    <li><a href="#uoi">Index</a></li>
+    <li><a href="#network">Network</a></li>
+    <li><a href="#spatial">Spatial</a></li>
+    <li><a href="#bym2">BYM2</a></li>
+    <li><a href="#swmm">SWMM</a></li>
+    <li><a href="#theory">Theory</a></li>
+  </ul>
+  <a href="https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA" target="_blank" class="nav-gh">GitHub →</a>
+</nav>
 
-  <!-- Search -->
-  <script src="https://cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+<!-- ═══ HERO ════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-content">
+    <div class="hero-tag">M.Sc. Statistics · Vadodara Municipal Corporation · 2024–2026</div>
+    <h1 class="hero-h1">
+      Urban<br><span>Inequality</span>
+      <em>in Vadodara</em>
+    </h1>
+    <p class="hero-sub">
+      A thesis-grade geo-spatial analysis combining accessibility modelling, Bayesian spatial statistics,
+      hydrodynamic flood simulation, and graph neural networks to measure and map opportunity across 32 urban wards.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="n">32</span><span class="l">Urban Wards</span></div>
+      <div class="hero-stat"><span class="n">0.73</span><span class="l">Moran's I</span></div>
+      <div class="hero-stat"><span class="n">4h</span><span class="l">SWMM Simulation</span></div>
+      <div class="hero-stat"><span class="n">BYM2</span><span class="l">Spatial Model</span></div>
+      <div class="hero-stat"><span class="n">GCN</span><span class="l">Graph Neural Net</span></div>
+    </div>
+    <div class="hero-btns">
+      <a href="#network" class="btn-primary">Explore the Network →</a>
+      <a href="https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA" target="_blank" class="btn-outline">View Repository</a>
+    </div>
+  </div>
+  <div class="hero-scroll">Scroll to explore</div>
+</section>
 
-  <!-- Prism languages -->
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-python.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-r.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
-  <script>
-  function setTheme(theme) {
-    document.querySelectorAll('link[title]').forEach(link => {
-      link.disabled = link.getAttribute('title') !== theme;
+<!-- ═══ ABOUT ════════════════════════════════════ -->
+<section id="about">
+  <div class="section-label">Context</div>
+  <h2 class="section-h2 reveal">What is this project?</h2>
+  <p class="section-lead reveal reveal-delay-1">
+    Vadodara (Baroda), Gujarat's third-largest city, exhibits sharp spatial disparities in access to healthcare,
+    education, transit, and flood safety. This project builds a rigorous, reproducible measurement framework.
+  </p>
+  <div class="about-grid reveal reveal-delay-2">
+    <div class="about-text">
+      <p>
+        Urban inequality is rarely a single-dimension problem. A ward may have <strong>excellent schools</strong>
+        but be <strong>chronically flood-prone</strong>. Another may have strong transit coverage but poor healthcare
+        access. The Urban Opportunity Index (UOI) synthesises these four dimensions into a single, interpretable
+        ward-level score using normalised, weighted components.
+      </p>
+      <p>
+        The spatial distribution of the UOI is not random — it exhibits strong <strong>spatial autocorrelation</strong>
+        (Global Moran's I = 0.73), meaning high-opportunity and low-opportunity wards cluster together.
+        This clustering motivates the use of Bayesian spatial models (BYM2) rather than standard regression.
+      </p>
+      <p>
+        The flood risk component is computed dynamically using <strong>SWMM DYNWAVE</strong> hydrodynamic
+        simulation — not a static raster overlay — making it physically grounded and sensitive to road-network
+        topology.
+      </p>
+    </div>
+    <div class="about-cards">
+      <div class="about-card reveal reveal-delay-1">
+        <div class="about-card-icon">🗺️</div>
+        <div><div class="about-card-title">Open Data</div><div class="about-card-desc">OSMnx road networks, Open Vadodara Smart City Bus GTFS, SRTM 30m DEM, VMC ward boundaries.</div></div>
+      </div>
+      <div class="about-card reveal reveal-delay-2">
+        <div class="about-card-icon">📐</div>
+        <div><div class="about-card-title">Rigorous Statistics</div><div class="about-card-desc">Bayesian BYM2 with PC priors, Moran's I, LISA clusters, Kolm–Pollak EDE inequality adjustment.</div></div>
+      </div>
+      <div class="about-card reveal reveal-delay-3">
+        <div class="about-card-icon">🌊</div>
+        <div><div class="about-card-title">Physics-Based Flood</div><div class="about-card-desc">SWMM St Venant DYNWAVE engine simulates 4-hour cloudburst. Road failures computed per ward.</div></div>
+      </div>
+      <div class="about-card reveal reveal-delay-4">
+        <div class="about-card-icon">🧠</div>
+        <div><div class="about-card-title">Graph Neural Networks</div><div class="about-card-desc">3-layer GCN extracts spatially-contextualised ward embeddings, fed into BYM2 as covariates.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ UOI ══════════════════════════════════════ -->
+<section id="uoi">
+  <div class="section-label">Urban Opportunity Index</div>
+  <h2 class="section-h2 reveal">The UOI Formula</h2>
+  <p class="section-lead reveal reveal-delay-1">
+    Four normalised components, weighted by policy relevance, produce a 0–100 score where higher means better access and lower risk.
+  </p>
+
+  <div class="uoi-formula-wrap reveal reveal-delay-2">
+    <div class="formula-label">// formula_v2.4 · balanced_weights</div>
+    <div class="formula-text">
+      UOI<sub>i</sub> = <span class="coeff">0.30</span> · <span class="component">Ĥᵢ</span> + <span class="coeff">0.30</span> · <span class="component">Êᵢ</span> + <span class="coeff">0.20</span> · <span class="component">T̂ᵢ</span> + <span class="coeff">0.20</span> · <span class="inv">(1 − F̂ᵢ)</span>
+    </div>
+    <div class="formula-note">
+      All components min-max normalised to [0,1] across all 32 wards. F̂ᵢ is inverted so high flood exposure reduces the score.
+      Final scale is 0–100. Kolm–Pollak EDE adjustment with κ ∈ [0.1, 2.0] validates inequality-adjusted rankings.
+    </div>
+  </div>
+
+  <div class="uoi-components">
+    <div class="uoi-comp reveal" style="--comp-color:#00C9A7">
+      <div class="uoi-comp-pct">30%</div>
+      <div class="uoi-comp-name">Healthcare (Ĥ)</div>
+      <div class="uoi-comp-desc">Drive-time isochrone to nearest hospital, clinic, or health post via OSMnx road network.</div>
+      <div class="uoi-comp-metric">OSMnx · ISOCHRONE</div>
+    </div>
+    <div class="uoi-comp reveal reveal-delay-1" style="--comp-color:#4A9EFF">
+      <div class="uoi-comp-pct">30%</div>
+      <div class="uoi-comp-name">Education (Ê)</div>
+      <div class="uoi-comp-desc">Walk-time to nearest school, college, or university. Captures local educational access.</div>
+      <div class="uoi-comp-metric">OSMnx · WALK</div>
+    </div>
+    <div class="uoi-comp reveal reveal-delay-2" style="--comp-color:#FFB347">
+      <div class="uoi-comp-pct">20%</div>
+      <div class="uoi-comp-name">Transit (T̂)</div>
+      <div class="uoi-comp-desc">Bus stop density + route coverage from Open Vadodara Smart City Bus GTFS data.</div>
+      <div class="uoi-comp-metric">GTFS · city2graph</div>
+    </div>
+    <div class="uoi-comp reveal reveal-delay-3" style="--comp-color:#FF6B6B">
+      <div class="uoi-comp-pct">20%</div>
+      <div class="uoi-comp-name">Flood Risk (1−F̂)</div>
+      <div class="uoi-comp-desc">Inverted SWMM hydraulic flood road failure percentage. Dynamic, not a static raster.</div>
+      <div class="uoi-comp-metric">SWMM · DYNWAVE</div>
+    </div>
+  </div>
+
+  <div class="uoi-chart-wrap reveal">
+    <div class="chart-title">Ward UOI Scores — All 32 Wards</div>
+    <div id="uoi-bars"></div>
+  </div>
+</section>
+
+<!-- ═══ METHODOLOGY ══════════════════════════════ -->
+<section id="methodology">
+  <div class="section-label">Methodology</div>
+  <h2 class="section-h2 reveal">Five analytical stages</h2>
+  <p class="section-lead reveal reveal-delay-1">
+    Each stage is reproducible and runs in order. The pipeline processes open data into the final Bayesian posterior.
+  </p>
+  <div class="method-steps">
+    <div class="method-step reveal" style="--step-c:#00C9A7">
+      <div class="step-num">01 // DATA COLLECTION</div>
+      <div class="step-title">Spatial data ingestion</div>
+      <div class="step-desc">Road networks downloaded via OSMnx. Bus stops from Open Vadodara GTFS. SRTM 30m DEM for elevations. VMC ward boundaries as the analytical unit.</div>
+      <div class="step-tags"><span class="step-tag">OSMnx</span><span class="step-tag">GTFS</span><span class="step-tag">SRTM</span><span class="step-tag">GeoPandas</span></div>
+    </div>
+    <div class="method-step reveal reveal-delay-1" style="--step-c:#4A9EFF">
+      <div class="step-num">02 // ACCESSIBILITY</div>
+      <div class="step-title">Travel-time isochrones</div>
+      <div class="step-desc">Network-based drive and walk times from each ward centroid to nearest facilities. Transit stop density computed from GTFS via city2graph.travel_summary_graph().</div>
+      <div class="step-tags"><span class="step-tag">city2graph</span><span class="step-tag">isochrone</span><span class="step-tag">GTFS</span></div>
+    </div>
+    <div class="method-step reveal reveal-delay-2" style="--step-c:#FFB347">
+      <div class="step-num">03 // COMPOSITE INDEX</div>
+      <div class="step-title">UOI construction</div>
+      <div class="step-desc">Min-max normalise all four components. Apply weights. Compute Gini coefficient and Kolm–Pollak EDE with κ-sweep from 0.1 to 2.0 for inequality sensitivity.</div>
+      <div class="step-tags"><span class="step-tag">Normalisation</span><span class="step-tag">Kolm-Pollak</span><span class="step-tag">Gini</span></div>
+    </div>
+    <div class="method-step reveal reveal-delay-3" style="--step-c:#FF6B6B">
+      <div class="step-num">04 // FLOOD SIMULATION</div>
+      <div class="step-title">SWMM DYNWAVE</div>
+      <div class="step-desc">Major road network (~700 nodes) filtered from OSMnx. 4-hour triangular storm hyetograph. St Venant DYNWAVE engine. Ward-level flood road percentage aggregated.</div>
+      <div class="step-tags"><span class="step-tag">SWMM 5.2</span><span class="step-tag">DYNWAVE</span><span class="step-tag">CFL dt=5s</span></div>
+    </div>
+    <div class="method-step reveal reveal-delay-4" style="--step-c:#A78BFA">
+      <div class="step-num">05 // BAYESIAN INFERENCE</div>
+      <div class="step-title">BYM2 + GCN</div>
+      <div class="step-desc">BYM2 with ICAR prior via PyMC 5 NUTS. city2graph Queen contiguity adjacency. Optional GCN penultimate-layer embeddings as covariates. 4 chains × 2000 draws.</div>
+      <div class="step-tags"><span class="step-tag">PyMC 5</span><span class="step-tag">BYM2</span><span class="step-tag">ICAR</span><span class="step-tag">GCN</span></div>
+    </div>
+    <div class="method-step reveal reveal-delay-1" style="--step-c:#00C9A7">
+      <div class="step-num">06 // SENSITIVITY</div>
+      <div class="step-title">Robustness checks</div>
+      <div class="step-desc">OAT (±5pp), Monte Carlo Dirichlet N=10,000, Sobol' first-order indices, Kolm–Pollak κ-sweep, spatial CI mapping. 9/32 wards achieve full classification robustness.</div>
+      <div class="step-tags"><span class="step-tag">OAT</span><span class="step-tag">Monte Carlo</span><span class="step-tag">Sobol'</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ NETWORK MAP ══════════════════════════════ -->
+<section id="network">
+  <div class="network-header">
+    <div class="section-label">Interactive Network</div>
+    <h2 class="section-h2 reveal">Road network & flood simulation</h2>
+    <p class="section-lead reveal reveal-delay-1">
+      61 nodes · 198 edges · 32 wards · 8-step storm timeline. Click any ward for details. Drag to pan, scroll to zoom.
+    </p>
+  </div>
+
+  <div id="network-canvas-wrap">
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="map-canvas"></canvas>
+
+    <!-- Controls -->
+    <div class="net-controls">
+      <div class="net-mode-group">
+        <button class="net-mode-btn active" id="btn-pre" onclick="setMode('pre')">Pre-Storm</button>
+        <button class="net-mode-btn" id="btn-post" onclick="setMode('post')">Post-Storm</button>
+        <button class="net-mode-btn" id="btn-diff" onclick="setMode('diff')">Δ Diff</button>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="net-timeline-wrap">
+      <span class="tl-label">STORM</span>
+      <div class="tl-steps" id="tl-steps"></div>
+      <button class="tl-play-btn" id="tl-play" onclick="togglePlay()">▶</button>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="net-tooltip" id="net-tooltip">
+      <div class="net-tt-title" id="tt-title"></div>
+      <div id="tt-body"></div>
+    </div>
+
+    <!-- Ward panel -->
+    <div class="net-ward-panel" id="ward-panel">
+      <button class="wp-close" onclick="clearSel()">✕</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="net-legend">
+      <div class="leg-item"><div class="leg-line" style="width:20px;height:4px;background:#5AACFF"></div>Arterial</div>
+      <div class="leg-item"><div class="leg-line" style="width:20px;height:3px;background:#2A70C0"></div>Primary</div>
+      <div class="leg-item"><div class="leg-line" style="width:20px;height:2px;background:#1A4A90"></div>Secondary</div>
+      <div class="leg-item"><div class="leg-line" style="width:20px;height:3px;background:#FF6B6B"></div>Flooded</div>
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="net-stats-row">
+    <div class="net-stat" style="--stat-c:var(--teal)"><div class="net-stat-v">61</div><div class="net-stat-l">Nodes</div></div>
+    <div class="net-stat" style="--stat-c:var(--blue)"><div class="net-stat-v">198</div><div class="net-stat-l">Edges</div></div>
+    <div class="net-stat" style="--stat-c:var(--red)"><div class="net-stat-v" id="stat-flooded">—</div><div class="net-stat-l">Flooded</div></div>
+    <div class="net-stat" style="--stat-c:var(--amber)"><div class="net-stat-v" id="stat-wards">—</div><div class="net-stat-l">Wards affected</div></div>
+    <div class="net-stat" style="--stat-c:var(--purple)"><div class="net-stat-v" id="stat-depth">—</div><div class="net-stat-l">Mean depth</div></div>
+  </div>
+</section>
+
+<!-- ═══ SPATIAL STATS ════════════════════════════ -->
+<section id="spatial">
+  <div class="section-label">Spatial Statistics</div>
+  <h2 class="section-h2 reveal">Measuring inequality patterns</h2>
+  <p class="section-lead reveal reveal-delay-1">
+    Global and local spatial autocorrelation metrics reveal how opportunity clusters — and where inequality concentrates.
+  </p>
+  <div class="spatial-grid">
+    <div class="spatial-card reveal">
+      <div class="spatial-card-title">Global Moran's I</div>
+      <div class="spatial-card-sub">Measures spatial autocorrelation of UOI across all ward pairs under the Queen contiguity weight matrix (city2graph).</div>
+      <div class="moran-display">
+        <div class="moran-val">I = 0.73</div>
+        <div class="moran-label">Global Moran's I · Queen contiguity · p &lt; 0.001</div>
+        <div class="moran-interp">Strong positive spatial autocorrelation. High-opportunity wards cluster with high-opportunity neighbours. Justifies BYM2 spatial random effect over standard OLS.</div>
+      </div>
+      <div class="lisa-legend">
+        <span class="lisa-badge" style="background:rgba(0,201,167,.15);color:var(--teal)">HH: Opportunity clusters</span>
+        <span class="lisa-badge" style="background:rgba(255,107,107,.15);color:var(--red)">LL: Deprivation clusters</span>
+        <span class="lisa-badge" style="background:rgba(255,179,71,.15);color:var(--amber)">HL: High outlier</span>
+        <span class="lisa-badge" style="background:rgba(74,158,255,.15);color:var(--blue)">LH: Low outlier</span>
+      </div>
+    </div>
+    <div class="spatial-card reveal reveal-delay-1">
+      <div class="spatial-card-title">Inequality Metrics</div>
+      <div class="spatial-card-sub">Gini coefficient and Kolm–Pollak EDE measure the distribution of opportunity across wards.</div>
+      <div class="gini-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--grey);margin-bottom:6px;">
+          <span>Gini Coefficient</span><span style="font-family:var(--font-mono);color:var(--teal)">0.218</span>
+        </div>
+        <div class="gini-track"><div class="gini-fill" style="width:21.8%"></div></div>
+        <div class="gini-labels"><span>0 (perfect equality)</span><span>1 (maximum inequality)</span></div>
+      </div>
+      <div style="margin-top:1.2rem">
+        <div style="font-size:11px;color:var(--grey);margin-bottom:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Kolm–Pollak EDE (κ-sweep)</div>
+        <div class="ede-row"><span class="ede-k">κ = 0.1</span><span class="ede-v">52.8</span></div>
+        <div class="ede-row"><span class="ede-k">κ = 0.5</span><span class="ede-v">51.4</span></div>
+        <div class="ede-row"><span class="ede-k">κ = 1.0</span><span class="ede-v">50.6</span></div>
+        <div class="ede-row"><span class="ede-k">κ = 2.0</span><span class="ede-v">49.8</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--grey);margin-top:.75rem;line-height:1.5;">
+        Spearman ρ ≥ 0.99 across full κ range → rankings are robust to inequality aversion parameter choice.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BYM2 ═════════════════════════════════════ -->
+<section id="bym2">
+  <div class="section-label">Bayesian Spatial Model</div>
+  <h2 class="section-h2 reveal">BYM2 — Besag York Mollié 2</h2>
+  <p class="section-lead reveal reveal-delay-1">
+    The primary inferential model. Decomposes spatial variation into structured clustering (ICAR) and unstructured noise,
+    with interpretable Penalised Complexity hyperpriors.
+  </p>
+  <div class="bym2-layout">
+    <div class="reveal">
+      <div class="eq-block">
+        <div class="eq-label">// likelihood</div>
+        <div class="eq-text"><span class="sym">yᵢ</span> | μᵢ, σε ~ <span class="op">Normal</span>(<span class="sym">μᵢ</span>, <span class="sym">σε²</span>)</div>
+      </div>
+      <div class="eq-block">
+        <div class="eq-label">// linear predictor</div>
+        <div class="eq-text"><span class="sym">μᵢ</span> = <span class="sym">α</span> + Σⱼ <span class="sym">βⱼ</span> <span class="sym">xᵢⱼ</span> + <span class="sym">bᵢ</span></div>
+      </div>
+      <div class="eq-block">
+        <div class="eq-label">// BYM2 spatial effect</div>
+        <div class="eq-text"><span class="sym">bᵢ</span> = <span class="sym">σb</span> · (<span class="op">√φ</span> · <span class="sym">u*ᵢ</span> + <span class="op">√(1−φ)</span> · <span class="sym">v*ᵢ</span>)</div>
+      </div>
+      <div class="eq-block">
+        <div class="eq-label">// ICAR structured effect</div>
+        <div class="eq-text"><span class="sym">u*</span> ~ <span class="op">ICAR</span>(W) &nbsp;&nbsp;<span style="color:var(--grey);font-size:.85em">[scaled, sum-to-zero]</span></div>
+      </div>
+      <div class="eq-block">
+        <div class="eq-label">// IID unstructured noise</div>
+        <div class="eq-text"><span class="sym">v*ᵢ</span> ~ <span class="op">Normal</span>(0, 1) &nbsp;&nbsp;<span style="color:var(--grey);font-size:.85em">[IID]</span></div>
+      </div>
+      <div class="eq-block">
+        <div class="eq-label">// PC priors (Riebler et al. 2016)</div>
+        <div class="eq-text">
+          <span class="sym">σb</span> ~ <span class="prior">HalfNormal</span>(0.5) &nbsp; P(σb &gt; 1.0) = 0.01<br>
+          <span class="sym">φ</span> &nbsp;~ <span class="prior">Beta</span>(0.5, 0.5) &nbsp; [neutral]
+        </div>
+      </div>
+      <div class="critical-note">
+        <div class="cn-title">⚠ Critical: do NOT use pm.CAR</div>
+        <div class="cn-text">
+          <span class="cn-code">pm.CAR(alpha=0.99, tau=1.0)</span> approximates ICAR but hardcodes precision and produces biased σb and φ estimates.
+          Use the explicit ICAR log-potential: <span class="cn-code">pm.Potential("icar", icar_logp(u_raw, node1, node2))</span>
+          with node arrays from city2graph Queen contiguity.
+        </div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <table class="param-table">
+        <thead>
+          <tr><th>Parameter</th><th>Prior</th><th>Interpretation</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">α</td><td class="mono">Normal(0,1)</td><td>Baseline UOI (weakly informative)</td></tr>
+          <tr><td class="mono">βⱼ</td><td class="mono">Normal(0,1)</td><td>Component j coefficient</td></tr>
+          <tr><td class="mono">σb</td><td class="mono">HalfNormal(0.5) [PC]</td><td>Total spatial SD</td></tr>
+          <tr><td class="mono">φ</td><td class="mono">Beta(0.5,0.5) [PC]</td><td>Spatial fraction of σb</td></tr>
+          <tr><td class="mono">σε</td><td class="mono">HalfNormal(1.0)</td><td>Residual noise SD</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:1.5rem;background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:1.2rem;">
+        <div style="font-size:11px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">MCMC Configuration</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--teal);line-height:1.8;">
+          4 chains × 2,000 draws<br>
+          tune = 1,000 steps<br>
+          target_accept = 0.90<br>
+          adjacency: city2graph Queen
+        </div>
+      </div>
+      <div style="margin-top:1rem;background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:1.2rem;">
+        <div style="font-size:11px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">Interpretation of φ</div>
+        <div style="font-size:12px;color:rgba(232,237,245,.7);line-height:1.6;">
+          φ → 1: spatial variation is entirely structured (neighbouring wards are similar — ICAR dominates).<br><br>
+          φ → 0: variation is ward-specific noise with no spatial pattern.<br><br>
+          Expected range for UOI: φ ∈ [0.55, 0.85], confirming strong neighbourhood effects.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SWMM ══════════════════════════════════════ -->
+<section id="swmm">
+  <div class="section-label">Hydrodynamic Simulation</div>
+  <h2 class="section-h2 reveal">SWMM — Why it hung for 17 minutes</h2>
+  <p class="section-lead reveal reveal-delay-1">
+    The original build_swm.py caused a 17-minute execution freeze due to four compounding failures — all diagnosed empirically and fixed.
+  </p>
+  <div class="swmm-layout">
+    <div class="reveal">
+      <div class="diagnosis-row">
+        <div class="diag-num">1</div>
+        <div class="diag-body">
+          <div class="diag-title">Network scale</div>
+          <div class="diag-broken">✕ network_type='drive' → ~18,000 nodes</div>
+          <div class="diag-fixed">✓ custom_filter='primary|secondary|tertiary' → ~700 nodes (20× reduction)</div>
+        </div>
+      </div>
+      <div class="diagnosis-row">
+        <div class="diag-num">2</div>
+        <div class="diag-body">
+          <div class="diag-title">Catastrophic constant inflow</div>
+          <div class="diag-broken">✕ baseline=0.05 CMS × 18k nodes = 900 CMS</div>
+          <div class="diag-fixed">✓ TIMESERIES storm hyetograph, peak 0.005 CMS/node (100× less)</div>
+        </div>
+      </div>
+      <div class="diagnosis-row">
+        <div class="diag-num">3</div>
+        <div class="diag-body">
+          <div class="diag-title">Random elevations</div>
+          <div class="diag-broken">✕ np.random.uniform(30,40) → 50% uphill conduits, closed loops</div>
+          <div class="diag-fixed">✓ Synthetic DEM slope toward Vishwamitri river (real topography)</div>
+        </div>
+      </div>
+      <div class="diagnosis-row">
+        <div class="diag-num">4</div>
+        <div class="diag-body">
+          <div class="diag-title">Zero junction storage</div>
+          <div class="diag-broken">✕ MaxDepth=0 → instant surcharge at every node</div>
+          <div class="diag-fixed">✓ MaxDepth=2.0m, Aponded=200m², 5 boundary outfalls</div>
+        </div>
+      </div>
+      <div style="margin-top:1.5rem;background:rgba(0,201,167,.08);border:1px solid rgba(0,201,167,.2);border-radius:8px;padding:1rem;font-family:var(--font-mono);font-size:12px;color:var(--teal);">
+        Result: 17+ minutes → &lt;30 seconds
+      </div>
+    </div>
+    <div class="reveal reveal-delay-2">
+      <div style="font-size:12px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1rem;">Storm Timeline</div>
+      <canvas id="swmm-timeline" height="140"></canvas>
+      <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--grey);margin-top:4px;">
+        <span>0h</span><span>30m</span><span>1h</span><span>1h30 ⚡</span><span>2h</span><span>2h30</span><span>3h</span><span>4h</span>
+      </div>
+      <div style="margin-top:1.5rem;background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:1.2rem;">
+        <div style="font-size:11px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">CFL Condition</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--amber);line-height:1.8;">
+          Δt ≤ Δx / c<br>
+          c = √(gA/T) ≈ 3.1 m/s<br>
+          Δx_min ≈ 50m<br>
+          → max stable dt = 16s<br>
+          → routing_step = 5s ✓
+        </div>
+      </div>
+      <div style="margin-top:1rem;background:var(--raised);border:1px solid var(--border);border-radius:8px;padding:1.2rem;">
+        <div style="font-size:11px;font-weight:700;color:var(--grey);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;">Storm Design</div>
+        <div style="font-size:12px;color:rgba(232,237,245,.7);line-height:1.6;">
+          Vadodara 10-yr return: ~50mm/hr peak<br>
+          Catchment per node: ~500m²<br>
+          Runoff coefficient C = 0.70<br>
+          Q_peak = 50/3600 × 500 × 0.70 = <span style="color:var(--teal);font-family:var(--font-mono)">0.005 CMS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PIPELINE ══════════════════════════════════ -->
+<section id="pipeline">
+  <div class="section-label">Reproduce this</div>
+  <h2 class="section-h2 reveal">Clean pipeline — 11 steps</h2>
+  <p class="section-lead reveal reveal-delay-1">Run these scripts in order. Each step feeds the next.</p>
+  <div class="pipeline-steps">
+    <div class="pipeline-step reveal" style="--ps-c:#00C9A7">
+      <div class="ps-dot">01</div>
+      <div class="ps-content">
+        <div class="ps-script">03_accessibility_engine.py</div>
+        <div class="ps-title">Accessibility modelling</div>
+        <div class="ps-desc">OSMnx network download → drive/walk isochrones to hospitals, schools.</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#4A9EFF">
+      <div class="ps-dot">02</div>
+      <div class="ps-content">
+        <div class="ps-script">03b_transit_accessibility.py</div>
+        <div class="ps-title">Transit graph</div>
+        <div class="ps-desc">city2graph.load_gtfs() + travel_summary_graph(). Requires vadodara_gtfs.zip.</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#FFB347">
+      <div class="ps-dot">03</div>
+      <div class="ps-content">
+        <div class="ps-script">04_risk_assessment.py</div>
+        <div class="ps-title">Flood risk raster</div>
+        <div class="ps-desc">SRTM 30m DEM → flood exposure % per ward. Place DEM at data/raw/.</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#FF6B6B">
+      <div class="ps-dot">04</div>
+      <div class="ps-content">
+        <div class="ps-script">05_calculate_uoi.py</div>
+        <div class="ps-title">UOI composite</div>
+        <div class="ps-desc">Min-max normalise, apply weights, compute Gini + EDE. Output: vadodara_final_uoi_balanced.gpkg</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#A78BFA">
+      <div class="ps-dot">05</div>
+      <div class="ps-content">
+        <div class="ps-script">05b_prepare_bym2_inputs.py</div>
+        <div class="ps-title">BYM2 data prep</div>
+        <div class="ps-desc">Standardise features, build adjacency arrays. Output: bym2_inputs.npz</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#00C9A7">
+      <div class="ps-dot">06</div>
+      <div class="ps-content">
+        <div class="ps-script">10_city2graph_integration.py</div>
+        <div class="ps-title">city2graph graphs</div>
+        <div class="ps-desc">Queen/Rook contiguity, KNN, Delaunay, POI group_nodes. Exports bym2_node1/2.npy.</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#4A9EFF">
+      <div class="ps-dot">07</div>
+      <div class="ps-content">
+        <div class="ps-script">06_bym2_pymc_model.py</div>
+        <div class="ps-title">BYM2 model</div>
+        <div class="ps-desc">ICAR Potential, PC priors, NUTS 4 chains × 2000. Output: wards_bym2_results.gpkg + bym2_idata.nc</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#FFB347">
+      <div class="ps-dot">08</div>
+      <div class="ps-content">
+        <div class="ps-script">build_swm_fixed.py</div>
+        <div class="ps-title">SWMM network builder</div>
+        <div class="ps-desc">Major roads only, storm timeseries, DEM slope, 5 outfalls. Output: vadodara_overland.inp</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#FF6B6B">
+      <div class="ps-dot">09</div>
+      <div class="ps-content">
+        <div class="ps-script">run_swmm_fixed.py</div>
+        <div class="ps-title">SWMM simulation</div>
+        <div class="ps-desc">DYNWAVE 4-hour run, RPT parser, ward aggregation. Adds swmm_flood_road_pct to .gpkg</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#A78BFA">
+      <div class="ps-dot">10</div>
+      <div class="ps-content">
+        <div class="ps-script">GNN.py (fix 5 bugs first)</div>
+        <div class="ps-title">GCN + BYM2 hybrid</div>
+        <div class="ps-desc">3-layer GCN embeddings → BYM2 covariate. Fix: replace pm.CAR with ICAR Potential; use LOO-CV predictions.</div>
+      </div>
+    </div>
+    <div class="pipeline-step reveal" style="--ps-c:#00C9A7">
+      <div class="ps-dot">11</div>
+      <div class="ps-content">
+        <div class="ps-script">streamlit run dashboard.py</div>
+        <div class="ps-title">Streamlit dashboard</div>
+        <div class="ps-desc">5-KPI dark-theme dashboard at localhost:8501. Reads gnn_bym2_results layer from .gpkg.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ THEORY ════════════════════════════════════ -->
+<section id="theory">
+  <div class="section-label">Theory</div>
+  <h2 class="section-h2 reveal">Theoretical foundations</h2>
+  <p class="section-lead reveal reveal-delay-1">Key citations and theoretical extracts supporting each analytical choice.</p>
+  <div class="theory-grid">
+    <div class="theory-card reveal" style="--tc-color:#00C9A7">
+      <div class="tc-source">ANSELIN, L. (1988)</div>
+      <div class="tc-title">Spatial Econometrics</div>
+      <div class="tc-body">OLS fails when observations are spatially autocorrelated — breaking the independence assumption inflates Type I error rates and produces biased coefficients. The LM tests (LM-Lag, LM-Error, RLM versions) provide a data-driven procedure to select between SLM and SEM, which is the gateway to BYM2.</div>
+    </div>
+    <div class="theory-card reveal reveal-delay-1" style="--tc-color:#A78BFA">
+      <div class="tc-source">RIEBLER ET AL. (2016)</div>
+      <div class="tc-title">BYM2 Penalised Complexity</div>
+      <div class="tc-body">The BYM2 reparameterisation makes σb and φ directly interpretable. PC priors penalise deviation from the base model (constant risk), placing probability mass on simpler models unless the data demands complexity. The mixing parameter φ ∈ [0,1] quantifies the proportion of spatial variation attributable to neighbourhood structure.</div>
+      <div class="tc-formula">P(σb > U) = a where U=0.5/0.31, a=0.01</div>
+    </div>
+    <div class="theory-card reveal reveal-delay-2" style="--tc-color:#4A9EFF">
+      <div class="tc-source">ANSELIN (1995)</div>
+      <div class="tc-title">LISA Cluster Maps</div>
+      <div class="tc-body">Local Indicators of Spatial Association decompose global Moran's I into four typologies: High-High (opportunity clusters — policy reinforcement), Low-Low (deprivation clusters — priority intervention), High-Low (positive outlier), Low-High (isolated deprived ward). The LISA map is the primary policy communication output.</div>
+    </div>
+    <div class="theory-card reveal" style="--tc-color:#FFB347">
+      <div class="tc-source">KOLM (1976), POLLAK (1971)</div>
+      <div class="tc-title">Kolm–Pollak EDE</div>
+      <div class="tc-body">The Equally Distributed Equivalent measures what constant UOI would deliver the same social welfare as the observed distribution. Unlike Atkinson's measure, it uses a negative exponential social welfare function making it unit-specific. The κ-sweep from 0.1 to 2.0 tests sensitivity to the degree of inequality aversion.</div>
+      <div class="tc-formula">EDE_κ = −(1/κ)·log[(1/n)Σᵢ exp(−κ·xᵢ)]</div>
+    </div>
+    <div class="theory-card reveal reveal-delay-1" style="--tc-color:#FF6B6B">
+      <div class="tc-source">EPA / SWMM 5.2</div>
+      <div class="tc-title">DYNWAVE St Venant</div>
+      <div class="tc-body">DYNWAVE solves the full 1D Saint-Venant equations: continuity ∂A/∂t + ∂Q/∂x = q and momentum ∂Q/∂t + ∂(Q²/A)/∂x + gA(∂H/∂x + Sf) = 0. The CFL stability condition Δt ≤ Δx/c must be satisfied at all timesteps. Violation causes DYNWAVE to internally substep to milliseconds — the root cause of the 17-minute hang.</div>
+    </div>
+    <div class="theory-card reveal reveal-delay-2" style="--tc-color:#00C9A7">
+      <div class="tc-source">SATO (2025) / BOEING (2025)</div>
+      <div class="tc-title">city2graph + OSMnx</div>
+      <div class="tc-body">city2graph converts geospatial datasets to graph representations integrated with GeoPandas, NetworkX and PyTorch Geometric. The contiguity_graph() function returns a MultiIndex edge GeoDataFrame where level_0/level_1 are 0-indexed ward positions — directly usable as BYM2 node1/node2 adjacency arrays without manual mapping.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FILES ════════════════════════════════════ -->
+<section id="files">
+  <div class="section-label">Repository</div>
+  <h2 class="section-h2 reveal">All deliverables</h2>
+  <div class="files-grid">
+    <div class="file-card reveal" style="--fc-c:#00C9A7">
+      <div class="fc-type">Python</div>
+      <div class="fc-name">06_bym2_pymc_model.py</div>
+      <div class="fc-desc">BYM2 ICAR model in PyMC 5. Correct ICAR via pm.Potential, PC priors, city2graph adjacency.</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+    <div class="file-card reveal reveal-delay-1" style="--fc-c:#00C9A7">
+      <div class="fc-type">Python</div>
+      <div class="fc-name">10_city2graph_integration.py</div>
+      <div class="fc-desc">Contiguity, proximity (KNN/Delaunay/Gabriel), POI group_nodes, transit graph, heterogeneous graph.</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+    <div class="file-card reveal reveal-delay-2" style="--fc-c:#00C9A7">
+      <div class="fc-type">Python</div>
+      <div class="fc-name">uoi_sensitivity_analysis.py</div>
+      <div class="fc-desc">OAT, Monte Carlo Dirichlet N=10k, Sobol' indices, Kolm–Pollak κ-sweep, spatial CI mapping.</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+    <div class="file-card reveal" style="--fc-c:#FFB347">
+      <div class="fc-type">Python</div>
+      <div class="fc-name">build_swm_fixed.py</div>
+      <div class="fc-desc">Major roads only, storm TIMESERIES, DEM slope, 5 outfalls. Fixed all 4 root causes of 17-min hang.</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+    <div class="file-card reveal reveal-delay-1" style="--fc-c:#FFB347">
+      <div class="fc-type">Python</div>
+      <div class="fc-name">run_swmm_fixed.py</div>
+      <div class="fc-desc">Regex edge ID parser, column-discovery RPT parser, road-type thresholds, ward aggregation.</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+    <div class="file-card reveal reveal-delay-2" style="--fc-c:#FF6B6B">
+      <div class="fc-type">Python</div>
+      <div class="fc-name">GNN.py</div>
+      <div class="fc-desc">GCN + BYM2 hybrid. 5 bugs documented: replace pm.CAR, use LOO-CV, fix priors, target_accept, spatial CV.</div>
+      <div class="fc-status fix">Needs fixes</div>
+    </div>
+    <div class="file-card reveal" style="--fc-c:#4A9EFF">
+      <div class="fc-type">Python</div>
+      <div class="fc-name">dashboard.py</div>
+      <div class="fc-desc">Streamlit dark-theme dashboard. 5 KPI cards, pydeck 3D map, layer toggles, correlation matrix.</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+    <div class="file-card reveal reveal-delay-1" style="--fc-c:#A78BFA">
+      <div class="fc-type">HTML</div>
+      <div class="fc-name">vadodara_network.html</div>
+      <div class="fc-desc">Self-contained 142KB interactive flood network. Pre/Post/Diff modes, storm timeline, pan+zoom.</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+    <div class="file-card reveal reveal-delay-2" style="--fc-c:#A78BFA">
+      <div class="fc-type">SWMM .inp</div>
+      <div class="fc-name">vadodara_overland_fixed.inp</div>
+      <div class="fc-desc">Patched .inp file. 5 missing junction nodes (OSMnx outfall candidates) added back. Passes swmm_open().</div>
+      <div class="fc-status done">Complete</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ════════════════════════════════════ -->
+<footer>
+  <div>
+    <div class="footer-brand">Urban Inequality · Vadodara</div>
+    <div class="footer-sub">A thesis-grade geo-spatial analysis of opportunity, risk, and accessibility across 32 urban wards. M.Sc. Statistics, 2024–2026.</div>
+  </div>
+  <div>
+    <div class="footer-col-title">Sections</div>
+    <ul class="footer-links">
+      <li><a href="#about">Context & motivation</a></li>
+      <li><a href="#uoi">Urban Opportunity Index</a></li>
+      <li><a href="#network">Interactive network map</a></li>
+      <li><a href="#spatial">Spatial statistics</a></li>
+      <li><a href="#bym2">BYM2 Bayesian model</a></li>
+      <li><a href="#swmm">SWMM flood simulation</a></li>
+      <li><a href="#theory">Theory & citations</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="footer-col-title">Stack</div>
+    <ul class="footer-links">
+      <li><a href="https://osmnx.readthedocs.io" target="_blank">OSMnx</a></li>
+      <li><a href="https://city2graph.net" target="_blank">city2graph</a></li>
+      <li><a href="https://www.pymc.io" target="_blank">PyMC 5</a></li>
+      <li><a href="https://www.epa.gov/water-research/storm-water-management-model-swmm" target="_blank">SWMM 5.2</a></li>
+      <li><a href="https://pytorch-geometric.readthedocs.io" target="_blank">PyTorch Geometric</a></li>
+      <li><a href="https://github.com/threed2y/URBAN-INEQUALITY-IN-BARODA" target="_blank">GitHub Repository</a></li>
+    </ul>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 · Urban Inequality in Vadodara · GPL-3.0 License</span>
+    <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">github.com/threed2y/URBAN-INEQUALITY-IN-BARODA</span>
+  </div>
+</footer>
+
+<script>
+// ── Cursor ────────────────────────────────────────────────────────────────────
+const cur = document.getElementById('cursor');
+const curR = document.getElementById('cursor-ring');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+function animCursor() {
+  cur.style.transform = `translate(${mx-4}px,${my-4}px)`;
+  rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+  curR.style.transform = `translate(${rx-16}px,${ry-16}px)`;
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+
+// ── Scroll reveal ────────────────────────────────────────────────────────────
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+// ── UOI bars ─────────────────────────────────────────────────────────────────
+const WARD_DATA = [
+  {n:'Alkapuri',v:85.5},{n:'Race Course',v:79.6},{n:'Sayajigunj',v:76.5},
+  {n:'Baroda Society',v:76.5},{n:'Akota',v:72.2},{n:'Diwalipura',v:70.4},
+  {n:'Subhanpura',v:62.6},{n:'Old Padra Rd',v:60.2},{n:'Karelibaug',v:59.3},
+  {n:'Raopura',v:58.5},{n:'Jetalpur',v:58.7},{n:'Fatehgunj',v:56.4},
+  {n:'Wadi',v:54.4},{n:'Tandalja',v:49.3},{n:'Ajwa Road',v:48.8},
+  {n:'Waghodia Rd',v:46.8},{n:'Pratapnagar',v:48.6},{n:'Vasna',v:48.4},
+  {n:'Makarpura',v:42.5},{n:'Manjalpur',v:43.9},{n:'Sama',v:43.6},
+  {n:'Panigate',v:44.8},{n:'Gorwa',v:36.3},{n:'Babajipura',v:39.0},
+  {n:'Chhani',v:40.5},{n:'Nizampura',v:47.9},{n:'Kalali',v:43.3},
+  {n:'Vadsar',v:38.4},{n:'Harni',v:36.0},{n:'Danteshwar',v:34.4},
+  {n:'Tarsali',v:33.3},{n:'Gorwa',v:36.3},
+];
+const sorted = [...WARD_DATA].sort((a,b)=>b.v-a.v);
+const barsEl = document.getElementById('uoi-bars');
+sorted.forEach(w => {
+  const pct = w.v;
+  const c = pct>70?'var(--teal)':pct>50?'var(--blue)':pct>40?'var(--amber)':'var(--red)';
+  const row = document.createElement('div');
+  row.className = 'uoi-bar-row';
+  row.innerHTML = `
+    <div class="uoi-bar-name">${w.n}</div>
+    <div class="uoi-bar-track">
+      <div class="uoi-bar-fill" style="width:0%;background:${c}" data-pct="${pct}"></div>
+    </div>
+    <div class="uoi-bar-val">${pct}</div>`;
+  barsEl.appendChild(row);
+});
+// animate on scroll
+const barObs = new IntersectionObserver(entries => {
+  if(entries[0].isIntersecting) {
+    document.querySelectorAll('.uoi-bar-fill').forEach(b => {
+      b.style.width = b.dataset.pct + '%';
     });
-    localStorage.setItem('docsify-theme', theme);
+    barObs.disconnect();
   }
+},{ threshold:0.2 });
+barObs.observe(document.getElementById('uoi-bars'));
 
-  const savedTheme = localStorage.getItem('docsify-theme') || 'light';
-  setTheme(savedTheme);
+// ── SWMM Timeline Canvas ──────────────────────────────────────────────────────
+function drawSWMMTimeline() {
+  const c = document.getElementById('swmm-timeline');
+  if(!c) return;
+  const W=c.clientWidth||600, H=140;
+  c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+  const intensity=[0,0.2,0.6,1.0,0.9,0.6,0.3,0.05];
+  const flood=[0,3.1,8.4,15.9,13.8,9.2,5.1,0.8];
+  const n=intensity.length;
+  const pad={t:16,b:28,l:8,r:8};
+  const W2=W-pad.l-pad.r, H2=H-pad.t-pad.b;
+  ctx.clearRect(0,0,W,H);
 
-  window.$docsify.plugins = [].concat(function (hook) {
-    hook.ready(function () {
-      const btn = document.createElement('button');
-      btn.innerText = '🌙 / ☀️';
-      btn.style.cssText =
-        'position:fixed;bottom:20px;right:20px;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;z-index:9999;';
-      btn.onclick = () => {
-        const next = localStorage.getItem('docsify-theme') === 'dark' ? 'light' : 'dark';
-        setTheme(next);
-      };
-      document.body.appendChild(btn);
+  // Flood bars
+  const bw=(W2/n)*0.6, bx=(W2/n)*0.2;
+  flood.forEach((f,i)=>{
+    const x=pad.l+i*(W2/n)+bx;
+    const bh=(f/20)*H2;
+    const y=pad.t+H2-bh;
+    const g=ctx.createLinearGradient(0,y,0,y+bh);
+    g.addColorStop(0,'rgba(255,107,107,0.9)');
+    g.addColorStop(1,'rgba(255,107,107,0.2)');
+    ctx.fillStyle=g;
+    ctx.fillRect(x,y,bw,bh);
+  });
+
+  // Intensity line
+  ctx.beginPath();
+  intensity.forEach((v,i)=>{
+    const x=pad.l+i*(W2/(n-1));
+    const y=pad.t+H2*(1-v);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle='rgba(0,201,167,0.9)'; ctx.lineWidth=2; ctx.stroke();
+
+  // Dots
+  intensity.forEach((v,i)=>{
+    const x=pad.l+i*(W2/(n-1));
+    const y=pad.t+H2*(1-v);
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2);
+    ctx.fillStyle='#00C9A7'; ctx.fill();
+  });
+
+  // Legend
+  ctx.font='9px IBM Plex Mono,monospace';
+  ctx.fillStyle='rgba(0,201,167,0.8)';
+  ctx.fillText('── Storm intensity',W-120,pad.t+12);
+  ctx.fillStyle='rgba(255,107,107,0.8)';
+  ctx.fillText('▮ Flooded roads %',W-120,pad.t+24);
+}
+window.addEventListener('load', drawSWMMTimeline);
+window.addEventListener('resize', drawSWMMTimeline);
+
+// ═══════════════════════════════════════════════════
+// NETWORK MAP ENGINE
+// ═══════════════════════════════════════════════════
+let NET = null;
+let mode='pre', step=0, selWard=null, playing=false, playTimer=null;
+let camX=0, camY=0, camZ=1, dragging=false, lmx=0, lmy=0, flowTick=0;
+
+const wrap = document.getElementById('network-canvas-wrap');
+const bgC  = document.getElementById('bg-canvas');
+const mc   = document.getElementById('map-canvas');
+const bgCtx= bgC.getContext('2d');
+const ctx  = mc.getContext('2d');
+
+const ROAD_C = {
+  arterial:'rgba(90,172,255,0.85)',
+  primary:'rgba(42,112,192,0.8)',
+  secondary:'rgba(26,74,144,0.75)',
+  tertiary:'rgba(16,46,96,0.7)',
+};
+const ROAD_W = {arterial:3.2,primary:2.2,secondary:1.6,tertiary:1.1,residential:0.7};
+const LAT0=22.22,LAT1=22.40,LON0=73.10,LON1=73.27,PAD=48;
+
+function resize() {
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  bgC.width=mc.width=W; bgC.height=mc.height=H;
+  drawBg(); if(NET) draw();
+}
+
+function toXY(lat,lon) {
+  const W=mc.width,H=mc.height;
+  const x=PAD+(lon-LON0)/(LON1-LON0)*(W-2*PAD);
+  const y=PAD+(1-(lat-LAT0)/(LAT1-LAT0))*(H-2*PAD);
+  return [x,y];
+}
+function cam(x,y) { return [x*camZ+camX, y*camZ+camY]; }
+function proj(lat,lon) { const[x,y]=toXY(lat,lon); return cam(x,y); }
+
+function drawBg() {
+  const W=bgC.width,H=bgC.height;
+  bgCtx.clearRect(0,0,W,H);
+  const g=bgCtx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*0.7);
+  g.addColorStop(0,'#07101E'); g.addColorStop(1,'#04070E');
+  bgCtx.fillStyle=g; bgCtx.fillRect(0,0,W,H);
+  bgCtx.strokeStyle='rgba(12,30,60,0.45)'; bgCtx.lineWidth=0.5;
+  for(let i=0;i<=14;i++) {
+    const x=i*(W/14),y=i*(H/14);
+    bgCtx.beginPath();bgCtx.moveTo(x,0);bgCtx.lineTo(x,H);bgCtx.stroke();
+    bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(W,y);bgCtx.stroke();
+  }
+}
+
+function draw() {
+  if(!NET) return;
+  ctx.clearRect(0,0,mc.width,mc.height);
+  const nmap={};NET.nodes.forEach(n=>nmap[n.id]=n);
+  const wmap={};NET.wards.forEach(w=>wmap[w.id]=w);
+
+  // Ward zones
+  NET.wards.forEach(w=>{
+    const[cx,cy]=proj(w.lat,w.lon);
+    const fr=w.flood_risk;
+    const flooded=mode!=='pre'&&w.flooded_pct>20;
+    const sel=selWard===w.id;
+    const R=(38+fr*18)*camZ;
+    if(flooded){
+      const g=ctx.createRadialGradient(cx,cy,R*.1,cx,cy,R*1.6);
+      g.addColorStop(0,`rgba(255,107,107,${fr*.18})`);
+      g.addColorStop(1,'rgba(255,80,40,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.6,0,Math.PI*2); ctx.fill();
+    }
+    ctx.save();
+    ctx.strokeStyle=sel?'rgba(0,201,167,.9)':flooded?`rgba(255,107,107,${.3+fr*.4})`:'rgba(20,60,130,.35)';
+    ctx.lineWidth=sel?1.5:.7; ctx.setLineDash(sel?[]:[5,5]);
+    ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+  });
+
+  // Get timeline state
+  const tl=NET.timeline[step];
+  const tlMap={};
+  if(tl) tl.e.forEach(te=>tlMap[`${te.u}_${te.v}`]=te);
+
+  // Edges
+  NET.edges.forEach(e=>{
+    const un=nmap[e.u],vn=nmap[e.v];
+    if(!un||!vn) return;
+    const[x1,y1]=proj(un.lat,un.lon),[x2,y2]=proj(vn.lat,vn.lon);
+    let flooded,depth;
+    if(mode==='pre'){flooded=0;depth=e.pre;}
+    else if(mode==='post'||mode==='diff'){flooded=e.fl;depth=e.post;}
+    else{const te=tlMap[`${e.u}_${e.v}`]||{f:0,d:e.pre};flooded=te.f;depth=te.d;}
+    const w=(ROAD_W[e.t]||1)*camZ;
+    ctx.lineCap='round';
+    if(flooded){
+      ctx.shadowColor='rgba(255,80,60,0.45)'; ctx.shadowBlur=7*camZ;
+      ctx.strokeStyle='rgba(255,107,107,0.95)'; ctx.lineWidth=w+1*camZ;
+    } else {
+      ctx.shadowBlur=0;
+      ctx.strokeStyle=mode==='diff'?'rgba(52,211,153,0.7)':(ROAD_C[e.t]||'rgba(20,60,130,.7)');
+      ctx.lineWidth=w;
+    }
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.shadowBlur=0;
+    if(flooded&&mode!=='pre'){
+      const L=Math.sqrt((x2-x1)**2+(y2-y1)**2);
+      if(L>4){
+        const dx=(x2-x1)/L,dy=(y2-y1)/L;
+        const t=((flowTick%40)/40);
+        const px=x1+dx*L*t,py=y1+dy*L*t;
+        ctx.fillStyle='rgba(255,210,80,0.85)';
+        ctx.shadowColor='rgba(255,200,50,.5)'; ctx.shadowBlur=4;
+        ctx.beginPath(); ctx.arc(px,py,2*camZ,0,Math.PI*2); ctx.fill();
+        ctx.shadowBlur=0;
+      }
+    }
+  });
+
+  // Nodes
+  NET.nodes.forEach(n=>{
+    const[x,y]=proj(n.lat,n.lon);
+    const isWard=n.w>=0&&n.w<32;
+    const w=isWard?wmap[n.w]:null;
+    const sel=isWard&&selWard===n.w;
+    const flooded=mode!=='pre'&&w&&w.flooded_pct>30;
+    if(isWard){
+      const r=(sel?8:5)*camZ;
+      if(sel){ctx.shadowColor='rgba(0,201,167,.8)';ctx.shadowBlur=14;}
+      else if(flooded){ctx.shadowColor='rgba(255,80,60,.6)';ctx.shadowBlur=8;}
+      ctx.fillStyle=flooded?'rgba(255,107,107,.9)':'rgba(74,158,255,.9)';
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle=sel?'#fff':'rgba(190,220,255,.85)';
+      ctx.beginPath(); ctx.arc(x,y,r*.4,0,Math.PI*2); ctx.fill();
+      ctx.shadowBlur=0;
+    } else {
+      ctx.fillStyle='rgba(20,50,110,.6)';
+      ctx.beginPath(); ctx.arc(x,y,2*camZ,0,Math.PI*2); ctx.fill();
+    }
+  });
+
+  // Labels
+  NET.wards.forEach(w=>{
+    const[cx,cy]=proj(w.lat,w.lon);
+    const sel=selWard===w.id;
+    const flooded=mode!=='pre'&&w.flooded_pct>20;
+    const sz=Math.max(8,Math.min(12,(sel?11:9)*camZ));
+    ctx.font=`${sel?600:400} ${sz}px 'IBM Plex Mono',monospace`;
+    ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillStyle=sel?'rgba(0,201,167,1)':flooded?'rgba(255,130,110,.9)':'rgba(80,130,180,.75)';
+    ctx.fillText(w.name,cx,cy-9*camZ);
+  });
+
+  updateNetStats();
+}
+
+function updateNetStats() {
+  if(mode==='pre'){
+    document.getElementById('stat-flooded').textContent='0';
+    document.getElementById('stat-wards').textContent='0';
+    document.getElementById('stat-depth').textContent='0.00m';
+    return;
+  }
+  const fl=NET.edges.filter(e=>e.fl).length;
+  const wa=NET.wards.filter(w=>w.flooded_pct>15).length;
+  const md=(NET.edges.reduce((a,e)=>a+e.post,0)/NET.edges.length).toFixed(2);
+  document.getElementById('stat-flooded').textContent=fl;
+  document.getElementById('stat-wards').textContent=wa;
+  document.getElementById('stat-depth').textContent=md+'m';
+}
+
+function setMode(m){
+  mode=m;
+  ['pre','post','diff'].forEach(id=>document.getElementById('btn-'+id).classList.toggle('active',id===m));
+  draw();
+}
+
+function setStep(s){
+  step=s;
+  const tl=NET.timeline[s];
+  document.querySelectorAll('.tl-step-btn').forEach((b,i)=>{
+    b.className='tl-step-btn'+(i===s?' active':i<s?' past':'');
+  });
+  if(tl.i>0&&mode==='pre') setMode('post');
+  draw();
+}
+
+function togglePlay(){
+  playing=!playing;
+  const btn=document.getElementById('tl-play');
+  if(playing){
+    btn.textContent='■';
+    if(step===NET.timeline.length-1) setStep(0);
+    playTimer=setInterval(()=>{
+      const ns=(step+1)%NET.timeline.length;
+      setStep(ns);
+      if(ns===0){clearInterval(playTimer);playing=false;btn.textContent='▶';}
+    },750);
+  } else {
+    clearInterval(playTimer); btn.textContent='▶';
+  }
+}
+
+function clearSel(){
+  selWard=null;
+  document.getElementById('ward-panel').style.display='none';
+  draw();
+}
+
+function showWardPanel(w){
+  const p=document.getElementById('ward-panel');
+  p.style.display='block';
+  const col=w.flood_risk>0.65?'var(--red)':w.flood_risk>0.45?'var(--amber)':'var(--teal)';
+  p.innerHTML=`
+    <button class="wp-close" onclick="clearSel()">✕</button>
+    <div class="wp-name">${w.name}</div>
+    ${metric('UOI Score',w.uoi.toFixed(1),w.uoi,'var(--teal)')}
+    ${metric('Flood Risk',(w.flood_risk*100).toFixed(0)+'%',w.flood_risk*100,col)}
+    ${metric('Roads Flooded',w.flooded_pct+'%',w.flooded_pct,'var(--red)')}
+    ${metric('Access Lost',w.accessibility_loss+'%',w.accessibility_loss,'var(--amber)')}
+    <div style="font-size:9px;color:var(--grey);margin-top:8px;font-family:var(--font-mono)">
+      pop: ${w.pop.toLocaleString()}
+    </div>`;
+}
+function metric(l,v,p,c){
+  return `<div class="wp-metric">
+    <div class="wp-metric-label">${l}</div>
+    <div class="wp-metric-val" style="color:${c}">${v}</div>
+    <div class="wp-metric-bar"><div class="wp-metric-fill" style="width:${Math.min(100,p)}%;background:${c}"></div></div>
+  </div>`;
+}
+
+// Tooltip
+mc.addEventListener('mousemove', e=>{
+  if(!NET) return;
+  const R=mc.getBoundingClientRect();
+  const mx=e.clientX-R.left, my=e.clientY-R.top;
+  const tt=document.getElementById('net-tooltip');
+  const nmap={};NET.nodes.forEach(n=>nmap[n.id]=n);
+  const wmap={};NET.wards.forEach(w=>wmap[w.id]=w);
+
+  let closest=null,minD=28;
+  NET.nodes.forEach(n=>{
+    if(n.w<0||n.w>=32) return;
+    const[nx,ny]=proj(n.lat,n.lon);
+    const d=Math.hypot(nx-mx,ny-my);
+    if(d<minD){minD=d;closest=n;}
+  });
+  if(closest){
+    const w=wmap[closest.w];
+    const col=w.flood_risk>0.65?'var(--red)':w.flood_risk>0.45?'var(--amber)':'var(--teal)';
+    tt.style.display='block';
+    tt.style.left=(mx+14)+'px'; tt.style.top=(my-10)+'px';
+    document.getElementById('tt-title').textContent=w.name;
+    document.getElementById('tt-body').innerHTML=`
+      <div class="net-tt-row"><span class="net-tt-k">UOI</span><span class="net-tt-v">${w.uoi}</span></div>
+      <div class="net-tt-row"><span class="net-tt-k">Flood risk</span><span class="net-tt-v" style="color:${col}">${(w.flood_risk*100).toFixed(0)}%</span></div>
+      <div class="net-tt-row"><span class="net-tt-k">Population</span><span class="net-tt-v">${w.pop.toLocaleString()}</span></div>
+      ${mode!=='pre'?`<div class="net-tt-row"><span class="net-tt-k">Roads flooded</span><span class="net-tt-v">${w.flooded_pct}%</span></div>`:''}
+      ${w.flood_risk>0.6&&mode!=='pre'?'<div class="net-tt-warn">⚠ HIGH RISK</div>':''}`;
+    return;
+  }
+  // Edge proximity
+  let cEdge=null; let minED=9;
+  NET.edges.forEach(eg=>{
+    const un=nmap[eg.u],vn=nmap[eg.v];
+    if(!un||!vn) return;
+    const[x1,y1]=proj(un.lat,un.lon),[x2,y2]=proj(vn.lat,vn.lon);
+    const dx=x2-x1,dy=y2-y1,len2=dx*dx+dy*dy;
+    if(len2===0) return;
+    const t2=Math.max(0,Math.min(1,((mx-x1)*dx+(my-y1)*dy)/len2));
+    const d=Math.hypot(mx-(x1+t2*dx),my-(y1+t2*dy));
+    if(d<minED){minED=d;cEdge=eg;}
+  });
+  if(cEdge){
+    const flooded=mode!=='pre'&&cEdge.fl;
+    const depth=(mode==='pre'?cEdge.pre:cEdge.post).toFixed(3);
+    tt.style.display='block';
+    tt.style.left=(mx+14)+'px'; tt.style.top=(my-10)+'px';
+    document.getElementById('tt-title').textContent=cEdge.t.charAt(0).toUpperCase()+cEdge.t.slice(1)+' Road';
+    document.getElementById('tt-body').innerHTML=`
+      <div class="net-tt-row"><span class="net-tt-k">Length</span><span class="net-tt-v">${cEdge.L.toFixed(0)}m</span></div>
+      <div class="net-tt-row"><span class="net-tt-k">Depth</span><span class="net-tt-v" style="color:${flooded?'var(--red)':'var(--teal)'}">${depth}m</span></div>
+      <div class="net-tt-row"><span class="net-tt-k">Threshold</span><span class="net-tt-v">${cEdge.thr}m</span></div>
+      ${flooded?'<div class="net-tt-warn">⚠ IMPASSABLE</div>':''}`;
+  } else {
+    tt.style.display='none';
+  }
+});
+mc.addEventListener('mouseleave',()=>{ document.getElementById('net-tooltip').style.display='none'; });
+mc.addEventListener('click', e=>{
+  if(!NET) return;
+  const R=mc.getBoundingClientRect();
+  const mx=e.clientX-R.left, my=e.clientY-R.top;
+  const wmap={};NET.wards.forEach(w=>wmap[w.id]=w);
+  let closest=null,minD=32;
+  NET.nodes.forEach(n=>{
+    if(n.w<0||n.w>=32) return;
+    const[nx,ny]=proj(n.lat,n.lon);
+    const d=Math.hypot(nx-mx,ny-my);
+    if(d<minD){minD=d;closest=n;}
+  });
+  if(closest){
+    selWard=selWard===closest.w?null:closest.w;
+    if(selWard!==null) showWardPanel(wmap[selWard]);
+    else document.getElementById('ward-panel').style.display='none';
+  } else { clearSel(); }
+  draw();
+});
+
+// Pan/zoom
+mc.addEventListener('mousedown',e=>{dragging=true;lmx=e.clientX;lmy=e.clientY;mc.style.cursor='grabbing';});
+window.addEventListener('mouseup',()=>{dragging=false;mc.style.cursor='crosshair';});
+window.addEventListener('mousemove',e=>{
+  if(!dragging) return;
+  camX+=e.clientX-lmx; camY+=e.clientY-lmy;
+  lmx=e.clientX; lmy=e.clientY;
+  if(NET) draw();
+});
+mc.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const f=e.deltaY>0?.88:1.14;
+  const R=mc.getBoundingClientRect();
+  const mx=e.clientX-R.left, my=e.clientY-R.top;
+  camX=(camX-mx)*f+mx; camY=(camY-my)*f+my; camZ*=f;
+  if(NET) draw();
+},{passive:false});
+
+// Flow animation
+let lastFlowT=0;
+function flowLoop(t){
+  if(NET&&mode!=='pre'){
+    if(t-lastFlowT>35){ flowTick++; lastFlowT=t; draw(); }
+  }
+  requestAnimationFrame(flowLoop);
+}
+requestAnimationFrame(flowLoop);
+
+// Load data
+fetch('data/network.json')
+  .then(r=>r.json())
+  .then(d=>{
+    NET=d;
+    // Build timeline buttons
+    const tlEl=document.getElementById('tl-steps');
+    NET.timeline.forEach((t,i)=>{
+      const btn=document.createElement('button');
+      btn.className='tl-step-btn'+(i===0?' active':'');
+      btn.textContent=t.lbl.split(' ')[0];
+      btn.onclick=()=>setStep(i);
+      tlEl.appendChild(btn);
     });
-  }, window.$docsify.plugins || []);
+    new ResizeObserver(resize).observe(wrap);
+    resize();
+    // init stats
+    const fl=NET.edges.filter(e=>e.fl).length;
+    document.getElementById('stat-flooded').textContent=fl;
+    document.getElementById('stat-wards').textContent=NET.wards.filter(w=>w.flooded_pct>15).length;
+  })
+  .catch(()=>{ /* offline/local fallback */ });
 </script>
-
 </body>
 </html>
