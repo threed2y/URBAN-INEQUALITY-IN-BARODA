@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_a18f7e365b67217d22517868f8764e9b {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    
+                    <style>
+                        .foliumtooltip {
+                            
+                background-color:#161b22;border:1px solid #30363d;
+                border-radius:6px;color:#e6edf3;
+                font-family:'Segoe UI',Arial,sans-serif;
+                font-size:13px;padding:10px 14px;
+                box-shadow:0 4px 16px rgba(0,0,0,.5);
+            
+                        }
+                       .foliumtooltip table{
+                            margin: auto;
+                        }
+                        .foliumtooltip tr{
+                            text-align: left;
+                        }
+                        .foliumtooltip th{
+                            padding: 2px; padding-right: 8px;
+                        }
+                    </style>
+            
+    
+                    <style>
+                        .foliumpopup {
+                            
+                background-color:#161b22;border:1px solid #58a6ff;
+                border-radius:8px;color:#e6edf3;
+                font-family:'Segoe UI',Arial,sans-serif;
+                font-size:13px;padding:12px 16px;
+            
+                        }
+                       .foliumpopup table{
+                            margin: auto;
+                        }
+                        .foliumpopup tr{
+                            text-align: left;
+                        }
+                        .foliumpopup th{
+                            padding: 2px; padding-right: 8px;
+                        }
+                    </style>
+            
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-minimap/3.6.1/Control.MiniMap.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.css"/>
+</head>
+<body>
+    
+    
+    <style>
+      body{background:#0d1117}
+      .map-title-card{
+        position:absolute;top:12px;left:52px;z-index:1000;
+        background:rgba(22,27,34,.92);border:1px solid #30363d;
+        border-radius:10px;padding:10px 18px 8px;
+        backdrop-filter:blur(6px);box-shadow:0 4px 24px rgba(0,0,0,.6);
+        pointer-events:none;
+      }
+      .map-title-card h2{
+        margin:0 0 2px;font-size:15px;font-weight:700;color:#e6edf3;
+        font-family:'Segoe UI',Arial,sans-serif;letter-spacing:.5px;
+      }
+      .map-title-card p{
+        margin:0;font-size:11px;color:#8b949e;
+        font-family:'Segoe UI',Arial,sans-serif;
+      }
+      .map-title-card .accent{color:#58a6ff}
+      .legend{
+        border-radius:8px!important;background:rgba(22,27,34,.92)!important;
+        border:1px solid #30363d!important;color:#e6edf3!important;
+        font-family:'Segoe UI',Arial,sans-serif!important;font-size:12px!important;
+        box-shadow:0 4px 16px rgba(0,0,0,.4)!important;
+      }
+      .leaflet-control-fullscreen a,.leaflet-control-layers{
+        background:rgba(22,27,34,.92)!important;
+        border:1px solid #30363d!important;border-radius:8px!important;
+        color:#e6edf3!important;font-family:'Segoe UI',Arial,sans-serif!important;
+        font-size:12px!important;
+      }
+    </style>
+    <div class="map-title-card">
+      <h2>🏙️ Vadodara <span class="accent">Urban Inequality</span> Index</h2>
+      <p>GCN-BYM2 Spatial Model &middot; Ward-level opportunity scores</p>
+    </div>
+    
+    
+            <div class="folium-map" id="map_a18f7e365b67217d22517868f8764e9b" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_a18f7e365b67217d22517868f8764e9b = L.map(
+                "map_a18f7e365b67217d22517868f8764e9b",
+                {
+                    center: [22.3072, 73.1812],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 12,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_2c59b20070d4c18da8602dd1a116af93 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_2c59b20070d4c18da8602dd1a116af93.addTo(map_a18f7e365b67217d22517868f8764e9b);
+        
+    
+            var tile_layer_b84d55f94b6a1f4469aa853c16ecd0b3 = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_b84d55f94b6a1f4469aa853c16ecd0b3.addTo(map_a18f7e365b67217d22517868f8764e9b);
+        
+    
+            var tile_layer_7eb4268ba4d5cbc840310ceda352baeb = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_7eb4268ba4d5cbc840310ceda352baeb.addTo(map_a18f7e365b67217d22517868f8764e9b);
+        
+    
+        function geo_json_6ede2eac5cde38f57db36a4921bf8ab1_styler(feature) {
+            switch(feature.id) {
+                case "0": 
+                    return {"color": "#ffffff", "fillColor": "#37477cff", "fillOpacity": 0.75, "weight": 0.4};
+                case "1": 
+                    return {"color": "#ffffff", "fillColor": "#339582ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "2": 
+                    return {"color": "#ffffff", "fillColor": "#440154ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "3": 
+                    return {"color": "#ffffff", "fillColor": "#393c75ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "4": 
+                    return {"color": "#ffffff", "fillColor": "#31668dff", "fillOpacity": 0.75, "weight": 0.4};
+                case "5": 
+                    return {"color": "#ffffff", "fillColor": "#3a3471ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "6": 
+                    return {"color": "#ffffff", "fillColor": "#335d88ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "7": 
+                    return {"color": "#ffffff", "fillColor": "#34a77dff", "fillOpacity": 0.75, "weight": 0.4};
+                case "8": 
+                    return {"color": "#ffffff", "fillColor": "#31748bff", "fillOpacity": 0.75, "weight": 0.4};
+                case "10": 
+                    return {"color": "#ffffff", "fillColor": "#fde725ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "11": 
+                    return {"color": "#ffffff", "fillColor": "#6dc561ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "12": 
+                    return {"color": "#ffffff", "fillColor": "#58c06aff", "fillOpacity": 0.75, "weight": 0.4};
+                case "13": 
+                    return {"color": "#ffffff", "fillColor": "#34b27aff", "fillOpacity": 0.75, "weight": 0.4};
+                case "14": 
+                    return {"color": "#ffffff", "fillColor": "#83ca58ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "15": 
+                    return {"color": "#ffffff", "fillColor": "#31698eff", "fillOpacity": 0.75, "weight": 0.4};
+                case "16": 
+                    return {"color": "#ffffff", "fillColor": "#335a86ff", "fillOpacity": 0.75, "weight": 0.4};
+                case "17": 
+                    return {"color": "#ffffff", "fillColor": "#34a87dff", "fillOpacity": 0.75, "weight": 0.4};
+                case "18": 
+                    return {"color": "#ffffff", "fillColor": "#339a81ff", "fillOpacity": 0.75, "weight": 0.4};
+                default:
+                    return {"color": "#ffffff", "fillColor": "#34af7bff", "fillOpacity": 0.75, "weight": 0.4};
+            }
+        }
+        function geo_json_6ede2eac5cde38f57db36a4921bf8ab1_highlighter(feature) {
+            switch(feature.id) {
+                default:
+                    return {"color": "#ffffff", "fillColor": "#ffffff", "fillOpacity": 0.9, "weight": 2.5};
+            }
+        }
+
+        function geo_json_6ede2eac5cde38f57db36a4921bf8ab1_onEachFeature(feature, layer) {
+
+            layer.on({
+                mouseout: function(e) {
+                    if(typeof e.target.setStyle === "function"){
+                            geo_json_6ede2eac5cde38f57db36a4921bf8ab1.resetStyle(e.target);
+                    }
+                },
+                mouseover: function(e) {
+                    if(typeof e.target.setStyle === "function"){
+                        const highlightStyle = geo_json_6ede2eac5cde38f57db36a4921bf8ab1_highlighter(e.target.feature)
+                        e.target.setStyle(highlightStyle);
+                    }
+                },
+            });
+        };
+        var geo_json_6ede2eac5cde38f57db36a4921bf8ab1 = L.geoJson(null, {
+                onEachFeature: geo_json_6ede2eac5cde38f57db36a4921bf8ab1_onEachFeature,
+            
+                style: geo_json_6ede2eac5cde38f57db36a4921bf8ab1_styler,
+            ...{
+}
+        });
+
+        function geo_json_6ede2eac5cde38f57db36a4921bf8ab1_add (data) {
+            geo_json_6ede2eac5cde38f57db36a4921bf8ab1
+                .addData(data);
+        }
+            geo_json_6ede2eac5cde38f57db36a4921bf8ab1_add({"bbox": [73.11886247039203, 22.21604546413017, 73.29352631921792, 22.378581676557726], "features": [{"bbox": [73.21167866179847, 22.228677605886276, 73.27658142186392, 22.284070041094996], "geometry": {"coordinates": [[[73.21167866179847, 22.272001121409474], [73.22393147035687, 22.284070041094996], [73.25341139588352, 22.2824118409993], [73.27658142186392, 22.249376857419914], [73.27433458714157, 22.246488458838847], [73.2686536042732, 22.240517738262], [73.26237180656055, 22.235093936277988], [73.25554969008972, 22.23026922164812], [73.25277067808342, 22.228677605886276], [73.21167866179847, 22.272001121409474]]], "type": "Polygon"}, "id": "0", "properties": {"Score_Edu": 0.020015596568754956, "Score_Health": 0.026033690658499253, "Score_Mobility": 0.4085832007635408, "UOI_Score": 5.97, "building_density_pct": 1.36, "bus_access_score": 0.0516386679392347, "bus_stop_density": 2.9781705865800063, "bym2_spatial_phi": -0.4668184877923256, "crs": "EPSG:32643", "flood_exposure_pct": 44.76, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 39.03485870361328, "highway_access_min": 2.52, "hospitals_min": 9.22, "hybrid_opportunity_score": 61.56853004688958, "num_wards": 19, "schools_min": 79.64, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 1.19498338599574, "swmm_mean_depth": 0.1388319533331039, "transport_node_min": 111.65, "ward_id": 1}, "type": "Feature"}, {"bbox": [73.19570061060885, 22.331617835287194, 73.25662942331185, 22.378581676557726], "geometry": {"coordinates": [[[73.23436766212438, 22.33654013706327], [73.21753540446278, 22.331617835287194], [73.20301465302703, 22.336617601835304], [73.19570061060885, 22.358778545968192], [73.20014557175327, 22.378297151922148], [73.20515187747633, 22.378581676557726], [73.21372188280394, 22.378285157990568], [73.22221929643533, 22.37720838958011], [73.23056214260582, 22.375361749783277], [73.23866994248694, 22.372763044079488], [73.24646449437182, 22.36943733265835], [73.25387063140305, 22.365416687778126], [73.25662942331185, 22.363559329411157], [73.23436766212438, 22.33654013706327]]], "type": "Polygon"}, "id": "1", "properties": {"Score_Edu": 0.7824278658695087, "Score_Health": 0.3093415007656969, "Score_Mobility": 0.41049828409998546, "UOI_Score": 46.32, "building_density_pct": 3.05, "bus_access_score": 0.0216452883147905, "bus_stop_density": 1.2483544516099796, "bym2_spatial_phi": -0.4148167054542339, "crs": "EPSG:32643", "flood_exposure_pct": 82.15, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 58.0618896484375, "highway_access_min": 0.28, "hospitals_min": 7.37, "hybrid_opportunity_score": 65.70440167180347, "num_wards": 19, "schools_min": 20.98, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 53.8465612514827, "swmm_mean_depth": 0.4369347395245419, "transport_node_min": 88.29, "ward_id": 2}, "type": "Feature"}, {"bbox": [73.25341139588352, 22.249376857419914, 73.29352631921792, 22.32392716353965], "geometry": {"coordinates": [[[73.25341139588352, 22.2824118409993], [73.25487088225888, 22.30378777708385], [73.28863417668954, 22.32392716353965], [73.28947822640244, 22.321808492710595], [73.29165528949278, 22.314093860076667], [73.29300895501699, 22.306217799361182], [73.29352631921792, 22.298256190258343], [73.29320254018289, 22.29028572419899], [73.29204087906324, 22.28238316515006], [73.29005266317692, 22.27462461020608], [73.2872571715604, 22.26708475709661], [73.28368144427651, 22.259836185647828], [73.27936001750572, 22.252948660084197], [73.27658142186392, 22.249376857419914], [73.25341139588352, 22.2824118409993]]], "type": "Polygon"}, "id": "2", "properties": {"Score_Edu": 0.4187678710683651, "Score_Health": 0.0, "Score_Mobility": 0.3889777777777778, "UOI_Score": 0.55, "building_density_pct": 1.2, "bus_access_score": 0.0, "bus_stop_density": 0.0, "bym2_spatial_phi": -0.47048779385816825, "crs": "EPSG:32643", "flood_exposure_pct": 38.41, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 24.216646194458008, "highway_access_min": 1.24, "hospitals_min": 9.39, "hybrid_opportunity_score": 58.366404063720495, "num_wards": 19, "schools_min": 48.96, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 0.0, "swmm_mean_depth": 0.08446400752291083, "transport_node_min": 78.39, "ward_id": 3}, "type": "Feature"}, {"bbox": [73.23436766212438, 22.30378777708385, 73.28863417668954, 22.363559329411157], "geometry": {"coordinates": [[[73.25487088225888, 22.30378777708385], [73.2431301483771, 22.310493109922202], [73.23436766212438, 22.33654013706327], [73.25662942331185, 22.363559329411157], [73.26081694936659, 22.360739883183328], [73.26723649739192, 22.355452018640566], [73.2730674247899, 22.349604083289254], [73.27825357772059, 22.343252462103653], [73.28274503990795, 22.336458390316437], [73.2864986121998, 22.329287361157547], [73.28863417668954, 22.32392716353965], [73.25487088225888, 22.30378777708385]]], "type": "Polygon"}, "id": "3", "properties": {"Score_Edu": 0.8480634260462698, "Score_Health": 0.6079632465543645, "Score_Mobility": 0.4124794235899093, "UOI_Score": 59.69, "building_density_pct": 1.08, "bus_access_score": 0.0416879282054044, "bus_stop_density": 2.404278935755881, "bym2_spatial_phi": -0.4448888772421645, "crs": "EPSG:32643", "flood_exposure_pct": 15.47, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 36.642974853515625, "highway_access_min": 1.41, "hospitals_min": 5.42, "hybrid_opportunity_score": 61.0632052818958, "num_wards": 19, "schools_min": 15.93, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 37.17259221763811, "swmm_mean_depth": 0.35010651927843367, "transport_node_min": 46.98, "ward_id": 4}, "type": "Feature"}, {"bbox": [73.1905106471776, 22.217475850200415, 73.25277067808342, 22.272001121409474], "geometry": {"coordinates": [[[73.1905106471776, 22.251819915078045], [73.20904126638776, 22.27190056654044], [73.21167866179847, 22.272001121409474], [73.25277067808342, 22.228677605886276], [73.24825292682965, 22.226089994051275], [73.24055173329556, 22.222596439702734], [73.2325201964551, 22.2198221466977], [73.22423556328641, 22.217793783695548], [73.22210603322951, 22.217475850200415], [73.1905106471776, 22.251819915078045]]], "type": "Polygon"}, "id": "4", "properties": {"Score_Edu": 0.1737717702105538, "Score_Health": 0.206738131699847, "Score_Mobility": 0.4470289200340775, "UOI_Score": 25.23, "building_density_pct": 1.95, "bus_access_score": 0.1170482000567958, "bus_stop_density": 6.750551873868638, "bym2_spatial_phi": -0.45450646435315195, "crs": "EPSG:32643", "flood_exposure_pct": 50.4, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 45.46710968017578, "highway_access_min": 2.61, "hospitals_min": 8.04, "hybrid_opportunity_score": 62.96399623448521, "num_wards": 19, "schools_min": 67.81, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 0.0, "swmm_mean_depth": 0.13923435728743816, "transport_node_min": 136.13, "ward_id": 5}, "type": "Feature"}, {"bbox": [73.15458178751716, 22.21604546413017, 73.22210603322951, 22.251819915078045], "geometry": {"coordinates": [[[73.17180006221604, 22.251369832775612], [73.1905106471776, 22.251819915078045], [73.22210603322951, 22.217475850200415], [73.21577750071388, 22.216530844958527], [73.20722733290144, 22.21604546413017], [73.19866726307721, 22.216342298490147], [73.19017958719435, 22.217418484758447], [73.1818459067993, 22.219263666849912], [73.17374634848348, 22.22186009530452], [73.1659587972343, 22.225182797446852], [73.15855815087883, 22.229199816664405], [73.15458178751716, 22.231876196813577], [73.17180006221604, 22.251369832775612]]], "type": "Polygon"}, "id": "5", "properties": {"Score_Edu": 1.0, "Score_Health": 0.7779479326186831, "Score_Mobility": 0.42381740058245865, "UOI_Score": 69.08, "building_density_pct": 0.87, "bus_access_score": 0.0725845565263199, "bus_stop_density": 4.186188372268133, "bym2_spatial_phi": -0.4018717897508687, "crs": "EPSG:32643", "flood_exposure_pct": 66.13, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 34.88536071777344, "highway_access_min": 2.22, "hospitals_min": 4.31, "hybrid_opportunity_score": 60.7056732707323, "num_wards": 19, "schools_min": 4.24, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 0.0, "swmm_mean_depth": 0.11318289995193481, "transport_node_min": 134.34, "ward_id": 6}, "type": "Feature"}, {"bbox": [73.12481543236501, 22.231876196813577, 73.17180006221604, 22.278421405305238], "geometry": {"coordinates": [[[73.14539458357436, 22.278421405305238], [73.16699921427748, 22.271887643260147], [73.17180006221604, 22.251369832775612], [73.15458178751716, 22.231876196813577], [73.15161560262855, 22.233872518545567], [73.1451979584877, 22.239155960989333], [73.13936699598234, 22.244999324795327], [73.13417887030381, 22.25134640067121], [73.12968357354174, 22.258136128057647], [73.12592445221036, 22.265303180676977], [73.12481543236501, 22.268079090425744], [73.14539458357436, 22.278421405305238]]], "type": "Polygon"}, "id": "6", "properties": {"Score_Edu": 0.0, "Score_Health": 0.4869831546707505, "Score_Mobility": 0.371615205444598, "UOI_Score": 0.57, "building_density_pct": 2.67, "bus_access_score": 0.0319512683335891, "bus_stop_density": 1.8427339695709173, "bym2_spatial_phi": -0.45335938220411415, "crs": "EPSG:32643", "flood_exposure_pct": 18.43, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 43.60963821411133, "highway_access_min": 5.35, "hospitals_min": 6.21, "hybrid_opportunity_score": 62.56343181594669, "num_wards": 19, "schools_min": 81.18, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 0.0, "swmm_mean_depth": 0.08300502189538544, "transport_node_min": 114.97, "ward_id": 7}, "type": "Feature"}, {"bbox": [73.16699921427748, 22.251369832775612, 73.20904126638776, 22.292433974264092], "geometry": {"coordinates": [[[73.18181263219834, 22.291250064559406], [73.18478890501916, 22.292433974264092], [73.20904126638776, 22.27190056654044], [73.1905106471776, 22.251819915078045], [73.17180006221604, 22.251369832775612], [73.16699921427748, 22.271887643260147], [73.18181263219834, 22.291250064559406]]], "type": "Polygon"}, "id": "7", "properties": {"Score_Edu": 0.9186378996620743, "Score_Health": 0.9326186830015314, "Score_Mobility": 0.5025396121427028, "UOI_Score": 75.51, "building_density_pct": 2.1, "bus_access_score": 0.2178623165341343, "bus_stop_density": 12.564831141454828, "bym2_spatial_phi": -0.40650546904122786, "crs": "EPSG:32643", "flood_exposure_pct": 43.53, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 62.87001419067383, "highway_access_min": 3.17, "hospitals_min": 3.3, "hybrid_opportunity_score": 66.74705898088129, "num_wards": 19, "schools_min": 10.5, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 14.290482240645213, "swmm_mean_depth": 0.18018117826786104, "transport_node_min": 83.61, "ward_id": 8}, "type": "Feature"}, {"bbox": [73.14939261647824, 22.342545916609616, 73.20014557175327, 22.378297151922148], "geometry": {"coordinates": [[[73.19570061060885, 22.358778545968192], [73.16636401947896, 22.342545916609616], [73.14939261647824, 22.359019033565843], [73.14996177264025, 22.359510837051353], [73.1567858618237, 22.364340096997044], [73.16408645963274, 22.36852366900541], [73.17179320219404, 22.372021199907287], [73.17983178929464, 22.37479894878995], [73.18812470301869, 22.376830114185765], [73.19659195822368, 22.37809509413731], [73.20014557175327, 22.378297151922148], [73.19570061060885, 22.358778545968192]]], "type": "Polygon"}, "id": "8", "properties": {"Score_Edu": 0.39303353262282315, "Score_Health": 0.5650842266462481, "Score_Mobility": 0.025987466866416058, "UOI_Score": 17.94, "building_density_pct": 0.38, "bus_access_score": 0.0433124447773601, "bus_stop_density": 2.4979701107045336, "bym2_spatial_phi": -0.4439790616648121, "crs": "EPSG:32643", "flood_exposure_pct": 52.37, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 49.170631408691406, "highway_access_min": 45.0, "hospitals_min": 5.7, "hybrid_opportunity_score": 63.769232015129774, "num_wards": 19, "schools_min": 50.94, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 30.827894746123242, "swmm_mean_depth": 0.2924574834343634, "transport_node_min": 94.18, "ward_id": 9}, "type": "Feature"}, {"bbox": [73.12692114488146, 22.321183410632, 73.16847836807422, 22.359019033565843], "geometry": {"coordinates": [[[73.16636401947896, 22.342545916609616], [73.16847836807422, 22.328691356056677], [73.1565380019161, 22.321183410632], [73.12692114488146, 22.33121200944121], [73.12866326421478, 22.33475186568897], [73.13297920029207, 22.3416430169019], [73.1380008609131, 22.348107320850836], [73.14367993985955, 22.354082463521536], [73.14939261647824, 22.359019033565843], [73.16636401947896, 22.342545916609616]]], "type": "Polygon"}, "id": "9", "properties": {"Score_Edu": 0.540681050168963, "Score_Health": 0.888208269525268, "Score_Mobility": 0.52232469593485, "UOI_Score": 63.07, "building_density_pct": 1.53, "bus_access_score": 0.20387449322475, "bus_stop_density": 11.758107699260169, "bym2_spatial_phi": -0.41444927378311747, "crs": "EPSG:32643", "flood_exposure_pct": 51.42, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 65.2514877319336, "highway_access_min": 0.0, "hospitals_min": 3.59, "hybrid_opportunity_score": 67.25730590815374, "num_wards": 19, "schools_min": 39.58, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 36.15206757247381, "swmm_mean_depth": 0.2796979983616027, "transport_node_min": 62.28, "ward_id": 10}, "type": "Feature"}, {"bbox": [73.15326680973698, 22.291250064559406, 73.18981552617606, 22.328691356056677], "geometry": {"coordinates": [[[73.1565380019161, 22.321183410632], [73.16847836807422, 22.328691356056677], [73.18341728917632, 22.32235705007241], [73.18981552617606, 22.302792435287476], [73.18478890501916, 22.292433974264092], [73.18181263219834, 22.291250064559406], [73.15326680973698, 22.30368934590367], [73.1565380019161, 22.321183410632]]], "type": "Polygon"}, "id": "10", "properties": {"Score_Edu": 0.7982843774369639, "Score_Health": 0.9509954058192955, "Score_Mobility": 0.9888888888888889, "UOI_Score": 90.89, "building_density_pct": 1.83, "bus_access_score": 1.0, "bus_stop_density": 57.67326512148874, "bym2_spatial_phi": -0.4224552982605863, "crs": "EPSG:32643", "flood_exposure_pct": 20.11, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 89.16172790527344, "highway_access_min": 1.25, "hospitals_min": 3.18, "hybrid_opportunity_score": 72.4170238599437, "num_wards": 19, "schools_min": 19.76, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 37.33914159386946, "swmm_mean_depth": 0.2895456139525515, "transport_node_min": 14.24, "ward_id": 11}, "type": "Feature"}, {"bbox": [73.18478890501916, 22.27190056654044, 73.22393147035687, 22.307102596975906], "geometry": {"coordinates": [[[73.18478890501916, 22.292433974264092], [73.18981552617606, 22.302792435287476], [73.21355261408809, 22.307102596975906], [73.22088647901184, 22.302027344262736], [73.22393147035687, 22.284070041094996], [73.21167866179847, 22.272001121409474], [73.20904126638776, 22.27190056654044], [73.18478890501916, 22.292433974264092]]], "type": "Polygon"}, "id": "11", "properties": {"Score_Edu": 0.806732518845854, "Score_Health": 1.0, "Score_Mobility": 0.9133446993536685, "UOI_Score": 90.32, "building_density_pct": 1.97, "bus_access_score": 0.8708337581820401, "bus_stop_density": 50.223826212375215, "bym2_spatial_phi": -0.41065901673308913, "crs": "EPSG:32643", "flood_exposure_pct": 68.3, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 73.4982681274414, "highway_access_min": 1.03, "hospitals_min": 2.86, "hybrid_opportunity_score": 69.04028148978283, "num_wards": 19, "schools_min": 19.11, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 13.009310989753617, "swmm_mean_depth": 0.1928624246164122, "transport_node_min": 53.03, "ward_id": 12}, "type": "Feature"}, {"bbox": [73.16636401947896, 22.32235705007241, 73.20301465302703, 22.358778545968192], "geometry": {"coordinates": [[[73.16636401947896, 22.342545916609616], [73.19570061060885, 22.358778545968192], [73.20301465302703, 22.336617601835304], [73.18341728917632, 22.32235705007241], [73.16847836807422, 22.328691356056677], [73.16636401947896, 22.342545916609616]]], "type": "Polygon"}, "id": "12", "properties": {"Score_Edu": 0.8310371718221992, "Score_Health": 0.8805513016845329, "Score_Mobility": 0.4989438034742928, "UOI_Score": 71.47, "building_density_pct": 11.07, "bus_access_score": 0.1822396724571547, "bus_stop_density": 10.510356945274753, "bym2_spatial_phi": -0.42924843047197114, "crs": "EPSG:32643", "flood_exposure_pct": 38.22, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 71.32759094238281, "highway_access_min": 1.17, "hospitals_min": 3.64, "hybrid_opportunity_score": 68.56195618255367, "num_wards": 19, "schools_min": 17.24, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 24.612915292161112, "swmm_mean_depth": 0.25173252967576826, "transport_node_min": 52.44, "ward_id": 13}, "type": "Feature"}, {"bbox": [73.11950797093337, 22.2996020230516, 73.1565380019161, 22.33121200944121], "geometry": {"coordinates": [[[73.1565380019161, 22.321183410632], [73.15326680973698, 22.30368934590367], [73.14682738402745, 22.2996020230516], [73.11950797093337, 22.306570507532317], [73.12032823736932, 22.3121981419926], [73.12230728750593, 22.31995815463121], [73.12509453756951, 22.32750028497609], [73.12692114488146, 22.33121200944121], [73.1565380019161, 22.321183410632]]], "type": "Polygon"}, "id": "13", "properties": {"Score_Edu": 0.7390174161684431, "Score_Health": 0.9218989280245022, "Score_Mobility": 0.608356655012488, "UOI_Score": 74.56, "building_density_pct": 2.0, "bus_access_score": 0.3534833139097023, "bus_stop_density": 20.38653687913669, "bym2_spatial_phi": -0.4160759964966564, "crs": "EPSG:32643", "flood_exposure_pct": 18.16, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 65.99568939208984, "highway_access_min": 0.42, "hospitals_min": 3.37, "hybrid_opportunity_score": 67.41719488877771, "num_wards": 19, "schools_min": 24.32, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 3.4531823039096534, "swmm_mean_depth": 0.15349072428465416, "transport_node_min": 67.69, "ward_id": 14}, "type": "Feature"}, {"bbox": [73.18341728917632, 22.302792435287476, 73.21753540446278, 22.336617601835304], "geometry": {"coordinates": [[[73.18341728917632, 22.32235705007241], [73.20301465302703, 22.336617601835304], [73.21753540446278, 22.331617835287194], [73.21355261408809, 22.307102596975906], [73.18981552617606, 22.302792435287476], [73.18341728917632, 22.32235705007241]]], "type": "Polygon"}, "id": "14", "properties": {"Score_Edu": 0.9832336885885106, "Score_Health": 0.9111791730474732, "Score_Mobility": 0.6959273276795965, "UOI_Score": 85.43, "building_density_pct": 2.24, "bus_access_score": 0.5311381387252534, "bus_stop_density": 30.632470690835607, "bym2_spatial_phi": -0.404035395631921, "crs": "EPSG:32643", "flood_exposure_pct": 68.34, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 75.83605194091797, "highway_access_min": 2.56, "hospitals_min": 3.44, "hybrid_opportunity_score": 69.54856151677848, "num_wards": 19, "schools_min": 5.53, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 36.45281048590853, "swmm_mean_depth": 0.27017846602290047, "transport_node_min": 36.36, "ward_id": 15}, "type": "Feature"}, {"bbox": [73.11886247039203, 22.268079090425744, 73.14682738402745, 22.306570507532317], "geometry": {"coordinates": [[[73.14682738402745, 22.2996020230516], [73.14539458357436, 22.278421405305238], [73.12481543236501, 22.268079090425744], [73.12293778775049, 22.27277859326099], [73.12075244412252, 22.28049042351464], [73.11938958599568, 22.288364443025642], [73.11886247039203, 22.29632485054158], [73.11917631396298, 22.30429500080761], [73.11950797093337, 22.306570507532317], [73.14682738402745, 22.2996020230516]]], "type": "Polygon"}, "id": "15", "properties": {"Score_Edu": 0.863270080582272, "Score_Health": 0.8315467075038285, "Score_Mobility": 0.409582036125093, "UOI_Score": 66.5, "building_density_pct": 2.84, "bus_access_score": 0.071673763912192, "bus_stop_density": 4.133659988362846, "bym2_spatial_phi": -0.4234040517174642, "crs": "EPSG:32643", "flood_exposure_pct": 21.46, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 46.08592224121094, "highway_access_min": 3.76, "hospitals_min": 3.96, "hybrid_opportunity_score": 63.11358535562195, "num_wards": 19, "schools_min": 14.76, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 0.0, "swmm_mean_depth": 0.1211199164390564, "transport_node_min": 96.09, "ward_id": 16}, "type": "Feature"}, {"bbox": [73.22088647901184, 22.2824118409993, 73.25487088225888, 22.310493109922202], "geometry": {"coordinates": [[[73.22088647901184, 22.302027344262736], [73.2431301483771, 22.310493109922202], [73.25487088225888, 22.30378777708385], [73.25341139588352, 22.2824118409993], [73.22393147035687, 22.284070041094996], [73.22088647901184, 22.302027344262736]]], "type": "Polygon"}, "id": "16", "properties": {"Score_Edu": 0.7642318689888224, "Score_Health": 0.885145482388974, "Score_Mobility": 0.579552499157799, "UOI_Score": 73.19, "building_density_pct": 2.7, "bus_access_score": 0.3309578689667021, "bus_stop_density": 19.08742092095954, "bym2_spatial_phi": -0.427192701047574, "crs": "EPSG:32643", "flood_exposure_pct": 52.02, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 42.97599411010742, "highway_access_min": 2.14, "hospitals_min": 3.61, "hybrid_opportunity_score": 62.44000111899467, "num_wards": 19, "schools_min": 22.38, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 16.313125597454544, "swmm_mean_depth": 0.2216158383617214, "transport_node_min": 48.79, "ward_id": 17}, "type": "Feature"}, {"bbox": [73.14539458357436, 22.271887643260147, 73.18181263219834, 22.30368934590367], "geometry": {"coordinates": [[[73.14682738402745, 22.2996020230516], [73.15326680973698, 22.30368934590367], [73.18181263219834, 22.291250064559406], [73.16699921427748, 22.271887643260147], [73.14539458357436, 22.278421405305238], [73.14682738402745, 22.2996020230516]]], "type": "Polygon"}, "id": "17", "properties": {"Score_Edu": 0.364309851832597, "Score_Health": 0.7856049004594181, "Score_Mobility": 0.4907675509886552, "UOI_Score": 51.98, "building_density_pct": 3.66, "bus_access_score": 0.1597236960922031, "bus_stop_density": 9.211787070909724, "bym2_spatial_phi": -0.42199809329749277, "crs": "EPSG:32643", "flood_exposure_pct": 28.46, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 63.25681686401367, "highway_access_min": 0.57, "hospitals_min": 4.26, "hybrid_opportunity_score": 66.82265260706775, "num_wards": 19, "schools_min": 53.15, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 0.0, "swmm_mean_depth": 0.14004183855072103, "transport_node_min": 57.94, "ward_id": 18}, "type": "Feature"}, {"bbox": [73.21355261408809, 22.302027344262736, 73.2431301483771, 22.33654013706327], "geometry": {"coordinates": [[[73.21753540446278, 22.331617835287194], [73.23436766212438, 22.33654013706327], [73.2431301483771, 22.310493109922202], [73.22088647901184, 22.302027344262736], [73.21355261408809, 22.307102596975906], [73.21753540446278, 22.331617835287194]]], "type": "Polygon"}, "id": "18", "properties": {"Score_Edu": 0.5298934234468418, "Score_Health": 0.8346094946401226, "Score_Mobility": 0.47144376356519074, "UOI_Score": 59.3, "building_density_pct": 1.67, "bus_access_score": 0.1355173837197623, "bus_stop_density": 7.815729999840377, "bym2_spatial_phi": -0.42390845849065306, "crs": "EPSG:32643", "flood_exposure_pct": 52.88, "generation_method": "Road-density-informed Voronoi", "gnn_prediction": 59.44575119018555, "highway_access_min": 1.11, "hospitals_min": 3.94, "hybrid_opportunity_score": 65.99860879177928, "num_wards": 19, "schools_min": 40.41, "seed_method": "KMeans on road midpoints", "swmm_flood_road_pct": 38.68035923694387, "swmm_mean_depth": 0.30810224576830275, "transport_node_min": 30.96, "ward_id": 19}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+    geo_json_6ede2eac5cde38f57db36a4921bf8ab1.bindTooltip(
+    function(layer){
+    let div = L.DomUtil.create('div');
+    
+    let handleObject = feature => {
+        if (feature === null) {
+            return '';
+        } else if (typeof(feature)=='object') {
+            return JSON.stringify(feature);
+        } else {
+            return feature;
+        }
+    }
+    let fields = ["ward_id", "hybrid_opportunity_score", "swmm_flood_road_pct"];
+    let aliases = ["Ward:", "UOI Score:", "Flood Risk %:"];
+    let table = '<table>' +
+        String(
+        fields.map(
+        (v,i)=>
+        `<tr>
+            <th>${aliases[i].toLocaleString()}</th>
+            
+            <td>${handleObject(layer.feature.properties[v]).toLocaleString()}</td>
+        </tr>`).join(''))
+    +'</table>';
+    div.innerHTML=table;
+    
+    return div
+    }
+    ,{
+  "sticky": true,
+  "className": "foliumtooltip",
+});
+                     
+    
+    geo_json_6ede2eac5cde38f57db36a4921bf8ab1.bindPopup(
+    function(layer){
+    let div = L.DomUtil.create('div');
+    
+    let handleObject = feature => {
+        if (feature === null) {
+            return '';
+        } else if (typeof(feature)=='object') {
+            return JSON.stringify(feature);
+        } else {
+            return feature;
+        }
+    }
+    let fields = ["ward_id", "hybrid_opportunity_score", "swmm_flood_road_pct"];
+    let aliases = ["Ward:", "UOI Score:", "Flood Risk %:"];
+    let table = '<table>' +
+        String(
+        fields.map(
+        (v,i)=>
+        `<tr>
+            <th>${aliases[i].toLocaleString()}</th>
+            
+            <td>${handleObject(layer.feature.properties[v]).toLocaleString()}</td>
+        </tr>`).join(''))
+    +'</table>';
+    div.innerHTML=table;
+    
+    return div
+    }
+    ,{
+  "className": "foliumpopup",
+});
+                     
+    
+            geo_json_6ede2eac5cde38f57db36a4921bf8ab1.addTo(map_a18f7e365b67217d22517868f8764e9b);
+        
+    
+    var color_map_d83f71228a50932a49322e0193d5e043 = {};
+
+    
+    color_map_d83f71228a50932a49322e0193d5e043.color = d3.scale.threshold()
+              .domain([58.366404063720495, 58.394561618422344, 58.42271917312419, 58.45087672782604, 58.4790342825279, 58.50719183722975, 58.5353493919316, 58.563506946633446, 58.591664501335295, 58.619822056037144, 58.64797961073899, 58.67613716544085, 58.7042947201427, 58.73245227484455, 58.7606098295464, 58.788767384248246, 58.816924938950095, 58.845082493651944, 58.8732400483538, 58.90139760305565, 58.9295551577575, 58.95771271245935, 58.9858702671612, 59.014027821863046, 59.042185376564895, 59.07034293126675, 59.0985004859686, 59.12665804067045, 59.1548155953723, 59.18297315007415, 59.211130704776, 59.239288259477846, 59.267445814179695, 59.29560336888155, 59.3237609235834, 59.35191847828525, 59.3800760329871, 59.40823358768895, 59.4363911423908, 59.46454869709265, 59.4927062517945, 59.52086380649635, 59.5490213611982, 59.57717891590005, 59.6053364706019, 59.63349402530375, 59.661651580005596, 59.68980913470745, 59.7179666894093, 59.74612424411115, 59.774281798813, 59.80243935351485, 59.8305969082167, 59.85875446291855, 59.8869120176204, 59.91506957232225, 59.9432271270241, 59.97138468172595, 59.9995422364278, 60.02769979112965, 60.0558573458315, 60.084014900533354, 60.1121724552352, 60.14033000993705, 60.1684875646389, 60.19664511934075, 60.2248026740426, 60.25296022874445, 60.281117783446305, 60.309275338148154, 60.33743289285, 60.36559044755185, 60.3937480022537, 60.42190555695555, 60.4500631116574, 60.478220666359256, 60.506378221061105, 60.534535775762954, 60.5626933304648, 60.59085088516665, 60.6190084398685, 60.64716599457035, 60.67532354927221, 60.703481103974056, 60.731638658675905, 60.759796213377754, 60.7879537680796, 60.81611132278145, 60.8442688774833, 60.87242643218515, 60.90058398688701, 60.928741541588856, 60.956899096290705, 60.985056650992554, 61.0132142056944, 61.04137176039625, 61.0695293150981, 61.09768686979996, 61.12584442450181, 61.154001979203656, 61.182159533905505, 61.210317088607354, 61.2384746433092, 61.26663219801105, 61.29478975271291, 61.32294730741476, 61.35110486211661, 61.379262416818456, 61.407419971520305, 61.435577526222154, 61.463735080924, 61.49189263562586, 61.52005019032771, 61.54820774502956, 61.57636529973141, 61.604522854433256, 61.632680409135105, 61.660837963836954, 61.68899551853881, 61.71715307324066, 61.74531062794251, 61.77346818264436, 61.80162573734621, 61.829783292048056, 61.857940846749905, 61.88609840145176, 61.91425595615361, 61.94241351085546, 61.97057106555731, 61.99872862025916, 62.02688617496101, 62.055043729662856, 62.083201284364705, 62.11135883906656, 62.13951639376841, 62.16767394847026, 62.19583150317211, 62.22398905787396, 62.25214661257581, 62.28030416727766, 62.30846172197951, 62.33661927668136, 62.36477683138321, 62.39293438608506, 62.42109194078691, 62.44924949548876, 62.47740705019061, 62.50556460489246, 62.53372215959431, 62.56187971429616, 62.59003726899801, 62.61819482369986, 62.64635237840171, 62.674509933103565, 62.702667487805414, 62.73082504250726, 62.75898259720911, 62.78714015191096, 62.81529770661281, 62.84345526131466, 62.87161281601651, 62.899770370718365, 62.927927925420214, 62.95608548012206, 62.98424303482391, 63.01240058952576, 63.04055814422761, 63.068715698929466, 63.096873253631315, 63.125030808333165, 63.153188363035014, 63.18134591773686, 63.20950347243871, 63.23766102714056, 63.26581858184241, 63.293976136544266, 63.322133691246115, 63.350291245947965, 63.378448800649814, 63.40660635535166, 63.43476391005351, 63.46292146475537, 63.49107901945722, 63.519236574159066, 63.547394128860915, 63.575551683562765, 63.603709238264614, 63.63186679296646, 63.66002434766831, 63.68818190237016, 63.71633945707202, 63.744497011773866, 63.772654566475715, 63.800812121177565, 63.828969675879414, 63.85712723058126, 63.88528478528311, 63.91344233998497, 63.94159989468682, 63.969757449388666, 63.997915004090515, 64.02607255879236, 64.05423011349421, 64.08238766819606, 64.11054522289791, 64.13870277759976, 64.16686033230161, 64.19501788700347, 64.22317544170532, 64.25133299640717, 64.27949055110902, 64.30764810581087, 64.33580566051272, 64.36396321521457, 64.39212076991642, 64.42027832461827, 64.44843587932012, 64.47659343402196, 64.50475098872381, 64.53290854342566, 64.56106609812751, 64.58922365282936, 64.61738120753122, 64.64553876223307, 64.67369631693492, 64.70185387163677, 64.73001142633862, 64.75816898104047, 64.78632653574232, 64.81448409044417, 64.84264164514602, 64.87079919984787, 64.89895675454972, 64.92711430925156, 64.95527186395341, 64.98342941865526, 65.01158697335713, 65.03974452805897, 65.06790208276082, 65.09605963746267, 65.12421719216452, 65.15237474686637, 65.18053230156822, 65.20868985627007, 65.23684741097192, 65.26500496567377, 65.29316252037562, 65.32132007507747, 65.34947762977932, 65.37763518448116, 65.40579273918303, 65.43395029388488, 65.46210784858673, 65.49026540328857, 65.51842295799042, 65.54658051269227, 65.57473806739412, 65.60289562209597, 65.63105317679782, 65.65921073149967, 65.68736828620152, 65.71552584090337, 65.74368339560522, 65.77184095030707, 65.79999850500892, 65.82815605971078, 65.85631361441263, 65.88447116911448, 65.91262872381633, 65.94078627851817, 65.96894383322002, 65.99710138792187, 66.02525894262372, 66.05341649732557, 66.08157405202742, 66.10973160672927, 66.13788916143112, 66.16604671613297, 66.19420427083483, 66.22236182553668, 66.25051938023853, 66.27867693494038, 66.30683448964223, 66.33499204434408, 66.36314959904593, 66.39130715374777, 66.41946470844962, 66.44762226315147, 66.47577981785332, 66.50393737255517, 66.53209492725702, 66.56025248195887, 66.58841003666072, 66.61656759136258, 66.64472514606443, 66.67288270076628, 66.70104025546813, 66.72919781016998, 66.75735536487183, 66.78551291957368, 66.81367047427553, 66.84182802897737, 66.86998558367922, 66.89814313838107, 66.92630069308292, 66.95445824778477, 66.98261580248663, 67.01077335718847, 67.03893091189033, 67.06708846659218, 67.09524602129403, 67.12340357599588, 67.15156113069773, 67.17971868539958, 67.20787624010143, 67.23603379480328, 67.26419134950513, 67.29234890420697, 67.32050645890882, 67.34866401361067, 67.37682156831252, 67.40497912301439, 67.43313667771623, 67.46129423241808, 67.48945178711993, 67.51760934182178, 67.54576689652363, 67.57392445122548, 67.60208200592733, 67.63023956062918, 67.65839711533103, 67.68655467003288, 67.71471222473473, 67.74286977943657, 67.77102733413844, 67.79918488884027, 67.82734244354214, 67.85549999824399, 67.88365755294583, 67.91181510764768, 67.93997266234953, 67.96813021705138, 67.99628777175323, 68.02444532645508, 68.05260288115693, 68.08076043585878, 68.10891799056063, 68.13707554526248, 68.16523309996433, 68.19339065466619, 68.22154820936804, 68.24970576406989, 68.27786331877174, 68.30602087347359, 68.33417842817543, 68.36233598287728, 68.39049353757913, 68.41865109228098, 68.44680864698283, 68.47496620168468, 68.50312375638653, 68.53128131108838, 68.55943886579024, 68.58759642049208, 68.61575397519394, 68.64391152989579, 68.67206908459764, 68.70022663929949, 68.72838419400134, 68.75654174870319, 68.78469930340503, 68.81285685810688, 68.84101441280873, 68.86917196751058, 68.89732952221243, 68.92548707691428, 68.95364463161613, 68.98180218631799, 69.00995974101983, 69.03811729572169, 69.06627485042354, 69.09443240512539, 69.12258995982724, 69.15074751452909, 69.17890506923094, 69.20706262393279, 69.23522017863463, 69.26337773333648, 69.29153528803833, 69.31969284274018, 69.34785039744203, 69.37600795214388, 69.40416550684573, 69.43232306154759, 69.46048061624944, 69.48863817095129, 69.51679572565314, 69.54495328035499, 69.57311083505684, 69.60126838975869, 69.62942594446054, 69.65758349916239, 69.68574105386423, 69.71389860856608, 69.74205616326793, 69.77021371796978, 69.79837127267163, 69.8265288273735, 69.85468638207534, 69.88284393677719, 69.91100149147904, 69.93915904618089, 69.96731660088274, 69.99547415558459, 70.02363171028644, 70.05178926498829, 70.07994681969014, 70.10810437439198, 70.13626192909383, 70.16441948379568, 70.19257703849753, 70.22073459319938, 70.24889214790124, 70.2770497026031, 70.30520725730494, 70.33336481200679, 70.36152236670864, 70.38967992141049, 70.41783747611234, 70.44599503081419, 70.47415258551604, 70.50231014021789, 70.53046769491974, 70.55862524962158, 70.58678280432343, 70.6149403590253, 70.64309791372713, 70.671255468429, 70.69941302313084, 70.7275705778327, 70.75572813253454, 70.78388568723639, 70.81204324193824, 70.84020079664009, 70.86835835134194, 70.89651590604379, 70.92467346074564, 70.95283101544749, 70.98098857014934, 71.00914612485118, 71.03730367955305, 71.0654612342549, 71.09361878895675, 71.1217763436586, 71.14993389836044, 71.1780914530623, 71.20624900776414, 71.23440656246599, 71.26256411716784, 71.29072167186969, 71.31887922657154, 71.34703678127339, 71.37519433597524, 71.4033518906771, 71.43150944537894, 71.4596670000808, 71.48782455478265, 71.5159821094845, 71.54413966418635, 71.5722972188882, 71.60045477359004, 71.6286123282919, 71.65676988299374, 71.68492743769559, 71.71308499239744, 71.74124254709929, 71.76940010180114, 71.79755765650299, 71.82571521120485, 71.8538727659067, 71.88203032060855, 71.9101878753104, 71.93834543001225, 71.9665029847141, 71.99466053941595, 72.0228180941178, 72.05097564881964, 72.0791332035215, 72.10729075822334, 72.13544831292519, 72.16360586762704, 72.1917634223289, 72.21992097703074, 72.2480785317326, 72.27623608643445, 72.3043936411363, 72.33255119583815, 72.36070875054, 72.38886630524185, 72.4170238599437])
+              .range(['#440154ff', '#440154ff', '#440255ff', '#430255ff', '#430355ff', '#430456ff', '#430456ff', '#430556ff', '#430557ff', '#430657ff', '#430757ff', '#430758ff', '#420858ff', '#420958ff', '#420959ff', '#420a59ff', '#420a59ff', '#420b5aff', '#420c5aff', '#420c5aff', '#410d5bff', '#410e5bff', '#410e5cff', '#410f5cff', '#410f5cff', '#41105dff', '#41115dff', '#41115dff', '#41125eff', '#40135eff', '#40135eff', '#40145fff', '#40145fff', '#40155fff', '#401660ff', '#401660ff', '#401760ff', '#401861ff', '#3f1861ff', '#3f1961ff', '#3f1962ff', '#3f1a62ff', '#3f1b63ff', '#3f1b63ff', '#3f1c63ff', '#3f1c64ff', '#3e1d64ff', '#3e1e64ff', '#3e1e65ff', '#3e1f65ff', '#3e2065ff', '#3e2066ff', '#3e2166ff', '#3e2166ff', '#3e2267ff', '#3d2367ff', '#3d2367ff', '#3d2468ff', '#3d2568ff', '#3d2568ff', '#3d2669ff', '#3d2669ff', '#3d276aff', '#3d286aff', '#3c286aff', '#3c296bff', '#3c2a6bff', '#3c2a6bff', '#3c2b6cff', '#3c2b6cff', '#3c2c6cff', '#3c2d6dff', '#3c2d6dff', '#3b2e6dff', '#3b2f6eff', '#3b2f6eff', '#3b306eff', '#3b306fff', '#3b316fff', '#3b326fff', '#3b3270ff', '#3a3370ff', '#3a3371ff', '#3a3471ff', '#3a3571ff', '#3a3572ff', '#3a3672ff', '#3a3772ff', '#3a3773ff', '#3a3873ff', '#393873ff', '#393974ff', '#393a74ff', '#393a74ff', '#393b75ff', '#393c75ff', '#393c75ff', '#393d76ff', '#393d76ff', '#383e76ff', '#383f77ff', '#383f77ff', '#384078ff', '#384178ff', '#384178ff', '#384279ff', '#384279ff', '#374379ff', '#37447aff', '#37447aff', '#37457aff', '#37467bff', '#37467bff', '#37477bff', '#37477cff', '#37487cff', '#36497cff', '#36497dff', '#364a7dff', '#364a7dff', '#364b7eff', '#364c7eff', '#364c7fff', '#364d7fff', '#364e7fff', '#354e80ff', '#354f80ff', '#354f80ff', '#355081ff', '#355181ff', '#355181ff', '#355282ff', '#355382ff', '#355382ff', '#345483ff', '#345483ff', '#345583ff', '#345684ff', '#345684ff', '#345784ff', '#345885ff', '#345885ff', '#335986ff', '#335986ff', '#335a86ff', '#335b87ff', '#335b87ff', '#335c87ff', '#335d88ff', '#335d88ff', '#335e88ff', '#325e89ff', '#325f89ff', '#326089ff', '#32608aff', '#32618aff', '#32618aff', '#32628bff', '#32638bff', '#32638bff', '#31648cff', '#31658cff', '#31658dff', '#31668dff', '#31668dff', '#31678eff', '#31688eff', '#31688eff', '#31698eff', '#31698eff', '#316a8eff', '#316a8dff', '#316b8dff', '#316b8dff', '#316c8dff', '#316c8dff', '#316d8dff', '#316d8dff', '#316d8dff', '#316e8cff', '#316e8cff', '#316f8cff', '#316f8cff', '#31708cff', '#31708cff', '#31718cff', '#31718cff', '#31728bff', '#31728bff', '#31738bff', '#31738bff', '#31748bff', '#31748bff', '#31758bff', '#31758bff', '#31768aff', '#31768aff', '#31778aff', '#31778aff', '#31778aff', '#32788aff', '#32788aff', '#32798aff', '#327989ff', '#327a89ff', '#327a89ff', '#327b89ff', '#327b89ff', '#327c89ff', '#327c89ff', '#327d89ff', '#327d88ff', '#327e88ff', '#327e88ff', '#327f88ff', '#327f88ff', '#328088ff', '#328088ff', '#328188ff', '#328187ff', '#328187ff', '#328287ff', '#328287ff', '#328387ff', '#328387ff', '#328487ff', '#328486ff', '#328586ff', '#328586ff', '#328686ff', '#328686ff', '#328786ff', '#328786ff', '#328886ff', '#328885ff', '#328985ff', '#328985ff', '#328a85ff', '#328a85ff', '#328b85ff', '#328b85ff', '#328c85ff', '#338c84ff', '#338c84ff', '#338d84ff', '#338d84ff', '#338e84ff', '#338e84ff', '#338f84ff', '#338f84ff', '#339083ff', '#339083ff', '#339183ff', '#339183ff', '#339283ff', '#339283ff', '#339383ff', '#339383ff', '#339482ff', '#339482ff', '#339582ff', '#339582ff', '#339682ff', '#339682ff', '#339682ff', '#339782ff', '#339781ff', '#339881ff', '#339881ff', '#339981ff', '#339981ff', '#339a81ff', '#339a81ff', '#339b81ff', '#339b80ff', '#339c80ff', '#339c80ff', '#339d80ff', '#339d80ff', '#339e80ff', '#339e80ff', '#339f80ff', '#339f7fff', '#34a07fff', '#34a07fff', '#34a07fff', '#34a17fff', '#34a17fff', '#34a27fff', '#34a27fff', '#34a37eff', '#34a37eff', '#34a47eff', '#34a47eff', '#34a57eff', '#34a57eff', '#34a67eff', '#34a67dff', '#34a77dff', '#34a77dff', '#34a87dff', '#34a87dff', '#34a97dff', '#34a97dff', '#34aa7dff', '#34aa7cff', '#34ab7cff', '#34ab7cff', '#34ab7cff', '#34ac7cff', '#34ac7cff', '#34ad7cff', '#34ad7cff', '#34ae7bff', '#34ae7bff', '#34af7bff', '#34af7bff', '#34b07bff', '#34b07bff', '#34b17bff', '#34b17bff', '#34b27aff', '#34b27aff', '#34b37aff', '#34b37aff', '#35b47aff', '#35b47aff', '#35b57aff', '#35b57aff', '#35b579ff', '#35b679ff', '#35b679ff', '#35b779ff', '#35b779ff', '#36b878ff', '#38b878ff', '#39b877ff', '#3ab877ff', '#3bb976ff', '#3cb976ff', '#3eb975ff', '#3fba75ff', '#40ba74ff', '#41ba74ff', '#42bb73ff', '#44bb73ff', '#45bb72ff', '#46bb72ff', '#47bc71ff', '#48bc71ff', '#4abc70ff', '#4bbd70ff', '#4cbd6fff', '#4dbd6fff', '#4ebd6eff', '#50be6eff', '#51be6dff', '#52be6dff', '#53bf6cff', '#54bf6cff', '#56bf6bff', '#57bf6bff', '#58c06aff', '#59c06aff', '#5bc069ff', '#5cc169ff', '#5dc168ff', '#5ec168ff', '#5fc167ff', '#61c267ff', '#62c266ff', '#63c266ff', '#64c365ff', '#65c365ff', '#67c364ff', '#68c364ff', '#69c463ff', '#6ac462ff', '#6bc462ff', '#6dc561ff', '#6ec561ff', '#6fc560ff', '#70c660ff', '#71c65fff', '#73c65fff', '#74c65eff', '#75c75eff', '#76c75dff', '#78c75dff', '#79c85cff', '#7ac85cff', '#7bc85bff', '#7cc85bff', '#7ec95aff', '#7fc95aff', '#80c959ff', '#81ca59ff', '#82ca58ff', '#84ca58ff', '#85ca57ff', '#86cb57ff', '#87cb56ff', '#88cb56ff', '#8acc55ff', '#8bcc55ff', '#8ccc54ff', '#8dcc54ff', '#8ecd53ff', '#90cd53ff', '#91cd52ff', '#92ce52ff', '#93ce51ff', '#94ce51ff', '#96ce50ff', '#97cf50ff', '#98cf4fff', '#99cf4fff', '#9bd04eff', '#9cd04eff', '#9dd04dff', '#9ed14dff', '#9fd14cff', '#a1d14cff', '#a2d14bff', '#a3d24bff', '#a4d24aff', '#a5d24aff', '#a7d349ff', '#a8d349ff', '#a9d348ff', '#aad348ff', '#abd447ff', '#add447ff', '#aed446ff', '#afd546ff', '#b0d545ff', '#b1d545ff', '#b3d544ff', '#b4d644ff', '#b5d643ff', '#b6d643ff', '#b7d742ff', '#b9d742ff', '#bad741ff', '#bbd741ff', '#bcd840ff', '#bed840ff', '#bfd83fff', '#c0d93fff', '#c1d93eff', '#c2d93dff', '#c4d93dff', '#c5da3cff', '#c6da3cff', '#c7da3bff', '#c8db3bff', '#cadb3aff', '#cbdb3aff', '#ccdc39ff', '#cddc39ff', '#cedc38ff', '#d0dc38ff', '#d1dd37ff', '#d2dd37ff', '#d3dd36ff', '#d4de36ff', '#d6de35ff', '#d7de35ff', '#d8de34ff', '#d9df34ff', '#dadf33ff', '#dcdf33ff', '#dde032ff', '#dee032ff', '#dfe031ff', '#e1e031ff', '#e2e130ff', '#e3e130ff', '#e4e12fff', '#e5e22fff', '#e7e22eff', '#e8e22eff', '#e9e22dff', '#eae32dff', '#ebe32cff', '#ede32cff', '#eee42bff', '#efe42bff', '#f0e42aff', '#f1e52aff', '#f3e529ff', '#f4e529ff', '#f5e528ff', '#f6e628ff', '#f7e627ff', '#f9e627ff', '#fae726ff', '#fbe726ff', '#fce725ff', '#fde725ff']);
+    
+
+    color_map_d83f71228a50932a49322e0193d5e043.x = d3.scale.linear()
+              .domain([58.366404063720495, 72.4170238599437])
+              .range([0, 450 - 50]);
+
+    color_map_d83f71228a50932a49322e0193d5e043.legend = L.control({position: 'topright'});
+    color_map_d83f71228a50932a49322e0193d5e043.legend.onAdd = function (map) {var div = L.DomUtil.create('div', 'legend'); return div};
+    color_map_d83f71228a50932a49322e0193d5e043.legend.addTo(map_a18f7e365b67217d22517868f8764e9b);
+
+    color_map_d83f71228a50932a49322e0193d5e043.xAxis = d3.svg.axis()
+        .scale(color_map_d83f71228a50932a49322e0193d5e043.x)
+        .orient("top")
+        .tickSize(1)
+        .tickValues([58.366404063720495, 63.0499439957949, 67.7334839278693, 72.4170238599437]);
+
+    color_map_d83f71228a50932a49322e0193d5e043.svg = d3.select(".legend.leaflet-control").append("svg")
+        .attr("id", 'legend')
+        .attr("width", 450)
+        .attr("height", 40);
+
+    color_map_d83f71228a50932a49322e0193d5e043.g = color_map_d83f71228a50932a49322e0193d5e043.svg.append("g")
+        .attr("class", "key")
+        .attr("fill", "black")
+        .attr("transform", "translate(25,16)");
+
+    color_map_d83f71228a50932a49322e0193d5e043.g.selectAll("rect")
+        .data(color_map_d83f71228a50932a49322e0193d5e043.color.range().map(function(d, i) {
+          return {
+            x0: i ? color_map_d83f71228a50932a49322e0193d5e043.x(color_map_d83f71228a50932a49322e0193d5e043.color.domain()[i - 1]) : color_map_d83f71228a50932a49322e0193d5e043.x.range()[0],
+            x1: i < color_map_d83f71228a50932a49322e0193d5e043.color.domain().length ? color_map_d83f71228a50932a49322e0193d5e043.x(color_map_d83f71228a50932a49322e0193d5e043.color.domain()[i]) : color_map_d83f71228a50932a49322e0193d5e043.x.range()[1],
+            z: d
+          };
+        }))
+      .enter().append("rect")
+        .attr("height", 40 - 30)
+        .attr("x", function(d) { return d.x0; })
+        .attr("width", function(d) { return d.x1 - d.x0; })
+        .style("fill", function(d) { return d.z; });
+
+    color_map_d83f71228a50932a49322e0193d5e043.g.call(color_map_d83f71228a50932a49322e0193d5e043.xAxis).append("text")
+        .attr("class", "caption")
+        .attr("y", 21)
+        .attr("fill", "black")
+        .text("GCN-BYM2 Urban Opportunity Index");
+    
+            var tile_layer_d788fa6baab336ff4712ef959da516ed = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+                {"attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e", "detect_retina": false, "max_native_zoom": 20, "max_zoom": 20, "min_zoom": 0, "no_wrap": false, "opacity": 1, "subdomains": "abcd", "tms": false}
+            );
+            var mini_map_f6eee53c8b31d1385ef1a560e9de85eb = new L.Control.MiniMap(
+                tile_layer_d788fa6baab336ff4712ef959da516ed,
+                {
+  "position": "bottomright",
+  "width": 140,
+  "height": 140,
+  "collapsedWidth": 25,
+  "collapsedHeight": 25,
+  "zoomLevelOffset": -5,
+  "centerFixed": false,
+  "zoomAnimation": false,
+  "toggleDisplay": false,
+  "autoToggleDisplay": false,
+  "minimized": false,
+  "collapsed": false,
+}
+            );
+            map_a18f7e365b67217d22517868f8764e9b.addControl(mini_map_f6eee53c8b31d1385ef1a560e9de85eb);
+        
+    
+            L.control.fullscreen(
+                {
+  "position": "topright",
+  "title": "Full Screen",
+  "titleCancel": "Exit Full Screen",
+  "forceSeparateButton": false,
+}
+            ).addTo(map_a18f7e365b67217d22517868f8764e9b);
+        
+    
+            var layer_control_d0f71f5d21fe3abc0684f1614be7f8e0_layers = {
+                base_layers : {
+                    "Dark (default)" : tile_layer_2c59b20070d4c18da8602dd1a116af93,
+                    "Light" : tile_layer_b84d55f94b6a1f4469aa853c16ecd0b3,
+                    "Street map" : tile_layer_7eb4268ba4d5cbc840310ceda352baeb,
+                },
+                overlays :  {
+                    "Urban Opportunity Index" : geo_json_6ede2eac5cde38f57db36a4921bf8ab1,
+                },
+            };
+            let layer_control_d0f71f5d21fe3abc0684f1614be7f8e0 = L.control.layers(
+                layer_control_d0f71f5d21fe3abc0684f1614be7f8e0_layers.base_layers,
+                layer_control_d0f71f5d21fe3abc0684f1614be7f8e0_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_a18f7e365b67217d22517868f8764e9b);
+
+        
+</script>
+</html>
